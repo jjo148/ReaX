@@ -42,7 +42,7 @@ TEST_CASE("Observer",
 		});
 		
 		bool completed = false;
-		o.subscribe([](var){}, [&](){ completed = true; });
+		o.subscribe([](var){}, [](Error){}, [&](){ completed = true; });
 		
 		REQUIRE(completed);
 	}

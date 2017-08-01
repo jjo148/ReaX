@@ -123,13 +123,6 @@ Disposable Observable::subscribe(const std::function<void(const var&)>& onNext,
 	return Disposable(std::make_shared<Disposable::Impl>(disposable));
 }
 
-Disposable Observable::subscribe(const std::function<void(const var&)>& onNext,
-								   const std::function<void()>& onCompleted,
-								   const std::function<void(Error)>& onError) const
-{
-	return subscribe(onNext, onError, onCompleted);
-}
-
 Disposable Observable::subscribe(const Observer& observer) const
 {
 	auto disposable = impl->wrapped.subscribe(observer.impl->wrapped);
@@ -215,7 +208,7 @@ Observable Observable::elementAt(int index) const
 
 Observable Observable::filter(const std::function<bool(const var&)>& predicate) const
 {
-	return Impl::fromRxCpp(impl->wrapped.filter(predicate));
+	return Impl::fromRxCpp(impl->wrapped.filter(std::move(predicate)));
 }
 
 Observable Observable::flatMap(const std::function<Observable(const var&)>& f) const
@@ -343,7 +336,7 @@ Observable Observable::takeUntil(Observable other) const
 
 Observable Observable::takeWhile(const std::function<bool(const var&)>& predicate) const
 {
-	return Impl::fromRxCpp(impl->wrapped.take_while(predicate));
+	return Impl::fromRxCpp(impl->wrapped.take_while(std::move(predicate)));
 }
 
 Observable Observable::withLatestFrom(Observable o1, Function2& f) const

@@ -23,9 +23,9 @@ TEST_CASE("Reactive<Value> conversion",
 		REQUIRE(value.getValue() == "Some String");
 	}
 	
-	IT("can be implicitly converted to var") {
+	IT("can be converted to var") {
 		value.setValue("Testing");
-		var v = value;
+		var v = value.operator var();
 		REQUIRE(v == "Testing");
 	}
 	

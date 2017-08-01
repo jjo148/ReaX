@@ -134,6 +134,10 @@ Now find the *varx* folder you just unzipped. It will then appear in the list of
 
 <img src="img/projucer-varx-module.png" width="242" height="184">
 
+If you're using Visual Studio, expand the *Exporters* section and highlight *Visual Studio*. On the right side, under *Extra compiler flags*, add `/bigobj` (as shown below).
+
+<img src="img/projucer-bigobj.png" width="772" height="204">
+
 Done! You can now use all the varx beauty in your code.
 
 

@@ -57,7 +57,7 @@ public:
 	/** Creates a new instance. Has the same behavior as the juce::Value equivalent. */
 	///@{
 	Reactive();
-	Reactive(const Value& other);
+	Reactive(const juce::Value& other);
 	explicit Reactive(const juce::var& initialValue);
 	///@}
 	
