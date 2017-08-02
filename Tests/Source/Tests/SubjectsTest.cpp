@@ -51,7 +51,7 @@ TEST_CASE("BehaviorSubject",
 	
 	IT("notifies onCompleted when calling onCompleted") {
 		bool completed = false;
-		subject.asObservable().subscribe([](var){}, [&](){ completed = true; });
+		subject.asObservable().subscribe([](var){}, [](Error){}, [&](){ completed = true; });
 		subject.onCompleted();
 		
 		REQUIRE(completed);
@@ -60,7 +60,7 @@ TEST_CASE("BehaviorSubject",
 	IT("does not call onCompleted when destroying the subject") {
 		auto subject = std::make_shared<BehaviorSubject>(3);
 		bool completed = false;
-		subject->asObservable().subscribe([](var){}, [&](){ completed = true; });
+		subject->asObservable().subscribe([](var){}, [](Error){}, [&](){ completed = true; });
 		subject.reset();
 		
 		REQUIRE(!completed);
@@ -139,13 +139,13 @@ TEST_CASE("PublishSubject",
 		
 		IT("notifies onCompleted when calling onCompleted") {
 			subject->onCompleted();
-			subject->asObservable().subscribe([](var){}, [&](){ completed = true; }).disposedBy(disposeBag);
+			subject->asObservable().subscribe([](var){}, [](Error){}, [&](){ completed = true; }).disposedBy(disposeBag);
 			
 			REQUIRE(completed);
 		}
 		
 		IT("does not call onCompleted when destroying the subject") {
-			subject->asObservable().subscribe([](var){}, [&](){ completed = true; }).disposedBy(disposeBag);
+			subject->asObservable().subscribe([](var){}, [](Error){}, [&](){ completed = true; }).disposedBy(disposeBag);
 			CHECK(!completed);
 			subject.reset();
 			
@@ -245,13 +245,13 @@ TEST_CASE("ReplaySubject",
 		
 		IT("notifies onCompleted when calling onCompleted") {
 			subject->onCompleted();
-			subject->asObservable().subscribe([](var){}, [&](){ completed = true; }).disposedBy(disposeBag);
+			subject->asObservable().subscribe([](var){}, [](Error){}, [&](){ completed = true; }).disposedBy(disposeBag);
 			
 			REQUIRE(completed);
 		}
 		
 		IT("does not call onCompleted when destroying the subject") {
-			subject->asObservable().subscribe([](var){}, [&](){ completed = true; }).disposedBy(disposeBag);
+			subject->asObservable().subscribe([](var){}, [](Error){}, [&](){ completed = true; }).disposedBy(disposeBag);
 			CHECK(!completed);
 			subject.reset();
 			

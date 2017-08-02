@@ -18,7 +18,7 @@ std::shared_ptr<Observable::Impl> Observable::Impl::fromRxCpp(const rxcpp::obser
 	return std::make_shared<Impl>(wrapped);
 }
 
-shared_ptr<Observable::Impl> Observable::Impl::fromValue(const Value& value)
+std::shared_ptr<Observable::Impl> Observable::Impl::fromValue(const Value& value)
 {
 	// An Observable::Impl that holds a Value to keep receiving changes until the Observable is destroyed.
 	class ValueObservableImpl : public Impl, private Value::Listener {

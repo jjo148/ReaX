@@ -9,7 +9,7 @@ public:
 	void initialise (const String& commandLine) override
 	{
 		Catch::ConfigData config;
-		config.shouldDebugBreak = true;
+//		config.shouldDebugBreak = true;
 		
 		Catch::Session session;
 		session.useConfigData(config);

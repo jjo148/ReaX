@@ -157,7 +157,7 @@ TEST_CASE("Observable::empty",
 	IT("notifies onCompleted immediately") {
 		DisposeBag disposeBag;
 		bool completed = false;
-		o.subscribe([](var){}, [&](){
+		o.subscribe([](var){}, [](Error){}, [&](){
 			completed = true;
 		}).disposedBy(disposeBag);
 		
@@ -228,7 +228,7 @@ TEST_CASE("Observable::from",
 TEST_CASE("Observable::fromValue",
 		  "[Observable][Observable::fromValue]")
 {
-	Value value("Initial Item");
+	Value value(String("Initial Item"));
 	const auto observable = Observable::fromValue(value);
 	Array<var> items;
 	varxCollectItems(observable, items);
@@ -292,7 +292,7 @@ TEST_CASE("Observable::fromValue lifetime",
 		  "[Observable][Observable::fromValue]")
 {
 	// Create an Observable from a Value
-	Value value("Initial");
+	Value value(String("Initial"));
 	auto source = std::make_shared<Observable>(Observable::fromValue(value));
 	
 	// Create another Observable from the source Observable
@@ -345,7 +345,7 @@ TEST_CASE("Observable::fromValue lifetime",
 	
 	IT("notified onComplete when the Observable is destroyed") {
 		bool completed = false;
-		source->subscribe([](var){}, [&]() { completed = true; });
+		source->subscribe([](var){}, [](Error){}, [&]() { completed = true; });
 		CHECK(!completed);
 		
 		source.reset();

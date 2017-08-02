@@ -57,7 +57,7 @@ public:
 	/** Creates a new instance. Has the same behavior as the juce::Value equivalent. */
 	///@{
 	Reactive();
-	Reactive(const Value& other);
+	Reactive(const juce::Value& other);
 	explicit Reactive(const juce::var& initialValue);
 	///@}
 	
@@ -74,14 +74,14 @@ private:
 /**
 	Adds reactive extensions to a juce::Component (or subclass).
  */
-template<typename Component>
-class Reactive<Component, detail::IsSimpleComponent<Component>> : public Component
+template<typename ComponentType>
+class Reactive<ComponentType, detail::IsSimpleComponent<ComponentType>> : public ComponentType
 {
 public:
 	/** Creates a new instance. @see juce::Component::Component. */
 	template<typename... Args>
 	Reactive(Args&&... args)
-	: Component(std::forward<Args>(args)...),
+	: ComponentType(std::forward<Args>(args)...),
 	  rx(*this) {}
 	
 	/** The reactive extension object. */
@@ -91,14 +91,14 @@ public:
 /**
 	Adds reactive extensions to a juce::ImageComponent (or subclass).
  */
-template<typename ImageComponent>
-class Reactive<ImageComponent, detail::IsImageComponent<ImageComponent>> : public ImageComponent
+template<typename ImageComponentType>
+class Reactive<ImageComponentType, detail::IsImageComponent<ImageComponentType>> : public ImageComponentType
 {
 public:
 	/** Creates a new instance. @see juce::ImageComponent::ImageComponent. */
 	template<typename... Args>
 	Reactive(Args&&... args)
-	: ImageComponent(std::forward<Args>(args)...),
+	: ImageComponentType(std::forward<Args>(args)...),
 	  rx(*this) {}
 	
 	/** The reactive extension object. */
@@ -108,14 +108,14 @@ public:
 /**
 	Adds reactive extensions to a juce::Button (or subclass).
  */
-template<typename Button>
-class Reactive<Button, detail::IsButton<Button>> : public Button
+template<typename ButtonType>
+class Reactive<ButtonType, detail::IsButton<ButtonType>> : public ButtonType
 {
 public:
 	/** Creates a new instance. @see juce::Button::Button. */
 	template<typename... Args>
 	Reactive(Args&&... args)
-	: Button(std::forward<Args>(args)...),
+	: ButtonType(std::forward<Args>(args)...),
 	  rx(*this) {}
 	
 	/** The reactive extension object. */
@@ -125,14 +125,14 @@ public:
 /**
 	Adds reactive extensions to a juce::Label (or subclass).
  */
-template<typename Label>
-class Reactive<Label, detail::IsLabel<Label>> : public Label
+template<typename LabelType>
+class Reactive<LabelType, detail::IsLabel<LabelType>> : public LabelType
 {
 public:
 	/** Creates a new instance. @see juce::Label::Label. */
 	template<typename... Args>
 	Reactive(Args&&... args)
-	: Label(std::forward<Args>(args)...),
+	: LabelType(std::forward<Args>(args)...),
 	  rx(*this) {}
 	
 	/** The reactive extension object. */
@@ -142,8 +142,8 @@ public:
 /**
 	Adds reactive extensions to a juce::Slider (or subclass).
  */
-template<typename Slider>
-class Reactive<Slider, detail::IsSlider<Slider>> : public Slider
+template<typename SliderType>
+class Reactive<SliderType, detail::IsSlider<SliderType>> : public SliderType
 {
 	typedef std::function<double(const juce::String&)> GetValueFromText_Function;
 	typedef std::function<juce::String(double)> GetTextFromValue_Function;
@@ -157,7 +157,7 @@ public:
 	/** Creates a new instance. @see juce::Slider::Slider. */
 	template<typename... Args>
 	Reactive(Args&&... args)
-	: Slider(std::forward<Args>(args)...),
+	: SliderType(std::forward<Args>(args)...),
 	  rx(*this, getValueFromText_Subject.asObserver(), getTextFromValue_Subject.asObserver())
 	{
 		getValueFromText_Subject.takeUntil(rx.deallocated).subscribe([this](juce::var function) {
@@ -179,7 +179,7 @@ public:
 		if (getValueFromText_Function)
 			return getValueFromText_Function(text);
 		else
-			return Slider::getValueFromText(text);
+			return SliderType::getValueFromText(text);
 	}
 	
 	juce::String getTextFromValue(double value) override
@@ -187,7 +187,7 @@ public:
 		if (getTextFromValue_Function)
 			return getTextFromValue_Function(value);
 		else
-			return Slider::getTextFromValue(value);
+			return SliderType::getTextFromValue(value);
 	}
 	///@endcond
 };

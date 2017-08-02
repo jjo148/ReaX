@@ -130,10 +130,6 @@ public:
 	Disposable subscribe(const std::function<void(const var&)>& onNext,
 						   const std::function<void(Error)>& onError = TerminateOnError,
 						   const std::function<void()>& onCompleted = EmptyOnCompleted) const;
-	/** \overload */
-	Disposable subscribe(const std::function<void(const var&)>& onNext,
-						   const std::function<void()>& onCompleted,
-						   const std::function<void(Error)>& onError = TerminateOnError) const;
 	///@}
 	
 	///@{
@@ -422,7 +418,7 @@ public:
 	 
 		This allows you to return an Observable from a function, e.g. when using Observable::map.
 	 */
-	operator var() const;
+	operator juce::var() const;
 	
 	/**
 		Blocks until the Observable has completed, then returns an Array of all emitted items.

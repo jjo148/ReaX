@@ -63,7 +63,7 @@ TEST_CASE("Observable onComplete",
 	};
 	
 	IT("calls onComplete synchronously") {
-		Observable::just(2).subscribe([](var){}, onComplete);
+		Observable::just(2).subscribe([](var){}, [](Error){}, onComplete);
 		REQUIRE(called);
 	}
 }
