@@ -6,7 +6,7 @@ varx uses the great [RxCpp](https://github.com/Reactive-Extensions/RxCpp) under 
 
 
 
-**[Download Latest Version](https://github.com/martinfinke/varx/releases/download/v0.6.1/varx-v0.6.1.zip)**
+**[Download Latest Version](https://github.com/martinfinke/varx/releases/download/v0.6.2/varx-v0.6.2.zip)**
 
 
 
