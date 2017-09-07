@@ -126,7 +126,7 @@ To find out what `Observable`, `rx` and `map` is all about, continue with [Getti
 
 ## Installation
 
-[Download](https://github.com/martinfinke/varx/releases/download/v0.6.1/varx-v0.6.1.zip) varx and un-zip it. In Projucer, expand the *Modules* section, click the `+` button and choose *“Add a module from a specified folder…”*:
+[Download](https://github.com/martinfinke/varx/releases/download/v0.6.2/varx-v0.6.2.zip) varx and un-zip it. In Projucer, expand the *Modules* section, click the `+` button and choose *“Add a module from a specified folder…”*:
 
 <img src="img/projucer-add-module.png" width="603" height="503">
 

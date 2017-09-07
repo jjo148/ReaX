@@ -3,7 +3,7 @@
 BEGIN_JUCE_MODULE_DECLARATION
 ID: varx
 vendor: martin-finke
-version: 0.6.1
+version: 0.6.2
 name: varx
 description: Reactive Extensions (Rx) for JUCE.
 dependencies: juce_core, juce_data_structures, juce_events, juce_graphics, juce_gui_basics
