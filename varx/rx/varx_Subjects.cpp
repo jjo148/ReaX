@@ -15,12 +15,12 @@ Subject::Subject(const std::shared_ptr<Impl>& impl)
 
 Observable Subject::asObservable() const
 {
-	return *this;
+    return *this;
 }
 
 Observer Subject::asObserver() const
 {
-	return *this;
+    return *this;
 }
 
 BehaviorSubject::BehaviorSubject(const juce::var& initial)
@@ -28,7 +28,7 @@ BehaviorSubject::BehaviorSubject(const juce::var& initial)
 
 var BehaviorSubject::getLatestItem() const
 {
-	return impl->getLatestItem();
+    return impl->getLatestItem();
 }
 
 PublishSubject::PublishSubject()

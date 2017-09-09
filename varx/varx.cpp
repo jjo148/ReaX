@@ -3,10 +3,10 @@
 #include "RxCpp/Rx/v2/src/rxcpp/rx.hpp"
 
 namespace varx {
-	using namespace juce;
-	
-	template<class T>
-	using shared_ptr = std::shared_ptr<T>;
+    using namespace juce;
+    
+    template<class T>
+    using shared_ptr = std::shared_ptr<T>;
 
 #include "gui/varx_Extensions.cpp"
 #include "gui/varx_Reactive.cpp"

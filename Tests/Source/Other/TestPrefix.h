@@ -32,30 +32,30 @@ using namespace varx;
 /** Runs the JUCE dispatch loop for a given time, to process async callbacks. */
 inline void varxRunDispatchLoop(int millisecondsToRunFor = 0)
 {
-	MessageManager::getInstance()->runDispatchLoopUntil(millisecondsToRunFor);
+    MessageManager::getInstance()->runDispatchLoopUntil(millisecondsToRunFor);
 }
 
 class TestWindow : public DocumentWindow, private DeletedAtShutdown
 {
 public:
-	static TestWindow& getInstance()
-	{
-		static TestWindow *window = new TestWindow();
-		return *window;
-	}
-	
-	void addAndMakeVisible(Component& component)
-	{
-		getContentComponent()->addAndMakeVisible(component);
-	}
-	
+    static TestWindow& getInstance()
+    {
+        static TestWindow *window = new TestWindow();
+        return *window;
+    }
+    
+    void addAndMakeVisible(Component& component)
+    {
+        getContentComponent()->addAndMakeVisible(component);
+    }
+    
 private:
-	TestWindow()
-	: DocumentWindow("varx-Tests", Colours::white, DocumentWindow::TitleBarButtons::closeButton, true)
-	{
-		ScopedPointer<Component> component(new Component());
-		component->setSize(1, 1);
-		setContentOwned(component.release(), true);
-		setVisible(true);
-	}
+    TestWindow()
+    : DocumentWindow("varx-Tests", Colours::white, DocumentWindow::TitleBarButtons::closeButton, true)
+    {
+        ScopedPointer<Component> component(new Component());
+        component->setSize(1, 1);
+        setContentOwned(component.release(), true);
+        setVisible(true);
+    }
 };
