@@ -10,16 +10,25 @@
 
 #pragma once
 
-#define VARX_DEFINE_PRINT_FUNCTION(__type, __body) namespace varx {\
-namespace util {\
-    inline juce::String desc(const __type& value) __body\
-}\
-}\
-namespace juce {\
-    inline std::ostream& operator<<(std::ostream& os, const __type& value) {\
-        os << varx::util::desc(value);\
-        return os;\
-    }\
+#define VARX_DEFINE_PRINT_FUNCTION(__type, __body) \
+    namespace varx { \
+        \
+namespace util \
+        { \
+            inline juce::String desc(const __type& value) __body \
+        \
+} \
+    \
+} \
+    \
+namespace juce \
+    { \
+        inline std::ostream& operator<<(std::ostream& os, const __type& value) \
+        { \
+            os << varx::util::desc(value); \
+            return os; \
+        } \
+    \
 }
 
 namespace varx {

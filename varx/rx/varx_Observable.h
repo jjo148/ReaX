@@ -23,7 +23,7 @@ public:
     //! @cond Doxygen_Suppress
     typedef juce::var var;
     //! @endcond
-    
+
 #pragma mark - Creation
     /**
         Creates an Observable which emits values from an Observer on each subscription.
@@ -31,22 +31,22 @@ public:
         In the onSubscribe function, you get an Observer. You can call Observer::onNext on it to emit values from the Observable.
      */
     static Observable create(const std::function<void(Observer)>& onSubscribe);
-    
+
     /**
         Creates a new Observable for each subscriber, by calling the `factory` function on each new subscription.
      */
     static Observable defer(const std::function<Observable()>& factory);
-    
+
     /**
         Creates an Observable that doesn't emit any items and notifies onComplete immediately.
      */
     static Observable empty();
-    
+
     /**
         Creates an Observable which doesn't emit any items, and immediately notifies onError.
      */
     static Observable error(const std::exception& error);
-    
+
     /**
         Creates an Observable that immediately emits the items from the given Array.
      
@@ -57,7 +57,7 @@ public:
             Observable::from({var(3), var("four")})
      */
     static Observable from(const juce::Array<var>& array);
-    
+
     /**
         Creates an Observable from a given JUCE Value. The returned Observable **only emits items until it is destroyed**, so you are responsible for managing its lifetime. Or use Reactive<Value>, which will handle this.
      
@@ -66,7 +66,7 @@ public:
         When calling Value::setValue, it notifies asynchronously. So **the returned Observable emits the new value asynchronously.** If you call setValue immediately before destroying the returned Observable, the new value will not be emitted.
      */
     static Observable fromValue(juce::Value value);
-    
+
     /**
         Returns an Observable that emits one item every `interval`, starting at the time of subscription (where the first item is emitted). The emitted items are `1`, `2`, `3`, and so on.
      
@@ -75,19 +75,19 @@ public:
         The interval has millisecond resolution.
      */
     static Observable interval(const juce::RelativeTime& interval);
-    
+
     /**
         Creates an Observable which emits a single item.
      
         The value is emitted immediately on each new subscription.
      */
     static Observable just(const var& value);
-    
+
     /**
         Creates an Observable that never emits any events and never terminates.
      */
     static Observable never();
-    
+
     ///@{
     /**
         Creates an Observable which emits a range of items, starting at `first` to (and including) `last`. It completes after emitting the `last` item.
@@ -103,7 +103,7 @@ public:
     /** \overload */
     static Observable range(double first, double last, unsigned int step);
     ///@}
-    
+
     /**
         Creates an Observable which emits a given item repeatedly.
      
@@ -112,8 +112,8 @@ public:
     static Observable repeat(const var& item);
     /** \overload */
     static Observable repeat(const var& item, unsigned int times);
-    
-    
+
+
 #pragma mark - Disposable
     ///@{
     /**
@@ -128,10 +128,10 @@ public:
         The returned Disposable can be used to unsubscribe from the Observable, to stop receiving values from it. **You will keep receiving values until you call Disposable::dispose, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
      */
     Disposable subscribe(const std::function<void(const var&)>& onNext,
-                           const std::function<void(Error)>& onError = TerminateOnError,
-                           const std::function<void()>& onCompleted = EmptyOnCompleted) const;
+                         const std::function<void(Error)>& onError = TerminateOnError,
+                         const std::function<void()>& onCompleted = EmptyOnCompleted) const;
     ///@}
-    
+
     ///@{
     /**
         Subscribes an Observer to an Observable. The Observer is notified whenever the Observable emits an item, or notifies an onError / onCompleted.
@@ -140,8 +140,8 @@ public:
      */
     Disposable subscribe(const Observer& observer) const;
     ///@}
-    
-    
+
+
 #pragma mark - Transform Functions
     ///@{
     /**
@@ -156,7 +156,7 @@ public:
     typedef const std::function<var(const var&, const var&, const var&, const var&, const var&, const var&, const var&)>& Function7;
     typedef const std::function<var(const var&, const var&, const var&, const var&, const var&, const var&, const var&, const var&)>& Function8;
     ///@}
-    
+
 #pragma mark - Operators
     ///@{
     /**
@@ -201,7 +201,7 @@ public:
     /** \overload */
     Observable concat(Observable o1, Observable o2, Observable o3, Observable o4, Observable o5, Observable o6, Observable o7) const;
     ///@}
-    
+
     /**
         Returns an Observable which emits if `interval` has passed without this Observable emitting an item. The returned Observable emits the latest item from this Observable.
      
@@ -210,22 +210,22 @@ public:
         The interval has millisecond resolution.
      */
     Observable debounce(const juce::RelativeTime& interval) const;
-    
+
     /**
         Returns an Observable which emits the same items as this Observable, but suppresses consecutive duplicate items.
      */
     Observable distinctUntilChanged() const;
-    
+
     /**
         Returns an Observable which emits only one item: The `index`th item emitted by this Observable.
      */
     Observable elementAt(int index) const;
-    
+
     /**
         Returns an Observable that emits only those items from this Observable that pass a predicate function.
      */
     Observable filter(const std::function<bool(const var&)>& predicate) const;
-    
+
     /**
         For each emitted item, calls `f` and subscribes to the Observable returned from `f`. The emitted items from all these returned Observables are *merged* (so they interleave).
      
@@ -240,14 +240,14 @@ public:
         @see Observable::merge, Observable::switchOnNext.
      */
     Observable flatMap(const std::function<Observable(const var&)>& f) const;
-    
+
     /**
         For each item emitted by this Observable, call the function with that item and emit the result.
      
         If `f` returns an Observable, you can use Observable::switchOnNext afterwards.
      */
     Observable map(Function1 f) const;
-    
+
     ///@{
     /**
         Merges the emitted items of this observable and o1, o2, … into one Observable. The items are interleaved, depending on when the source Observables emit items.
@@ -268,12 +268,12 @@ public:
     /** \overload */
     Observable merge(Observable o1, Observable o2, Observable o3, Observable o4, Observable o5, Observable o6, Observable o7) const;
     ///@}
-    
+
     /**
         Begins with a `startValue`, and then applies `f` to all items emitted by this Observable, and returns the aggregate result as a single-element Observable sequence.
      */
     Observable reduce(const var& startValue, Function2 f) const;
-    
+
     /**
         Returns an Observable which checks every `interval` milliseconds whether this Observable has emitted any new items. If so, the returned Observable emits the latest item from this Observable.
      
@@ -282,24 +282,24 @@ public:
         The interval has millisecond resolution.
      */
     Observable sample(const juce::RelativeTime& interval);
-    
+
     /**
         Calls a function `f` with the given `startValue` and the first item emitted by this Observable. The value returned from `f` is remembered. When the second item is emitted, `f` is called with the remembered value (called the *accumulator*) and the second emitted item. The returned item is remembered, until the third item is emitted, and so on.
         
         The first parameter to `f` is the accumulator, the second is the current item.
      */
     Observable scan(const var& startValue, Function2 f) const;
-    
+
     /**
         Returns an Observable which suppresses emitting the first `numItems` items from this Observable.
      */
     Observable skip(unsigned int numItems) const;
-    
+
     /**
         Returns an Observable which suppresses emitting items from this Observable until the `other` Observable sequence emits an item.
      */
     Observable skipUntil(Observable other) const;
-    
+
     /**
         Emits the given item(s) before beginning to emit the items in this Observable.
      */
@@ -318,36 +318,36 @@ public:
     Observable startWith(const var& item1, const var& item2, const var& item3, const var& item4, const var& item5, const var& item6, const var& item7) const;
     /** \overload */
     Observable startWith(const var& item1, const var& item2, const var& item3, const var& item4, const var& item5, const var& item6, const var& item7, const var& item8) const;
-    
+
     /**
         ​ **This must only be called if this Observable emits Observables**.
      
         Returns an Observable that emits the items emitted by the Observables which this Observable emits.
      */
     Observable switchOnNext() const;
-    
+
     /**
         Returns an Observable that emits only the first `numItems` items from this Observable.
      */
     Observable take(unsigned int numItems) const;
-    
+
     /**
         Returns an Observable that emits only the last `numItems` items from this Observable.
      */
     Observable takeLast(unsigned int numItems) const;
-    
+
     /**
         Emits items from this Observable until the `other` Observable sequence emits an item.
      */
     Observable takeUntil(Observable other) const;
-    
+
     /**
         Emits items from the beginning of this Observable as long as the given `predicate` returns `true`.
      
         The predicate is called on each item emitted by this Observable, until it returns `false`.
      */
     Observable takeWhile(const std::function<bool(const var&)>& predicate) const;
-    
+
     ///@{
     /**
         Returns an Observable that emits whenever an item is emitted by this Observable. It combines the latest item from each Observable via the given function and emits the result of this function.
@@ -368,7 +368,7 @@ public:
     /** \overload */
     Observable withLatestFrom(Observable o1, Observable o2, Observable o3, Observable o4, Observable o5, Observable o6, Observable o7, Function8 f = &Observable::CombineIntoArray8) const;
     ///@}
-    
+
     ///@{
     /**
         Returns an Observable that emits **whenever** an item is emitted by either this Observable **or** o1, o2, …. It combines the **latest** item from each Observable via the given function and emits the result of this function.
@@ -391,8 +391,8 @@ public:
     /** \overload */
     Observable zip(Observable o1, Observable o2, Observable o3, Observable o4, Observable o5, Observable o6, Observable o7, Function8 f = &Observable::CombineIntoArray8) const;
     ///@}
-    
-    
+
+
 #pragma mark - Scheduling
     /**
         Returns an Observable that will be observed on a specified scheduler, for example the JUCE Message Thread or a background thread.
@@ -410,8 +410,8 @@ public:
         @see Scheduler::messageThread, Scheduler::backgroundThread and Scheduler::newThread
      */
     Observable observeOn(const Scheduler& scheduler) const;
-    
-    
+
+
 #pragma mark - Misc
     /**
         Wraps the Observable into a var.
@@ -419,7 +419,7 @@ public:
         This allows you to return an Observable from a function, e.g. when using Observable::map.
      */
     operator juce::var() const;
-    
+
     /**
         Blocks until the Observable has completed, then returns an Array of all emitted items.
      
@@ -428,8 +428,8 @@ public:
         ​ **If you don't pass an onError handler, an exception inside the Observable will terminate your app.**
      */
     juce::Array<var> toArray(const std::function<void(Error)>& onError = TerminateOnError) const;
-    
-    
+
+
 private:
     friend class Subject;
     struct Impl;
@@ -443,7 +443,7 @@ private:
     static var CombineIntoArray6(const var&, const var&, const var&, const var&, const var&, const var&);
     static var CombineIntoArray7(const var&, const var&, const var&, const var&, const var&, const var&, const var&);
     static var CombineIntoArray8(const var&, const var&, const var&, const var&, const var&, const var&, const var&, const var&);
-    
+
     static const std::function<void(Error)> TerminateOnError;
     static const std::function<void()> EmptyOnCompleted;
     JUCE_LEAK_DETECTOR(Observable)

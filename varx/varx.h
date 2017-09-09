@@ -35,8 +35,8 @@ END_JUCE_MODULE_DECLARATION
 #include "util/varx_PrintFunctions.h"
 
 namespace varx {
-    
-typedef std::exception_ptr Error;
+
+    typedef std::exception_ptr Error;
 
 #include "rx/varx_Disposable.h"
 #include "rx/varx_DisposeBag.h"
@@ -44,7 +44,6 @@ typedef std::exception_ptr Error;
 #include "rx/varx_Observer.h"
 #include "rx/varx_Scheduler.h"
 #include "rx/varx_Subjects.h"
-    
 }
 
 #include "util/varx_VariantConverters.h"
@@ -53,5 +52,4 @@ namespace varx {
 
 #include "gui/varx_Extensions.h"
 #include "gui/varx_Reactive.h"
-
 }

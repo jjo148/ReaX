@@ -20,5 +20,3 @@ void Disposable::disposedBy(DisposeBag& disposeBag)
 {
     disposeBag.insert(*this);
 }
-
-

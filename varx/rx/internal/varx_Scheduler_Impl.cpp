@@ -12,5 +12,3 @@
 
 Scheduler::Impl::Impl(const Schedule& schedule)
 : schedule(schedule) {}
-
-

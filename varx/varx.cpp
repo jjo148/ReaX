@@ -4,7 +4,7 @@
 
 namespace varx {
     using namespace juce;
-    
+
     template<class T>
     using shared_ptr = std::shared_ptr<T>;
 
@@ -27,5 +27,4 @@ namespace varx {
 
 #include "util/varx_PrintFunctions.cpp"
 #include "util/varx_VariantConverters.cpp"
-
 }

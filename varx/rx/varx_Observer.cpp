@@ -25,5 +25,3 @@ void Observer::onCompleted() const
 {
     impl->wrapped.on_completed();
 }
-
-

@@ -38,5 +38,3 @@ ReplaySubject::ReplaySubject(size_t bufferSize)
 : Subject(std::make_shared<ReplaySubjectImpl>(bufferSize)) {}
 
 const size_t ReplaySubject::MaxBufferSize = std::numeric_limits<size_t>::max();
-
-

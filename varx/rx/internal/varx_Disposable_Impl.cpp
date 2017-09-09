@@ -12,5 +12,3 @@
 
 Disposable::Impl::Impl(const rxcpp::subscription& wrapped)
 : wrapped(wrapped) {}
-
-

@@ -10,7 +10,7 @@
 
 namespace {
     const std::runtime_error InvalidRangeError("Invalid range.");
-    
+
     std::chrono::milliseconds durationFromRelativeTime(const juce::RelativeTime& relativeTime)
     {
         return std::chrono::milliseconds(relativeTime.inMilliseconds());
@@ -23,13 +23,14 @@ const std::function<void(Error)> Observable::TerminateOnError = [](Error) {
     std::terminate();
 };
 
-const std::function<void()> Observable::EmptyOnCompleted = [](){};
+const std::function<void()> Observable::EmptyOnCompleted = []() {};
 
 
 #pragma mark - Creation
 
 Observable::Observable(const shared_ptr<Impl>& impl)
-:	impl(impl) {}
+: impl(impl)
+{}
 
 Observable Observable::create(const std::function<void(Observer)>& onSubscribe)
 {
@@ -85,9 +86,9 @@ Observable Observable::range(int first, int last, unsigned int step)
 {
     if (first > last)
         throw InvalidRangeError;
-    
+
     auto o = rxcpp::observable<>::range<int>(first, last, step, rxcpp::identity_immediate());
-    
+
     return Impl::fromRxCpp(o.map(toVar<int>));
 }
 
@@ -95,9 +96,9 @@ Observable Observable::range(double first, double last, unsigned int step)
 {
     if (first > last)
         throw InvalidRangeError;
-    
+
     auto o = rxcpp::observable<>::range<double>(first, last, step, rxcpp::identity_immediate());
-    
+
     return Impl::fromRxCpp(o.map(toVar<double>));
 }
 
@@ -115,18 +116,18 @@ Observable Observable::repeat(const var& item, unsigned int times)
 #pragma mark - Disposable
 
 Disposable Observable::subscribe(const std::function<void(const var&)>& onNext,
-                                   const std::function<void(Error)>& onError,
-                                   const std::function<void()>& onCompleted) const
+                                 const std::function<void(Error)>& onError,
+                                 const std::function<void()>& onCompleted) const
 {
     auto disposable = impl->wrapped.subscribe(onNext, onError, onCompleted);
-    
+
     return Disposable(std::make_shared<Disposable::Impl>(disposable));
 }
 
 Disposable Observable::subscribe(const Observer& observer) const
 {
     auto disposable = impl->wrapped.subscribe(observer.impl->wrapped);
-    
+
     return Disposable(std::make_shared<Disposable::Impl>(disposable));
 }
 
@@ -315,7 +316,7 @@ Observable Observable::switchOnNext() const
     rxcpp::observable<rxcpp::observable<var>> unwrapped = impl->wrapped.map([](var observable) {
         return fromVar<Observable>(observable).impl->wrapped;
     });
-    
+
     return Impl::fromRxCpp(unwrapped.switch_on_next());
 }
 
@@ -418,7 +419,8 @@ juce::Array<var> Observable::toArray(const std::function<void(Error)>& onError) 
     Array<var> items;
     impl->wrapped.as_blocking().subscribe([&](const var& item) {
         items.add(item);
-    }, onError);
+    },
+                                          onError);
     return items;
 }
 
@@ -427,29 +429,29 @@ juce::Array<var> Observable::toArray(const std::function<void(Error)>& onError) 
 
 var Observable::CombineIntoArray2(const var& v1, const var& v2)
 {
-    return Array<var>({v1, v2});
+    return Array<var>({ v1, v2 });
 }
 var Observable::CombineIntoArray3(const var& v1, const var& v2, const var& v3)
 {
-    return Array<var>({v1, v2, v3});
+    return Array<var>({ v1, v2, v3 });
 }
 var Observable::CombineIntoArray4(const var& v1, const var& v2, const var& v3, const var& v4)
 {
-    return Array<var>({v1, v2, v3, v4});
+    return Array<var>({ v1, v2, v3, v4 });
 }
 var Observable::CombineIntoArray5(const var& v1, const var& v2, const var& v3, const var& v4, const var& v5)
 {
-    return Array<var>({v1, v2, v3, v4, v5});
+    return Array<var>({ v1, v2, v3, v4, v5 });
 }
 var Observable::CombineIntoArray6(const var& v1, const var& v2, const var& v3, const var& v4, const var& v5, const var& v6)
 {
-    return Array<var>({v1, v2, v3, v4, v5, v6});
+    return Array<var>({ v1, v2, v3, v4, v5, v6 });
 }
 var Observable::CombineIntoArray7(const var& v1, const var& v2, const var& v3, const var& v4, const var& v5, const var& v6, const var& v7)
 {
-    return Array<var>({v1, v2, v3, v4, v5, v6, v7});
+    return Array<var>({ v1, v2, v3, v4, v5, v6, v7 });
 }
 var Observable::CombineIntoArray8(const var& v1, const var& v2, const var& v3, const var& v4, const var& v5, const var& v6, const var& v7, const var& v8)
 {
-    return Array<var>({v1, v2, v3, v4, v5, v6, v7, v8});
+    return Array<var>({ v1, v2, v3, v4, v5, v6, v7, v8 });
 }

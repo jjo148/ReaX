@@ -14,7 +14,7 @@ namespace util {
         juce::StringArray strings;
         for (juce::var v : array)
             strings.add(varx::util::desc(v));
-        
+
         return varx::util::desc(strings);
     }
 }
