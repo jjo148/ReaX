@@ -9,6 +9,7 @@ description: Reactive Extensions (Rx) for JUCE.
 dependencies: juce_core, juce_data_structures, juce_events, juce_graphics, juce_gui_basics
 website: http://github.com/martinfinke/varx
 license: MIT
+minimumCppStandard: 11
 END_JUCE_MODULE_DECLARATION
 */
 #endif

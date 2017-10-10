@@ -2,8 +2,9 @@
 
 <JUCERPROJECT id="ggJgza" name="varx-Tests" projectType="guiapp" version="1.0.0"
               bundleIdentifier="de.martin-finke.varx-Tests" includeBinaryInAppConfig="1"
-              jucerVersion="5.0.0" companyName="Martin Finke" companyWebsite="http://www.martin-finke.de"
-              displaySplashScreen="0" reportAppUsage="0" splashScreenColour="Dark">
+              jucerVersion="5.1.2" companyName="Martin Finke" companyWebsite="http://www.martin-finke.de"
+              displaySplashScreen="0" reportAppUsage="0" splashScreenColour="Dark"
+              cppLanguageStandard="11">
   <MAINGROUP id="J6yVM5" name="varx-Tests">
     <GROUP id="{3E021249-15C8-F098-B5C0-2A3DBD19388C}" name="Source">
       <GROUP id="{BBCE1761-6AF0-DAE7-65CD-AE0365C41BE7}" name="Other">
