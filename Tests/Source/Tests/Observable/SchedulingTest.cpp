@@ -8,7 +8,7 @@
   ==============================================================================
 */
 
-#include "TestPrefix.h"
+#include "../../Other/TestPrefix.h"
 
 
 TEST_CASE("Observable::observeOn",
