@@ -13,17 +13,15 @@ Observer::Observer(const std::shared_ptr<Impl>& impl)
 
 void Observer::onNext(const juce::var& next) const
 {
-	impl->wrapped.on_next(next);
+    impl->wrapped.on_next(next);
 }
 
 void Observer::onError(Error error) const
 {
-	impl->wrapped.on_error(error);
+    impl->wrapped.on_error(error);
 }
 
 void Observer::onCompleted() const
 {
-	impl->wrapped.on_completed();
+    impl->wrapped.on_completed();
 }
-
-

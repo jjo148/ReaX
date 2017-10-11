@@ -12,7 +12,5 @@
 
 struct DisposeBag::Impl
 {
-	const rxcpp::composite_subscription wrapped;
+    const rxcpp::composite_subscription wrapped;
 };
-
-

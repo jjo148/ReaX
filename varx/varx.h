@@ -9,6 +9,7 @@ description: Reactive Extensions (Rx) for JUCE.
 dependencies: juce_core, juce_data_structures, juce_events, juce_graphics, juce_gui_basics
 website: http://github.com/martinfinke/varx
 license: MIT
+minimumCppStandard: 11
 END_JUCE_MODULE_DECLARATION
 */
 #endif
@@ -35,8 +36,8 @@ END_JUCE_MODULE_DECLARATION
 #include "util/varx_PrintFunctions.h"
 
 namespace varx {
-	
-typedef std::exception_ptr Error;
+
+    typedef std::exception_ptr Error;
 
 #include "rx/varx_Disposable.h"
 #include "rx/varx_DisposeBag.h"
@@ -44,7 +45,6 @@ typedef std::exception_ptr Error;
 #include "rx/varx_Observer.h"
 #include "rx/varx_Scheduler.h"
 #include "rx/varx_Subjects.h"
-	
 }
 
 #include "util/varx_VariantConverters.h"
@@ -53,5 +53,4 @@ namespace varx {
 
 #include "gui/varx_Extensions.h"
 #include "gui/varx_Reactive.h"
-
 }

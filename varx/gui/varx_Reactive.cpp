@@ -21,6 +21,6 @@ Reactive<Value>::Reactive(const var& initialValue)
 
 Reactive<Value>& Reactive<Value>::operator=(const var& newValue)
 {
-	Value::operator=(newValue); // Causes Observable to emit
-	return *this;
+    Value::operator=(newValue); // Causes Observable to emit
+    return *this;
 }

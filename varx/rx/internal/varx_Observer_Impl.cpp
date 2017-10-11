@@ -12,5 +12,3 @@
 
 Observer::Impl::Impl(const rxcpp::subscriber<var>& wrapped)
 : wrapped(wrapped) {}
-
-

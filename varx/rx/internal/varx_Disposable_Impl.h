@@ -12,9 +12,7 @@
 
 struct Disposable::Impl
 {
-	Impl(const rxcpp::subscription& wrapped);
-	
-	const rxcpp::subscription wrapped;
+    Impl(const rxcpp::subscription& wrapped);
+
+    const rxcpp::subscription wrapped;
 };
-
-

@@ -12,8 +12,8 @@
 
 var Subject::Impl::getLatestItem() const
 {
-	jassertfalse;
-	return var::undefined();
+    jassertfalse;
+    return var::undefined();
 }
 
 BehaviorSubjectImpl::BehaviorSubjectImpl(const juce::var& initial)
@@ -21,29 +21,29 @@ BehaviorSubjectImpl::BehaviorSubjectImpl(const juce::var& initial)
 
 rxcpp::subscriber<var> BehaviorSubjectImpl::getSubscriber() const
 {
-	return wrapped.get_subscriber();
+    return wrapped.get_subscriber();
 }
 
 rxcpp::observable<var> BehaviorSubjectImpl::asObservable() const
 {
-	return wrapped.get_observable();
+    return wrapped.get_observable();
 }
 
 var BehaviorSubjectImpl::getLatestItem() const
 {
-	return wrapped.get_value();
+    return wrapped.get_value();
 }
 
 PublishSubjectImpl::PublishSubjectImpl() {}
 
 rxcpp::subscriber<var> PublishSubjectImpl::getSubscriber() const
 {
-	return wrapped.get_subscriber();
+    return wrapped.get_subscriber();
 }
 
 rxcpp::observable<var> PublishSubjectImpl::asObservable() const
 {
-	return wrapped.get_observable();
+    return wrapped.get_observable();
 }
 
 ReplaySubjectImpl::ReplaySubjectImpl(size_t bufferSize)
@@ -51,10 +51,10 @@ ReplaySubjectImpl::ReplaySubjectImpl(size_t bufferSize)
 
 rxcpp::subscriber<var> ReplaySubjectImpl::getSubscriber() const
 {
-	return wrapped.get_subscriber();
+    return wrapped.get_subscriber();
 }
 
 rxcpp::observable<var> ReplaySubjectImpl::asObservable() const
 {
-	return wrapped.get_observable();
+    return wrapped.get_observable();
 }
