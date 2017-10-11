@@ -163,7 +163,7 @@ public:
     template<typename... Args>
     Reactive(Args&&... args)
     : SliderType(std::forward<Args>(args)...),
-      rx(*this, getValueFromText_Subject.asObserver(), getTextFromValue_Subject.asObserver())
+      rx(*this, getValueFromText_Subject, getTextFromValue_Subject)
     {
         getValueFromText_Subject.takeUntil(rx.deallocated).subscribe([this](juce::var function) {
             this->getValueFromText_Function = fromVar<GetValueFromText_Function>(function);
