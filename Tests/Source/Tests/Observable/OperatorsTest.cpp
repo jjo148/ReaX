@@ -241,7 +241,7 @@ TEST_CASE("Interaction between Observable::map and Observable::switchOnNext",
 
         varxRequireItems(items, "1 Hello");
     }
-    /*
+    
     IT("continues to emit items after the source Observable is gone") {
         auto source = std::make_shared<Observable>(Observable::just(17));
         auto mapped = source->map([](int next) {
@@ -263,7 +263,7 @@ TEST_CASE("Interaction between Observable::map and Observable::switchOnNext",
         // The item should be emitted, although there's no reference to the source anymore
         varxRequireItems(items, 17 * 3);
     }
-    */
+    
     IT("emits an error when trying to unwrap a first-order Observable")
     {
         auto o = Observable::just(1).switchOnNext();
