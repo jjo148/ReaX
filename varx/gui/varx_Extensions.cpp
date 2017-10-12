@@ -315,3 +315,12 @@ bool SliderExtension::hasMultipleThumbs(const juce::Slider& parent)
             return false;
     }
 }
+
+AudioProcessorExtension::AudioProcessorExtension(juce::AudioProcessor& parent)
+: processorChanged(_processorChanged)
+{}
+
+void AudioProcessorExtension::audioProcessorChanged(AudioProcessor* processor)
+{
+    _processorChanged.onNext(var::undefined());
+}

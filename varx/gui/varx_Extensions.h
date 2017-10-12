@@ -249,7 +249,7 @@ public:
     /** Controls whether changes are discarded when hiding the text-box. The default is false.​ **Type: bool** */
     const Observer discardChangesWhenHidingTextBox;
 
-    /** Controls how a String that has been entered into the text-box is converted to a Slider value.​ **Type: std::function<double(String)>** If you don't use this, the slider will use its getValueFromText member function. */
+    /** Controls how a String that has been entered into the text-box is converted to a Slider value.​ **Type: std::function<double(String)>**. If you don't use this, the slider will use its getValueFromText member function. */
     const Observer getValueFromText;
 
     /** Controls how a Slider value is displayed as a String.​ **Type: std::function<String(double)>** If you don't use this, the slider will use its getTextFromValue member function. */
@@ -261,4 +261,27 @@ private:
     void sliderDragEnded(juce::Slider*) override;
 
     static bool hasMultipleThumbs(const juce::Slider& parent);
+};
+
+/**
+    Adds reactive extensions to a juce::AudioProcessor.
+ */
+class AudioProcessorExtension : public ExtensionBase, private juce::AudioProcessorListener
+{
+    PublishSubject _processorChanged;
+    juce::HashMap<int, BehaviorSubject> parameterValueSubjects;
+    juce::HashMap<int, BehaviorSubject> parameterIsChangingSubjects;
+    
+public:
+    /** Creates a new instance for a given AudioProcessor. */
+    AudioProcessorExtension(juce::AudioProcessor& parent);
+
+    /** Emits when something (apart from a parameter value) has changed. For example the program, number of parameters, etc.​ **Type: undefined**. */
+    const Observable processorChanged;
+
+private:
+    void audioProcessorParameterChanged(juce::AudioProcessor*, int, float) override;
+    void audioProcessorChanged(juce::AudioProcessor*) override;
+    void audioProcessorParameterChangeGestureBegin(juce::AudioProcessor*, int) override;
+    void audioProcessorParameterChangeGestureEnd(juce::AudioProcessor*, int) override;
 };
