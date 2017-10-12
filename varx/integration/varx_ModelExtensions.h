@@ -39,3 +39,22 @@ private:
     void audioProcessorParameterChangeGestureBegin(juce::AudioProcessor*, int) override {}
     void audioProcessorParameterChangeGestureEnd(juce::AudioProcessor*, int) override {}
 };
+
+/**
+ Adds reactive extensions to a juce::AudioProcessorValueTreeState.
+ */
+class AudioProcessorValueTreeStateExtension : public ExtensionBase {
+public:
+    /** Creates a new instance for a given AudioProcessorValueTreeState. */
+    AudioProcessorValueTreeStateExtension(juce::AudioProcessorValueTreeState& parent);
+    
+    ~AudioProcessorValueTreeStateExtension();
+    
+    /** Returns a subject to control the value of the parameter with the given ID.​ **Type: float**. */
+    BehaviorSubject parameterValue(const juce::String& parameterID) const;
+    
+private:
+    struct Impl;
+    const juce::ScopedPointer<Impl> impl;
+    juce::AudioProcessorValueTreeState& parent;
+};
