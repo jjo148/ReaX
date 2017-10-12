@@ -1,13 +1,3 @@
-/*
-  ==============================================================================
-
-    varx_Extensions.cpp
-    Created: 11 May 2017 8:15:44am
-    Author:  Martin Finke
-
-  ==============================================================================
-*/
-
 using std::placeholders::_1;
 
 ExtensionBase::ExtensionBase()

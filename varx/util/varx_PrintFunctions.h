@@ -1,13 +1,3 @@
-/*
-  ==============================================================================
-
-    varx_PrintFunctions.h
-    Created: 27 Apr 2017 7:49:11am
-    Author:  Martin Finke
-
-  ==============================================================================
-*/
-
 #pragma once
 
 #define VARX_DEFINE_PRINT_FUNCTION(__type, __body) \

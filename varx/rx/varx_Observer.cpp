@@ -1,13 +1,3 @@
-/*
-  ==============================================================================
-
-    varx_Observer.cpp
-    Created: 27 Apr 2017 7:08:56am
-    Author:  Martin Finke
-
-  ==============================================================================
-*/
-
 Observer::Observer(const std::shared_ptr<Impl>& impl)
 : impl(impl) {}
 

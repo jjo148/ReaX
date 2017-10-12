@@ -1,13 +1,3 @@
-/*
-  ==============================================================================
-
-    varx_Observable.cpp
-    Created: 27 Apr 2017 7:07:33am
-    Author:  Martin Finke
-
-  ==============================================================================
- */
-
 namespace {
     const std::runtime_error InvalidRangeError("Invalid range.");
 
