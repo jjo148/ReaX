@@ -8,8 +8,12 @@ namespace varx {
     template<class T>
     using shared_ptr = std::shared_ptr<T>;
 
-#include "gui/varx_Extensions.cpp"
-#include "gui/varx_Reactive.cpp"
+#include "integration/varx_ExtensionBase.cpp"
+#include "integration/varx_GUIExtensions.cpp"
+#include "integration/varx_ModelExtensions.cpp"
+#include "integration/varx_Reactive.cpp"
+#include "integration/varx_ReactiveGUI.cpp"
+#include "integration/varx_ReactiveModel.cpp"
 
 #include "rx/internal/varx_Disposable_Impl.cpp"
 #include "rx/internal/varx_DisposeBag_Impl.h"

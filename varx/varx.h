@@ -51,6 +51,10 @@ namespace varx {
 
 namespace varx {
 
-#include "gui/varx_Extensions.h"
-#include "gui/varx_Reactive.h"
+#include "integration/varx_ExtensionBase.h"
+#include "integration/varx_GUIExtensions.h"
+#include "integration/varx_ModelExtensions.h"
+#include "integration/varx_Reactive.h"
+#include "integration/varx_ReactiveGUI.h"
+#include "integration/varx_ReactiveModel.h"
 }

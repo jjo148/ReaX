@@ -27,8 +27,10 @@
               file="Source/Tests/DisposableTest.cpp"/>
         <FILE id="vc7e2E" name="ObserverTest.cpp" compile="1" resource="0"
               file="Source/Tests/ObserverTest.cpp"/>
-        <FILE id="wJg0X6" name="ReactiveTest.cpp" compile="1" resource="0"
-              file="Source/Tests/ReactiveTest.cpp"/>
+        <FILE id="Pf7uGi" name="ReactiveModelTest.cpp" compile="1" resource="0"
+              file="Source/Tests/ReactiveModelTest.cpp"/>
+        <FILE id="wJg0X6" name="ReactiveGUITest.cpp" compile="1" resource="0"
+              file="Source/Tests/ReactiveGUITest.cpp"/>
         <FILE id="qEsfze" name="SubjectsTest.cpp" compile="1" resource="0"
               file="Source/Tests/SubjectsTest.cpp"/>
       </GROUP>

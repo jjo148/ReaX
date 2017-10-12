@@ -1,50 +1,6 @@
 #pragma once
 
 /**
-    Base class for connections. Notifies when it's deallocated.
- */
-class ExtensionBase
-{
-    const ReplaySubject _deallocated;
-
-public:
-    /** Notifies the ExtensionBase::deallocated Observable with an item, and onCompleted. */
-    virtual ~ExtensionBase();
-
-    /**
-        An Observable which emits a single item and notifies onCompleted when the ExtensionBase instance is destroyed.
-     
-        If a subscription is done afterwards, it will still receive the item and the onCompleted notification.
-     
-        ​ **Type: undefined**
-     */
-    const Observable deallocated;
-
-protected:
-    ExtensionBase();
-};
-
-/**
-    Connects a juce::Value with a BehaviorSubject.
- 
-    Whenever the Value changes, the BehaviorSubject is changed, and vice versa.
- */
-class ValueExtension : public ExtensionBase, private juce::Value::Listener
-{
-public:
-    /** Creates a new instance with a given Value. The connection refers to the **`ValueSource`** of `inputValue`. */
-    ValueExtension(const juce::Value& inputValue);
-
-    /** The subject that's connected to the Value. This changes whenever the Value changes, and vice versa. */
-    const BehaviorSubject subject;
-
-private:
-    juce::Value value;
-
-    void valueChanged(juce::Value&) override;
-};
-
-/**
     Adds reactive extensions to a juce::Component.
  */
 class ComponentExtension : public ExtensionBase, private juce::ComponentListener
@@ -256,32 +212,9 @@ public:
     const Observer getTextFromValue;
 
 private:
-    void sliderValueChanged(juce::Slider* slider) override;
+    void sliderValueChanged(juce::Slider*) override;
     void sliderDragStarted(juce::Slider*) override;
     void sliderDragEnded(juce::Slider*) override;
 
     static bool hasMultipleThumbs(const juce::Slider& parent);
-};
-
-/**
-    Adds reactive extensions to a juce::AudioProcessor.
- */
-class AudioProcessorExtension : public ExtensionBase, private juce::AudioProcessorListener
-{
-    PublishSubject _processorChanged;
-    juce::HashMap<int, BehaviorSubject> parameterValueSubjects;
-    juce::HashMap<int, BehaviorSubject> parameterIsChangingSubjects;
-    
-public:
-    /** Creates a new instance for a given AudioProcessor. */
-    AudioProcessorExtension(juce::AudioProcessor& parent);
-
-    /** Emits when something (apart from a parameter value) has changed. For example the program, number of parameters, etc.​ **Type: undefined**. */
-    const Observable processorChanged;
-
-private:
-    void audioProcessorParameterChanged(juce::AudioProcessor*, int, float) override;
-    void audioProcessorChanged(juce::AudioProcessor*) override;
-    void audioProcessorParameterChangeGestureBegin(juce::AudioProcessor*, int) override;
-    void audioProcessorParameterChangeGestureEnd(juce::AudioProcessor*, int) override;
 };

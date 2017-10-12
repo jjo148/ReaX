@@ -1,31 +1,5 @@
 using std::placeholders::_1;
 
-ExtensionBase::ExtensionBase()
-: _deallocated(1),
-  deallocated(_deallocated) {}
-
-ExtensionBase::~ExtensionBase()
-{
-    _deallocated.onNext(var::undefined());
-    _deallocated.onCompleted();
-}
-
-ValueExtension::ValueExtension(const Value& inputValue)
-: subject(inputValue.getValue()),
-  value(inputValue)
-{
-    value.addListener(this);
-    subject.takeUntil(deallocated).subscribe(std::bind(&Value::setValue, value, _1));
-}
-
-void ValueExtension::valueChanged(Value&)
-{
-    if (value.getValue() != subject.getLatestItem()) {
-        subject.onNext(value.getValue());
-    }
-}
-
-
 ComponentExtension::ComponentExtension(Component& parent)
 : parent(parent),
   visible(parent.isVisible())
@@ -314,13 +288,4 @@ bool SliderExtension::hasMultipleThumbs(const juce::Slider& parent)
         default:
             return false;
     }
-}
-
-AudioProcessorExtension::AudioProcessorExtension(juce::AudioProcessor& parent)
-: processorChanged(_processorChanged)
-{}
-
-void AudioProcessorExtension::audioProcessorChanged(AudioProcessor* processor)
-{
-    _processorChanged.onNext(var::undefined());
 }
