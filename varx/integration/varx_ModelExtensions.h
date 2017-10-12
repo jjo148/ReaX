@@ -30,14 +30,12 @@ public:
     /** Creates a new instance for a given AudioProcessor. */
     AudioProcessorExtension(juce::AudioProcessor& parent);
 
-    /** Emits when something (apart from a parameter value) has changed. For example the program, number of parameters, etc.​ **Type: undefined**. */
+    /** Emits when something (apart from a parameter value) has changed, for example the latency.​ **Type: undefined**. */
     const Observable processorChanged;
 
 private:
     void audioProcessorParameterChanged(juce::AudioProcessor*, int, float) override {}
     void audioProcessorChanged(juce::AudioProcessor*) override;
-    void audioProcessorParameterChangeGestureBegin(juce::AudioProcessor*, int) override {}
-    void audioProcessorParameterChangeGestureEnd(juce::AudioProcessor*, int) override {}
 };
 
 /**
