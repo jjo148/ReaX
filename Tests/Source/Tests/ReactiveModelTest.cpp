@@ -43,10 +43,10 @@ TEST_CASE("Reactive<Value> Observable",
     {
         value->setValue("Second");
         varxCheckItems(items, "Initial");
-        varxRunDispatchLoop();
+        varxRunDispatchLoop(15);
         varxCheckItems(items, "Initial", "Second");
         value->setValue("Third");
-        varxRunDispatchLoop();
+        varxRunDispatchLoop(15);
 
         varxRequireItems(items, "Initial", "Second", "Third");
     }
@@ -55,7 +55,7 @@ TEST_CASE("Reactive<Value> Observable",
     {
         value->setValue("Should not arrive");
         value.reset();
-        varxRunDispatchLoop();
+        varxRunDispatchLoop(15);
 
         varxRequireItems(items, "Initial");
     }
