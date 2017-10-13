@@ -1,13 +1,3 @@
-/*
-  ==============================================================================
-
-    varx_Subject.cpp
-    Created: 30 Apr 2017 3:01:29am
-    Author:  Martin Finke
-
-  ==============================================================================
-*/
-
 Subject::Subject(const std::shared_ptr<Impl>& impl)
 : Observer(std::make_shared<Observer::Impl>(impl->getSubscriber())),
   Observable(std::make_shared<Observable::Impl>(impl->asObservable())),

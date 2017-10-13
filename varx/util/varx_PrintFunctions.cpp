@@ -1,13 +1,3 @@
-/*
-  ==============================================================================
-
-    varx_PrintFunctions.cpp
-    Created: 14 May 2017 4:06:12pm
-    Author:  Martin Finke
-
-  ==============================================================================
-*/
-
 namespace util {
     juce::String arrayDesc(const juce::Array<juce::var>& array)
     {

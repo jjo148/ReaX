@@ -1,13 +1,3 @@
-/*
-  ==============================================================================
-
-    varx_Subjects_Impl.cpp
-    Created: 14 May 2017 9:43:59am
-    Author:  Martin Finke
-
-  ==============================================================================
-*/
-
 #include "varx_Subjects_Impl.h"
 
 var Subject::Impl::getLatestItem() const

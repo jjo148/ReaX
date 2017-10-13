@@ -22,6 +22,7 @@ END_JUCE_MODULE_DECLARATION
 #include <juce_graphics/juce_graphics.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
+#include <atomic>
 #include <exception>
 #include <functional>
 #include <initializer_list>
@@ -31,6 +32,7 @@ END_JUCE_MODULE_DECLARATION
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
+#include <vector>
 
 
 #include "util/varx_PrintFunctions.h"
@@ -50,7 +52,12 @@ namespace varx {
 #include "util/varx_VariantConverters.h"
 
 namespace varx {
-
-#include "gui/varx_Extensions.h"
-#include "gui/varx_Reactive.h"
+#include "util/internal/varx_ReleasePool.h"
+#include "util/varx_LockFreeTarget.h"
+#include "integration/varx_ExtensionBase.h"
+#include "integration/varx_GUIExtensions.h"
+#include "integration/varx_ModelExtensions.h"
+#include "integration/varx_Reactive.h"
+#include "integration/varx_ReactiveGUI.h"
+#include "integration/varx_ReactiveModel.h"
 }

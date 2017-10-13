@@ -1,13 +1,3 @@
-/*
-  ==============================================================================
-
-    varx_Observable_Impl.cpp
-    Created: 27 Apr 2017 7:11:30am
-    Author:  Martin Finke
-
-  ==============================================================================
-*/
-
 #include "varx_Observable_Impl.h"
 
 Observable::Impl::Impl(const rxcpp::observable<var>& wrapped)

@@ -1,13 +1,3 @@
-/*
-  ==============================================================================
-
-    varx_VariantConverters.h
-    Created: 10 May 2017 9:24:37pm
-    Author:  Martin Finke
-
-  ==============================================================================
-*/
-
 #pragma once
 
 namespace varx {
@@ -97,6 +87,21 @@ struct VariantConverter<varx::Observable> : public varx::detail::ReferenceCounti
 
 template<>
 struct VariantConverter<Image> : public varx::detail::ReferenceCountingVariantConverter<Image>
+{
+};
+
+template<>
+struct VariantConverter<Point<int>> : public varx::detail::ReferenceCountingVariantConverter<Point<int>>
+{
+};
+
+template<>
+struct VariantConverter<Point<float>> : public varx::detail::ReferenceCountingVariantConverter<Point<float>>
+{
+};
+
+template<>
+struct VariantConverter<Point<double>> : public varx::detail::ReferenceCountingVariantConverter<Point<double>>
 {
 };
 
