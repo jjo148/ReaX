@@ -91,6 +91,21 @@ struct VariantConverter<Image> : public varx::detail::ReferenceCountingVariantCo
 };
 
 template<>
+struct VariantConverter<Point<int>> : public varx::detail::ReferenceCountingVariantConverter<Point<int>>
+{
+};
+
+template<>
+struct VariantConverter<Point<float>> : public varx::detail::ReferenceCountingVariantConverter<Point<float>>
+{
+};
+
+template<>
+struct VariantConverter<Point<double>> : public varx::detail::ReferenceCountingVariantConverter<Point<double>>
+{
+};
+
+template<>
 struct VariantConverter<Justification> : public varx::detail::ReferenceCountingVariantConverter<Justification>
 {
 };

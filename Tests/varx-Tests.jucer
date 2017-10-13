@@ -25,12 +25,14 @@
         </GROUP>
         <FILE id="K3FGg8" name="DisposableTest.cpp" compile="1" resource="0"
               file="Source/Tests/DisposableTest.cpp"/>
+        <FILE id="q4NC38" name="LockFreeTargetTest.cpp" compile="1" resource="0"
+              file="Source/Tests/LockFreeTargetTest.cpp"/>
         <FILE id="vc7e2E" name="ObserverTest.cpp" compile="1" resource="0"
               file="Source/Tests/ObserverTest.cpp"/>
-        <FILE id="Pf7uGi" name="ReactiveModelTest.cpp" compile="1" resource="0"
-              file="Source/Tests/ReactiveModelTest.cpp"/>
         <FILE id="wJg0X6" name="ReactiveGUITest.cpp" compile="1" resource="0"
               file="Source/Tests/ReactiveGUITest.cpp"/>
+        <FILE id="Pf7uGi" name="ReactiveModelTest.cpp" compile="1" resource="0"
+              file="Source/Tests/ReactiveModelTest.cpp"/>
         <FILE id="qEsfze" name="SubjectsTest.cpp" compile="1" resource="0"
               file="Source/Tests/SubjectsTest.cpp"/>
       </GROUP>
@@ -40,9 +42,9 @@
     <XCODE_MAC targetFolder="Builds/MacOSX" keepCustomXcodeSchemes="1">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="varx-Tests"
-                       osxCompatibility="10.7 SDK" cppLanguageStandard="c++11" cppLibType="libc++"/>
+                       osxCompatibility="10.9 SDK" cppLanguageStandard="c++11" cppLibType="libc++"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="varx-Tests"
-                       cppLanguageStandard="c++11" cppLibType="libc++" osxCompatibility="10.7 SDK"/>
+                       cppLanguageStandard="c++11" cppLibType="libc++" osxCompatibility="10.9 SDK"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../JUCE/modules"/>

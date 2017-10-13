@@ -3,10 +3,10 @@
 #include "RxCpp/Rx/v2/src/rxcpp/rx.hpp"
 
 namespace varx {
-    using namespace juce;
+using namespace juce;
 
-    template<class T>
-    using shared_ptr = std::shared_ptr<T>;
+template<class T>
+using shared_ptr = std::shared_ptr<T>;
 
 #include "integration/varx_ExtensionBase.cpp"
 #include "integration/varx_GUIExtensions.cpp"
@@ -29,6 +29,7 @@ namespace varx {
 #include "rx/varx_Scheduler.cpp"
 #include "rx/varx_Subjects.cpp"
 
+#include "util/internal/varx_ReleasePool.cpp"
 #include "util/varx_PrintFunctions.cpp"
 #include "util/varx_VariantConverters.cpp"
 }
