@@ -1,3 +1,5 @@
+#pragma once
+
 /**
  An Observer that stores the latest retrieved item atomically, so it can be read by a different thread.
  
@@ -17,17 +19,20 @@ public:
         }).disposedBy(disposeBag);
     }
     
-    /** Reads the latest retrieved item atomically. If this is called before any item has been retrieved, the returned value is uninitialized. */
+    /** Reads the latest retrieved item atomically. This can be called from the audio thread (or some other realtime thread). If this is called before any item has been retrieved, the returned value is uninitialized. */
     inline T getValue() const
     {
-        return latestValue.load();
+        return latestValue;
     }
-    
-    /** Returns the Observer for the target. Items pushed to the Observer are stored atomically. */
-    operator Observer() const { return subject; }
     
     /** Returns the latest retrieved item atomically. It just calls getValue(). */
     inline operator T() const { return getValue(); }
+    
+    /** Returns the Observer for the target. Items pushed to the Observer are stored atomically. */
+    inline Observer asObserver() const { return subject; }
+    
+    /** Returns the Observer for the target. It just calls asObserver(). */
+    operator Observer() const { return asObserver(); }
     
 private:
     std::atomic<T> latestValue;
@@ -58,7 +63,7 @@ public:
         }).disposedBy(disposeBag);
     }
     
-    /** Reads the latest retrieved item atomically. **Must not be called before any item has been retrieved.** */
+    /** Reads the latest retrieved item atomically. This can be called from the audio thread (or some other realtime thread). **Must not be called before any item has been retrieved.** */
     inline T getValue() const
     {
         const auto latest = std::atomic_load(&latestValue);
@@ -69,11 +74,14 @@ public:
         return *latest;
     }
     
-    /** Returns the Observer for the target. Items pushed to the Observer are stored atomically. */
-    operator Observer() const { return subject; }
-    
-    /** Returns the latest retrieved item atomically. It just calls getValue(). */
+    /** Returns the latest retrieved item atomically. It just calls getValue(). This can be called from the audio thread (or some other realtime thread). */
     inline operator T() const { return getValue(); }
+    
+    /** Returns the Observer for the target. Items pushed to the Observer are stored atomically. You should push items to the Observer from a non-realtime thread. */
+    inline Observer asObserver() const { return subject; }
+    
+    /** Returns the Observer for the target. It just calls asObserver(). */
+    operator Observer() const { return asObserver(); }
     
 private:
     std::shared_ptr<T> latestValue;

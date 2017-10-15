@@ -22,6 +22,8 @@ END_JUCE_MODULE_DECLARATION
 #include <juce_graphics/juce_graphics.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
+#include "util/internal/concurrentqueue.h"
+
 #include <atomic>
 #include <exception>
 #include <functional>
@@ -53,6 +55,7 @@ namespace varx {
 
 namespace varx {
 #include "util/internal/varx_ReleasePool.h"
+#include "util/varx_LockFreeSource.h"
 #include "util/varx_LockFreeTarget.h"
 #include "integration/varx_ExtensionBase.h"
 #include "integration/varx_GUIExtensions.h"

@@ -25,6 +25,8 @@
         </GROUP>
         <FILE id="K3FGg8" name="DisposableTest.cpp" compile="1" resource="0"
               file="Source/Tests/DisposableTest.cpp"/>
+        <FILE id="BSjpdo" name="LockFreeSourceTest.cpp" compile="1" resource="0"
+              file="Source/Tests/LockFreeSourceTest.cpp"/>
         <FILE id="q4NC38" name="LockFreeTargetTest.cpp" compile="1" resource="0"
               file="Source/Tests/LockFreeTargetTest.cpp"/>
         <FILE id="vc7e2E" name="ObserverTest.cpp" compile="1" resource="0"
