@@ -43,10 +43,10 @@ TEST_CASE("Reactive<Value> Observable",
     {
         value->setValue("Second");
         varxCheckItems(items, "Initial");
-        varxRunDispatchLoop(30);
+        varxRunDispatchLoopUntil(items.size() == 2);
         varxCheckItems(items, "Initial", "Second");
         value->setValue("Third");
-        varxRunDispatchLoop(30);
+        varxRunDispatchLoopUntil(items.size() == 3)
 
         varxRequireItems(items, "Initial", "Second", "Third");
     }
@@ -135,8 +135,8 @@ TEST_CASE("Reactive<AudioProcessorValueTreeState>",
         
         IT("emits the default value after a delay")
         {
-            // JUCE updates the value tree state with 10 Hz. Wait for the first update:
-            varxRunDispatchLoop(120);
+            // JUCE updates the value tree state asynchronously. Wait for the first update:
+            varxRunDispatchLoopUntil(fooValue.getValue() != var());
             
             CHECK(fooValue.getValue() == var(2.74f));
             varxRequireItems(fooItems, var(), var(2.74f));
@@ -150,7 +150,7 @@ TEST_CASE("Reactive<AudioProcessorValueTreeState>",
             IT("emits after a delay, when setting a new value on the ValueTree")
             {
                 valueTreeState.getParameterAsValue("foo").setValue(0.471f);
-                varxRunDispatchLoop(70);
+                varxRunDispatchLoopUntil(fooItems.size() == 4);
                 
                 // For some reason, JUCE sets the parameter not just to 0.471f, but afterwards to some float value nearby
                 varxRequireItems(fooItems, var(), var(2.74f), var(0.471f), var(0.4710000157356262207));
@@ -160,7 +160,7 @@ TEST_CASE("Reactive<AudioProcessorValueTreeState>",
             {
                 // setValue expects a value in the range [0..1]
                 valueTreeState.getParameter("foo")->setValue(0.98f);
-                varxRunDispatchLoop(70);
+                varxRunDispatchLoopUntil(fooItems.size() == 3);
                 
                 varxRequireItems(fooItems, var(), var(2.74f), var(9.8f));
             }
@@ -168,7 +168,7 @@ TEST_CASE("Reactive<AudioProcessorValueTreeState>",
             IT("does not emit when setting the value of a different parameter")
             {
                 valueTreeState.getParameterAsValue("bar").setValue(2.987f);
-                varxRunDispatchLoop(70);
+                varxRunDispatchLoopUntil(fooItems.size() == 2);
                 
                 CHECK(valueTreeState.rx.parameterValue("bar").getLatestItem() == var(2.987f));
                 varxRequireItems(fooItems, var(), var(2.74f));
