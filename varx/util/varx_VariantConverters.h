@@ -130,7 +130,6 @@ inline juce::var toVar(T&& t)
 // Define VariantConverters for common types
 VARX_DEFINE_VARIANT_CONVERTER(juce::Button::ButtonState)
 VARX_DEFINE_VARIANT_CONVERTER(juce::TextInputTarget::VirtualKeyboardType)
-VARX_DEFINE_VARIANT_CONVERTER(varx::Observable)
 VARX_DEFINE_VARIANT_CONVERTER(juce::Image)
 VARX_DEFINE_VARIANT_CONVERTER(juce::Point<int>)
 VARX_DEFINE_VARIANT_CONVERTER(juce::Point<float>)

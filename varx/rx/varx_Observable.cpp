@@ -187,7 +187,7 @@ Observable Observable::debounce(const juce::RelativeTime& period) const
     return Impl::fromRxCpp(impl->wrapped.debounce(durationFromRelativeTime(period)));
 }
 
-Observable Observable::distinctUntilChanged(Predicate2 equals) const
+Observable Observable::_distinctUntilChanged(Predicate2 equals) const
 {
     return Impl::fromRxCpp(impl->wrapped.distinct_until_changed(equals));
 }
@@ -444,9 +444,4 @@ var Observable::CombineIntoArray7(const var& v1, const var& v2, const var& v3, c
 var Observable::CombineIntoArray8(const var& v1, const var& v2, const var& v3, const var& v4, const var& v5, const var& v6, const var& v7, const var& v8)
 {
     return Array<var>({ v1, v2, v3, v4, v5, v6, v7, v8 });
-}
-
-bool Observable::DefaultEquals(const var& v1, const var& v2)
-{
-    return (v1 == v2);
 }

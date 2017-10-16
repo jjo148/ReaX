@@ -118,10 +118,12 @@ TEST_CASE("Observable::distinctUntilChanged",
         varxRequireItems(filteredItems, var(3), var(5), var(3));
     }
     
-    IT("emits consecutive duplicate Point<int>s when no custom predicate is given")
+    IT("emits consecutive duplicate Point<int>s when no type parameter is given")
     {
         Array<var> items;
         PublishSubject subject;
+        
+        // Don't declare type paramter. var::operator== will be used for comparison:
         varxCollectItems(subject.distinctUntilChanged(), items);
         
         subject.onNext(toVar(Point<int>(27, 12)));
@@ -134,15 +136,13 @@ TEST_CASE("Observable::distinctUntilChanged",
         REQUIRE(fromVar<Point<int>>(items[2]) == Point<int>(27, 15));
     }
     
-    IT("doesn't emit consecutive duplicate Point<int>s when a custom predicate is given")
+    IT("doesn't emit consecutive duplicate Point<int>s when the correct type parameter is given")
     {
-        static const auto equals = [](var lhs, var rhs) {
-            return (fromVar<Point<int>>(lhs) == fromVar<Point<int>>(rhs));
-        };
-        
         Array<var> items;
         PublishSubject subject;
-        varxCollectItems(subject.distinctUntilChanged(equals), items);
+        
+        // Declare Point<int> as the type parameter, to use Point<int>::operator== for comparison:
+        varxCollectItems(subject.distinctUntilChanged<Point<int>>(), items);
         
         subject.onNext(toVar(Point<int>(27, 12)));
         subject.onNext(toVar(Point<int>(27, 12)));

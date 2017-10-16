@@ -208,9 +208,19 @@ public:
     /**
         Returns an Observable which emits the same items as this Observable, but suppresses consecutive duplicate items.
      
-        You can pass a custom equality function to define when two items are considered to be equal. By default, it uses juce::var::operator==. **You should provide a custom equality function whenever the Observable emits items of a custom type (that is, whenever you use fromVar() and toVar()).** If you don't, it may not work as you expect, because it will just compare addresses of DynamicObjects.
+        If you just use distinctUntilChanged() without a template parameter, it uses juce::var::operator== to determine whether two items are equal.
+     
+        **If you are using VARX_DEFINE_VARIANT_CONVERTER to wrap a custom type T into a var, you should call distinctUntilChanged<T>(), declaring your custom type T.** This way, it uses T::operator== to determine whether two items are equal.
+     
+        If, for some reason, the custom type T doesn't have operator==, you can pass a custom equality function.
      */
-    Observable distinctUntilChanged(Predicate2 equals = &Observable::DefaultEquals) const;
+    template<typename T = juce::var>
+    inline Observable distinctUntilChanged(const std::function<bool(const T&, const T&)>& equals = std::equal_to<T>()) const
+    {
+        return _distinctUntilChanged([equals](const var& v1, const var& v2) {
+            return equals(fromVar<T>(v1), fromVar<T>(v2));
+        });
+    }
 
     /**
         Returns an Observable which emits only one item: The `index`th item emitted by this Observable.
@@ -440,7 +450,7 @@ private:
     static var CombineIntoArray7(const var&, const var&, const var&, const var&, const var&, const var&, const var&);
     static var CombineIntoArray8(const var&, const var&, const var&, const var&, const var&, const var&, const var&, const var&);
     
-    static bool DefaultEquals(const var&, const var&);
+    Observable _distinctUntilChanged(Predicate2 equals) const;
 
     static const std::function<void(Error)> TerminateOnError;
     static const std::function<void()> EmptyOnCompleted;
