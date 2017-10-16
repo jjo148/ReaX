@@ -42,16 +42,16 @@ TEST_CASE("Reactive<ImageComponent>",
 
     IT("allows setting a new image and placement")
     {
-        imageComponent.rx.image.onNext(toVar(image1));
+        imageComponent.rx.image.onNext(image1);
 
         CHECK(imageComponent.getImage().getWidth() == 17);
         CHECK(imageComponent.getImage().getHeight() == 47);
 
-        imageComponent.rx.imagePlacement.onNext(toVar(placement));
+        imageComponent.rx.imagePlacement.onNext(placement);
 
         CHECK(imageComponent.getImagePlacement() == placement);
 
-        imageComponent.rx.image.onNext(toVar(image2));
+        imageComponent.rx.image.onNext(image2);
 
         REQUIRE(imageComponent.getImage().getWidth() == 32);
         REQUIRE(imageComponent.getImage().getHeight() == 12);
@@ -197,7 +197,7 @@ TEST_CASE("Reactive<Button>",
                 auto observer = button.rx.colour(colourId);
 
                 for (auto colour : { Colours::red, Colour::fromFloatRGBA(0.3, 0.47, 0.11, 0.575), Colours::white }) {
-                    observer.onNext(toVar(colour));
+                    observer.onNext(colour);
                     REQUIRE(button.isColourSpecified(colourId));
                     REQUIRE(button.findColour(colourId) == colour);
                 }
@@ -378,9 +378,9 @@ TEST_CASE("Reactive<Label>",
 
         IT("changes the Label font when pushing items")
         {
-            label.rx.font.onNext(toVar(font1));
+            label.rx.font.onNext(font1);
             CHECK(label.getFont() == font1);
-            label.rx.font.onNext(toVar(font2));
+            label.rx.font.onNext(font2);
 
             REQUIRE(label.getFont() == font2);
         }
@@ -393,9 +393,9 @@ TEST_CASE("Reactive<Label>",
 
         IT("changes the justification type when pushing items")
         {
-            label.rx.justificationType.onNext(toVar(justification1));
+            label.rx.justificationType.onNext(justification1);
             CHECK(label.getJustificationType() == justification1);
-            label.rx.justificationType.onNext(toVar(justification2));
+            label.rx.justificationType.onNext(justification2);
 
             REQUIRE(label.getJustificationType() == justification2);
         }
@@ -408,9 +408,9 @@ TEST_CASE("Reactive<Label>",
 
         IT("changes the border size when pushing items")
         {
-            label.rx.borderSize.onNext(toVar(borderSize1));
+            label.rx.borderSize.onNext(borderSize1);
             CHECK(label.getBorderSize() == borderSize1);
-            label.rx.borderSize.onNext(toVar(borderSize2));
+            label.rx.borderSize.onNext(borderSize2);
 
             REQUIRE(label.getBorderSize() == borderSize2);
         }
@@ -425,7 +425,7 @@ TEST_CASE("Reactive<Label>",
         IT("attaches to another Component")
         {
             Component other;
-            label.rx.attachedComponent.onNext(toVar(WeakReference<Component>(&other)));
+            label.rx.attachedComponent.onNext(WeakReference<Component>(&other));
 
             CHECK(label.isAttachedOnLeft() == false);
             REQUIRE(label.getAttachedComponent() == &other);
@@ -456,7 +456,7 @@ TEST_CASE("Reactive<Label>",
 
             IT("can remove the attachment again via an empty weak reference")
             {
-                label.rx.attachedComponent.onNext(toVar(WeakReference<Component>()));
+                label.rx.attachedComponent.onNext(WeakReference<Component>());
 
                 REQUIRE(label.getAttachedComponent() == nullptr);
             }
@@ -465,7 +465,7 @@ TEST_CASE("Reactive<Label>",
         IT("loses the attachment when the other component is destroyed")
         {
             auto other = std::make_shared<Component>();
-            label.rx.attachedComponent.onNext(toVar(WeakReference<Component>(other.get())));
+            label.rx.attachedComponent.onNext(WeakReference<Component>(other.get()));
             CHECK(label.getAttachedComponent() == other.get());
 
             other.reset();
@@ -494,7 +494,7 @@ TEST_CASE("Reactive<Label>",
 
         IT("changes the keyboard type when pushing items")
         {
-            label.rx.keyboardType.onNext(toVar(TextInputTarget::emailAddressKeyboard));
+            label.rx.keyboardType.onNext(TextInputTarget::emailAddressKeyboard);
             label.showEditor();
             CHECK(label.getCurrentTextEditor() != nullptr);
 
@@ -502,7 +502,7 @@ TEST_CASE("Reactive<Label>",
 
             IT("can change the type while an editor is showing")
             {
-                label.rx.keyboardType.onNext(toVar(TextInputTarget::decimalKeyboard));
+                label.rx.keyboardType.onNext(TextInputTarget::decimalKeyboard);
 
                 REQUIRE(label.getCurrentTextEditor()->getKeyboardType() == TextInputTarget::decimalKeyboard);
             }
@@ -735,7 +735,7 @@ TEST_CASE("Reactive<Slider>",
                 }
             };
 
-            slider.rx.getValueFromText.onNext(toVar(function));
+            slider.rx.getValueFromText.onNext(function);
         }
     }
 
@@ -751,7 +751,7 @@ TEST_CASE("Reactive<Slider>",
             std::function<String(double)> function = [](double value) {
                 return value > 5 ? "BIG!" : "small";
             };
-            slider.rx.getTextFromValue.onNext(toVar(function));
+            slider.rx.getTextFromValue.onNext(function);
 
             REQUIRE(slider.getTextFromValue(2) == "small");
             REQUIRE(slider.getTextFromValue(8.4) == "BIG!");

@@ -83,7 +83,7 @@ private:
         T item;
         while (queue.try_dequeue(item)) {
             // If there's an error here, you probably need to implement juce::VariantConverter<T> for your type T.
-            subject.onNext(toVar(item));
+            subject.onNext(item);
         }
     }
 

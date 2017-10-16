@@ -126,9 +126,9 @@ TEST_CASE("Observable::distinctUntilChanged",
         // Don't declare type paramter. var::operator== will be used for comparison:
         varxCollectItems(subject.distinctUntilChanged(), items);
         
-        subject.onNext(toVar(Point<int>(27, 12)));
-        subject.onNext(toVar(Point<int>(27, 12)));
-        subject.onNext(toVar(Point<int>(27, 15)));
+        subject.onNext(Point<int>(27, 12));
+        subject.onNext(Point<int>(27, 12));
+        subject.onNext(Point<int>(27, 15));
         
         CHECK(items.size() == 3);
         REQUIRE(fromVar<Point<int>>(items[0]) == Point<int>(27, 12));
@@ -144,9 +144,9 @@ TEST_CASE("Observable::distinctUntilChanged",
         // Declare Point<int> as the type parameter, to use Point<int>::operator== for comparison:
         varxCollectItems(subject.distinctUntilChanged<Point<int>>(), items);
         
-        subject.onNext(toVar(Point<int>(27, 12)));
-        subject.onNext(toVar(Point<int>(27, 12)));
-        subject.onNext(toVar(Point<int>(27, 14)));
+        subject.onNext(Point<int>(27, 12));
+        subject.onNext(Point<int>(27, 12));
+        subject.onNext(Point<int>(27, 14));
         
         CHECK(items.size() == 2);
         REQUIRE(fromVar<Point<int>>(items[0]) == Point<int>(27, 12));

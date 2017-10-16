@@ -1,7 +1,7 @@
 Observer::Observer(const std::shared_ptr<Impl>& impl)
 : impl(impl) {}
 
-void Observer::onNext(const juce::var& next) const
+void Observer::_onNext(const juce::var& next) const
 {
     impl->wrapped.on_next(next);
 }

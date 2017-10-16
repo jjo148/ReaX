@@ -36,10 +36,10 @@ TEST_CASE("LockFreeTarget",
         PublishSubject subject;
         subject.subscribe(target);
         
-        subject.onNext(toVar(Point<int>(43, 29)));
+        subject.onNext(Point<int>(43, 29));
         CHECK(target.getValue() == Point<int>(43, 29));
         
-        subject.onNext(toVar(Point<int>(18, -5)));
+        subject.onNext(Point<int>(18, -5));
         REQUIRE(target.getValue() == Point<int>(18, -5));
     }
     
@@ -74,7 +74,7 @@ TEST_CASE("LockFreeTarget",
         PublishSubject pointSubject;
         LockFreeTarget<Point<float>> pointTarget;
         pointSubject.subscribe(pointTarget);
-        pointSubject.onNext(toVar(Point<float>(4.52f, 1.23f)));
+        pointSubject.onNext(Point<float>(4.52f, 1.23f));
         REQUIRE(detail::ReleasePool::get().size() == 1);
         
         // After another onNext, there should be 2 items

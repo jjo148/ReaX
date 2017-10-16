@@ -13,7 +13,11 @@ class Observer
 {
 public:
     /** Notifies the Observer with a new item. */
-    void onNext(const juce::var& next) const;
+    template<typename T>
+    inline void onNext(T&& next) const
+    {
+        _onNext(toVar(std::forward<T>(next)));
+    }
 
     /** Notifies the Observer that an error has occurred. */
     void onError(Error error) const;
@@ -27,6 +31,8 @@ private:
     struct Impl;
     explicit Observer(const std::shared_ptr<Impl>& impl);
     std::shared_ptr<Impl> impl;
+    
+    void _onNext(const juce::var& next) const;
 
     JUCE_LEAK_DETECTOR(Observer)
 };
