@@ -22,7 +22,7 @@ TEST_CASE("Observable::create",
     IT("emits items when pushing items asynchronously")
     {
         auto observable = Observable::create([](Observer observer) {
-            MessageManager::getInstance()->callAsync([observer]() mutable {
+            MessageManager::getInstance()->callAsync([observer]() {
                 observer.onNext("First");
                 observer.onNext("Second");
             });
@@ -40,7 +40,7 @@ TEST_CASE("Observable::create",
     IT("emits can emit items asynchronously after being destroyed")
     {
         auto observable = std::make_shared<Observable>(Observable::create([](Observer observer) {
-            MessageManager::getInstance()->callAsync([observer]() mutable {
+            MessageManager::getInstance()->callAsync([observer]() {
                 observer.onNext("First");
                 observer.onNext("Second");
             });

@@ -24,7 +24,7 @@ TEST_CASE("Observable onError",
     {
         // Create an Observable that throws asynchronously
         auto asyncThrow = Observable::create([](Observer observer) {
-            MessageManager::getInstance()->callAsync([observer]() mutable {
+            MessageManager::getInstance()->callAsync([observer]() {
                 observer.onNext(3);
             });
         });

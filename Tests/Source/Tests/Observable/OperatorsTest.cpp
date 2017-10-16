@@ -271,7 +271,7 @@ TEST_CASE("Interaction between Observable::map and Observable::switchOnNext",
         auto source = std::make_shared<Observable>(Observable::just(17));
         auto mapped = source->map([](int next) {
             return Observable::create([next](Observer observer) {
-                MessageManager::getInstance()->callAsync([observer, next]() mutable {
+                MessageManager::getInstance()->callAsync([observer, next]() {
                     observer.onNext(next * 3);
                 });
             });
