@@ -549,7 +549,7 @@ struct CopyAndMoveConstructible
 
 VARX_DEFINE_VARIANT_CONVERTER(CopyAndMoveConstructible)
 
-TEST_CASE("ReferenceCountingVariantConverter<T>")
+TEST_CASE("VariantConverter<T>")
 {
     IT("prefers the move constructor when wrapping in a juce::var")
     {
