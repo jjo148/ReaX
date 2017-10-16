@@ -97,7 +97,7 @@ TEST_CASE("Observable::concat",
 TEST_CASE("Observable::distinctUntilChanged",
           "[Observable][Observable::distinctUntilChanged]")
 {
-    IT("doesn't emit consecutive duplicate items")
+    IT("doesn't emit consecutive duplicate integers")
     {
         Array<var> originalItems;
         Array<var> filteredItems;
@@ -116,6 +116,41 @@ TEST_CASE("Observable::distinctUntilChanged",
 
         varxRequireItems(originalItems, var(3), var(3), var("3"), var(3), var(3), var(5), var(3));
         varxRequireItems(filteredItems, var(3), var(5), var(3));
+    }
+    
+    IT("emits consecutive duplicate Point<int>s when no custom predicate is given")
+    {
+        Array<var> items;
+        PublishSubject subject;
+        varxCollectItems(subject.distinctUntilChanged(), items);
+        
+        subject.onNext(toVar(Point<int>(27, 12)));
+        subject.onNext(toVar(Point<int>(27, 12)));
+        subject.onNext(toVar(Point<int>(27, 15)));
+        
+        CHECK(items.size() == 3);
+        REQUIRE(fromVar<Point<int>>(items[0]) == Point<int>(27, 12));
+        REQUIRE(fromVar<Point<int>>(items[1]) == Point<int>(27, 12));
+        REQUIRE(fromVar<Point<int>>(items[2]) == Point<int>(27, 15));
+    }
+    
+    IT("doesn't emit consecutive duplicate Point<int>s when a custom predicate is given")
+    {
+        static const auto equals = [](var lhs, var rhs) {
+            return (fromVar<Point<int>>(lhs) == fromVar<Point<int>>(rhs));
+        };
+        
+        Array<var> items;
+        PublishSubject subject;
+        varxCollectItems(subject.distinctUntilChanged(equals), items);
+        
+        subject.onNext(toVar(Point<int>(27, 12)));
+        subject.onNext(toVar(Point<int>(27, 12)));
+        subject.onNext(toVar(Point<int>(27, 14)));
+        
+        CHECK(items.size() == 2);
+        REQUIRE(fromVar<Point<int>>(items[0]) == Point<int>(27, 12));
+        REQUIRE(fromVar<Point<int>>(items[1]) == Point<int>(27, 14));
     }
 }
 

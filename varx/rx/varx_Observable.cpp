@@ -187,9 +187,9 @@ Observable Observable::debounce(const juce::RelativeTime& period) const
     return Impl::fromRxCpp(impl->wrapped.debounce(durationFromRelativeTime(period)));
 }
 
-Observable Observable::distinctUntilChanged() const
+Observable Observable::distinctUntilChanged(Predicate2 equals) const
 {
-    return Impl::fromRxCpp(impl->wrapped.distinct_until_changed());
+    return Impl::fromRxCpp(impl->wrapped.distinct_until_changed(equals));
 }
 
 Observable Observable::elementAt(int index) const
@@ -197,9 +197,9 @@ Observable Observable::elementAt(int index) const
     return Impl::fromRxCpp(impl->wrapped.element_at(index));
 }
 
-Observable Observable::filter(const std::function<bool(const var&)>& predicate) const
+Observable Observable::filter(Predicate1 predicate) const
 {
-    return Impl::fromRxCpp(impl->wrapped.filter(std::move(predicate)));
+    return Impl::fromRxCpp(impl->wrapped.filter(predicate));
 }
 
 Observable Observable::flatMap(const std::function<Observable(const var&)>& f) const
@@ -325,9 +325,9 @@ Observable Observable::takeUntil(Observable other) const
     return Impl::fromRxCpp(impl->wrapped.take_until(other.impl->wrapped));
 }
 
-Observable Observable::takeWhile(const std::function<bool(const var&)>& predicate) const
+Observable Observable::takeWhile(Predicate1 predicate) const
 {
-    return Impl::fromRxCpp(impl->wrapped.take_while(std::move(predicate)));
+    return Impl::fromRxCpp(impl->wrapped.take_while(predicate));
 }
 
 Observable Observable::withLatestFrom(Observable o1, Function2& f) const
@@ -444,4 +444,9 @@ var Observable::CombineIntoArray7(const var& v1, const var& v2, const var& v3, c
 var Observable::CombineIntoArray8(const var& v1, const var& v2, const var& v3, const var& v4, const var& v5, const var& v6, const var& v7, const var& v8)
 {
     return Array<var>({ v1, v2, v3, v4, v5, v6, v7, v8 });
+}
+
+bool Observable::DefaultEquals(const var& v1, const var& v2)
+{
+    return (v1 == v2);
 }

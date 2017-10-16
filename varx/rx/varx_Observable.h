@@ -146,6 +146,10 @@ public:
     typedef const std::function<var(const var&, const var&, const var&, const var&, const var&, const var&, const var&)>& Function7;
     typedef const std::function<var(const var&, const var&, const var&, const var&, const var&, const var&, const var&, const var&)>& Function8;
     ///@}
+    
+    /** A `PredicateN` is a function that compares takes `N` vars and returns a bool.  */
+    typedef const std::function<bool(const var&)>& Predicate1;
+    typedef const std::function<bool(const var&, const var&)>& Predicate2;
 
 #pragma mark - Operators
     ///@{
@@ -203,8 +207,10 @@ public:
 
     /**
         Returns an Observable which emits the same items as this Observable, but suppresses consecutive duplicate items.
+     
+        You can pass a custom equality function to define when two items are considered to be equal. By default, it uses juce::var::operator==. **You should provide a custom equality function whenever the Observable emits items of a custom type (that is, whenever you use fromVar() and toVar()).** If you don't, it may not work as you expect, because it will just compare addresses of DynamicObjects.
      */
-    Observable distinctUntilChanged() const;
+    Observable distinctUntilChanged(Predicate2 equals = &Observable::DefaultEquals) const;
 
     /**
         Returns an Observable which emits only one item: The `index`th item emitted by this Observable.
@@ -214,7 +220,7 @@ public:
     /**
         Returns an Observable that emits only those items from this Observable that pass a predicate function.
      */
-    Observable filter(const std::function<bool(const var&)>& predicate) const;
+    Observable filter(Predicate1 predicate) const;
 
     /**
         For each emitted item, calls `f` and subscribes to the Observable returned from `f`. The emitted items from all these returned Observables are *merged* (so they interleave).
@@ -336,7 +342,7 @@ public:
      
         The predicate is called on each item emitted by this Observable, until it returns `false`.
      */
-    Observable takeWhile(const std::function<bool(const var&)>& predicate) const;
+    Observable takeWhile(Predicate1 predicate) const;
 
     ///@{
     /**
@@ -433,6 +439,8 @@ private:
     static var CombineIntoArray6(const var&, const var&, const var&, const var&, const var&, const var&);
     static var CombineIntoArray7(const var&, const var&, const var&, const var&, const var&, const var&, const var&);
     static var CombineIntoArray8(const var&, const var&, const var&, const var&, const var&, const var&, const var&, const var&);
+    
+    static bool DefaultEquals(const var&, const var&);
 
     static const std::function<void(Error)> TerminateOnError;
     static const std::function<void()> EmptyOnCompleted;
