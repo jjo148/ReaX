@@ -71,7 +71,11 @@ public:
      
         The value is emitted immediately on each new subscription.
      */
-    static Observable just(const var& value);
+    template<typename T>
+    static Observable just(T&& value)
+    {
+        return _just(toVar(std::forward<T>(value)));
+    }
 
     /**
         Creates an Observable that never emits any events and never terminates.
@@ -99,9 +103,17 @@ public:
      
         An optional `times` parameter specifies how often the item should be repeated. If omitted, the item will is repeated indefinitely.
      */
-    static Observable repeat(const var& item);
+    template<typename T>
+    static Observable repeat(T&& item)
+    {
+        return _repeat(toVar(std::forward<T>(item)));
+    }
     /** \overload */
-    static Observable repeat(const var& item, unsigned int times);
+    template<typename T>
+    static Observable repeat(T&& item, unsigned int times)
+    {
+        return _repeat(toVar(std::forward<T>(item)), times);
+    }
 
 
 #pragma mark - Disposable
@@ -215,7 +227,7 @@ public:
         If, for some reason, the custom type T doesn't have operator==, you can pass a custom equality function.
      */
     template<typename T = juce::var>
-    inline Observable distinctUntilChanged(const std::function<bool(const T&, const T&)>& equals = std::equal_to<T>()) const
+    Observable distinctUntilChanged(const std::function<bool(const T&, const T&)>& equals = std::equal_to<T>()) const
     {
         return _distinctUntilChanged([equals](const var& v1, const var& v2) {
             return equals(fromVar<T>(v1), fromVar<T>(v2));
@@ -450,6 +462,9 @@ private:
     static var CombineIntoArray7(const var&, const var&, const var&, const var&, const var&, const var&, const var&);
     static var CombineIntoArray8(const var&, const var&, const var&, const var&, const var&, const var&, const var&, const var&);
     
+    static Observable _just(const var& value);
+    static Observable _repeat(const var& item);
+    static Observable _repeat(const var& item, unsigned int times);
     Observable _distinctUntilChanged(Predicate2 equals) const;
 
     static const std::function<void(Error)> TerminateOnError;

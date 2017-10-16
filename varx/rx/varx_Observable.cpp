@@ -62,7 +62,7 @@ Observable Observable::interval(const juce::RelativeTime& period)
     return Impl::fromRxCpp(o.map(toVar<int>));
 }
 
-Observable Observable::just(const var& value)
+Observable Observable::_just(const var& value)
 {
     return Impl::fromRxCpp(rxcpp::observable<>::just(value));
 }
@@ -92,12 +92,12 @@ Observable Observable::range(double first, double last, unsigned int step)
     return Impl::fromRxCpp(o.map([](double d) { return toVar(d); }));
 }
 
-Observable Observable::repeat(const var& item)
+Observable Observable::_repeat(const var& item)
 {
     return Impl::fromRxCpp(rxcpp::observable<>::just(item).repeat());
 }
 
-Observable Observable::repeat(const var& item, unsigned int times)
+Observable Observable::_repeat(const var& item, unsigned int times)
 {
     return Impl::fromRxCpp(rxcpp::observable<>::just(item).repeat(times));
 }

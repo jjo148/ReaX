@@ -14,7 +14,7 @@ class Observer
 public:
     /** Notifies the Observer with a new item. */
     template<typename T>
-    inline void onNext(T&& next) const
+    void onNext(T&& next) const
     {
         _onNext(toVar(std::forward<T>(next)));
     }
