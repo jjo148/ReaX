@@ -517,3 +517,63 @@ TEST_CASE("Observable::repeat",
         varxRequireItems(items, "4", "4", "4", "4", "4", "4", "4");
     }
 }
+
+
+// Dummy struct that just counts copy and move constructions
+struct CopyAndMoveConstructible
+{
+    CopyAndMoveConstructible(int& numCopyConstructorCalls, int& numMoveConstructorCalls)
+    : numCopyConstructorCalls(numCopyConstructorCalls),
+      numMoveConstructorCalls(numMoveConstructorCalls)
+    {}
+
+    // Copy Constructor
+    CopyAndMoveConstructible(const CopyAndMoveConstructible& other)
+    : numCopyConstructorCalls(other.numCopyConstructorCalls),
+      numMoveConstructorCalls(other.numMoveConstructorCalls)
+    {
+        numCopyConstructorCalls++;
+    }
+
+    // Move constructor
+    CopyAndMoveConstructible(CopyAndMoveConstructible&& other)
+    : numCopyConstructorCalls(other.numCopyConstructorCalls),
+      numMoveConstructorCalls(other.numMoveConstructorCalls)
+    {
+        numMoveConstructorCalls++;
+    }
+
+    int& numCopyConstructorCalls;
+    int& numMoveConstructorCalls;
+};
+
+VARX_DEFINE_VARIANT_CONVERTER(CopyAndMoveConstructible)
+
+TEST_CASE("ReferenceCountingVariantConverter<T>")
+{
+    IT("prefers the move constructor when wrapping in a juce::var")
+    {
+        // Counters for copy and move constructions
+        int numCopyConstructorCalls = 0;
+        int numMoveConstructorCalls = 0;
+        
+        // Create instance of custom type
+        CopyAndMoveConstructible original(numCopyConstructorCalls, numMoveConstructorCalls);
+        CHECK(numCopyConstructorCalls == 0);
+        CHECK(numMoveConstructorCalls == 0);
+        
+        // Wrap custom type in a var using rvalue
+        var v(toVar(std::move(original)));
+        
+        // Only the move constructor should have been called
+        REQUIRE(numCopyConstructorCalls == 0);
+        REQUIRE(numMoveConstructorCalls == 1);
+        
+        IT("uses the copy constructor when unwrapping")
+        {
+            auto unwrapped = fromVar<CopyAndMoveConstructible>(v);
+            REQUIRE(numCopyConstructorCalls == 1);
+            REQUIRE(numMoveConstructorCalls == 1);
+        }
+    }
+}

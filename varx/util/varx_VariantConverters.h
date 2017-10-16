@@ -27,18 +27,21 @@ namespace detail {
             // Throw error
             throw std::runtime_error("Error unwrapping type from var. Expected: " + ExpectedType + ". Actual: " + actualType + ".");
         }
-
-        static juce::var toVar(const T& t)
+        
+        template<typename U>
+        static juce::var toVar(U&& u)
         {
-            return new Wrapped(t);
+            return new Wrapped(std::forward<U>(u));
         }
 
     private:
         // Wraps a copyable type as a ReferenceCountedObject, so it can be stored in a juce var
         struct Wrapped : public juce::ReferenceCountedObject
         {
-            Wrapped(const T& t)
-            : t(t) {}
+            template<typename U>
+            Wrapped(U&& u)
+            : t(std::forward<U>(u))
+            {}
 
             const T t;
         };
@@ -60,105 +63,94 @@ namespace detail {
 }
 
 /**
-    Unwraps a type from a juce::var. It's the same as juce::VariantConverter<T>::fromVar.
+    Unwraps a type from a juce::var. It's a shorthand for juce::VariantConverter<T>::fromVar.
  */
 template<typename T>
-T fromVar(const juce::var& v)
+inline T fromVar(const juce::var& v)
 {
     return juce::VariantConverter<T>::fromVar(v);
 }
 
 /**
-    Wraps a type into a juce::var. It's the same as juce::VariantConverter<T>::toVar.
+    Wraps a type into a juce::var. It's a shorthand for juce::VariantConverter<T>::toVar.
  */
 template<typename T>
-juce::var toVar(const T& t)
+inline juce::var toVar(T&& t)
 {
-    return juce::VariantConverter<T>::toVar(t);
+    return juce::VariantConverter<typename std::decay<T>::type>::toVar(std::forward<T>(t));
 }
 }
 
-namespace juce {
+/**
+ Defines a juce::VariantConverter for a given enum type. This just converts enum values to ints, and back.
+ */
+#define VARX_DEFINE_ENUM_VARIANT_CONVERTER(__t) template<> struct juce::VariantConverter<__t> : public varx::detail::EnumVariantConverter<__t> {};
 
-template<>
-struct VariantConverter<varx::Observable> : public varx::detail::ReferenceCountingVariantConverter<varx::Observable>
-{
-};
+/**
+ Defines a juce::VariantConverter for a given type. This can be used for any copy-constructible type, as follows:
+ 
+    struct Circle
+    {
+        float x, y, radius;
+    };
+    
+    // This must be placed outside of functions
+    VARX_DEFINE_VARIANT_CONVERTER(Circle)
+    
+    // Create an instance, wrap it into a var
+    Circle myCircle;
+    var wrapped = toVar(myCircle);
+    
+    // Do something with the var, for example:
+    auto observable = Observable::just(wrapped);
+ 
+    // Unwrap the Circle from a var
+    observable.subscribe([](var item) {
+        Circle unwrapped = fromVar<Circle>(item);
+        // ...
+    });
+ 
+ If the type is also move-constructible, toVar() will prefer moving instead of copying.
+ 
+ It uses juce::ReferenceCountedObject internally. If you use Observable::distinctUntilChanged(), make sure to provide a custom comparison function, which actually compares your type in a meaningful way.
+ */
+#define VARX_DEFINE_VARIANT_CONVERTER(__t) template<> struct juce::VariantConverter<__t> : public varx::detail::ReferenceCountingVariantConverter<__t> {};
 
-template<>
-struct VariantConverter<Image> : public varx::detail::ReferenceCountingVariantConverter<Image>
-{
-};
 
-template<>
-struct VariantConverter<Point<int>> : public varx::detail::ReferenceCountingVariantConverter<Point<int>>
-{
-};
+// Define VariantConverters for common types
+VARX_DEFINE_ENUM_VARIANT_CONVERTER(juce::Button::ButtonState)
+VARX_DEFINE_ENUM_VARIANT_CONVERTER(juce::TextInputTarget::VirtualKeyboardType)
+VARX_DEFINE_VARIANT_CONVERTER(varx::Observable)
+VARX_DEFINE_VARIANT_CONVERTER(juce::Image)
+VARX_DEFINE_VARIANT_CONVERTER(juce::Point<int>)
+VARX_DEFINE_VARIANT_CONVERTER(juce::Point<float>)
+VARX_DEFINE_VARIANT_CONVERTER(juce::Point<double>)
+VARX_DEFINE_VARIANT_CONVERTER(juce::Justification)
+VARX_DEFINE_VARIANT_CONVERTER(juce::RectanglePlacement)
+VARX_DEFINE_VARIANT_CONVERTER(juce::BorderSize<int>)
+VARX_DEFINE_VARIANT_CONVERTER(juce::Font)
+VARX_DEFINE_VARIANT_CONVERTER(juce::Colour)
 
-template<>
-struct VariantConverter<Point<float>> : public varx::detail::ReferenceCountingVariantConverter<Point<float>>
-{
-};
-
-template<>
-struct VariantConverter<Point<double>> : public varx::detail::ReferenceCountingVariantConverter<Point<double>>
-{
-};
-
-template<>
-struct VariantConverter<Justification> : public varx::detail::ReferenceCountingVariantConverter<Justification>
-{
-};
-
-template<>
-struct VariantConverter<RectanglePlacement> : public varx::detail::ReferenceCountingVariantConverter<RectanglePlacement>
-{
-};
-
-template<>
-struct VariantConverter<BorderSize<int>> : public varx::detail::ReferenceCountingVariantConverter<BorderSize<int>>
-{
-};
-
-template<>
-struct VariantConverter<Font> : public varx::detail::ReferenceCountingVariantConverter<Font>
-{
-};
-
-template<>
-struct VariantConverter<Colour> : public varx::detail::ReferenceCountingVariantConverter<Colour>
-{
-};
-
+// Define a VariantConverter that converts from/to any std::function
 template<typename ReturnType, typename... Args>
-struct VariantConverter<std::function<ReturnType(Args...)>> : public varx::detail::ReferenceCountingVariantConverter<std::function<typename std::decay<ReturnType>::type(typename std::decay<Args>::type...)>>
+struct juce::VariantConverter<std::function<ReturnType(Args...)>> : public varx::detail::ReferenceCountingVariantConverter<std::function<typename std::decay<ReturnType>::type(typename std::decay<Args>::type...)>>
 {
 };
 
-template<>
-struct VariantConverter<Button::ButtonState> : public varx::detail::EnumVariantConverter<Button::ButtonState>
-{
-};
-
-template<>
-struct VariantConverter<TextInputTarget::VirtualKeyboardType> : public varx::detail::EnumVariantConverter<TextInputTarget::VirtualKeyboardType>
-{
-};
-
+// Define a VariantConverter for WeakReferences
 template<typename T>
-struct VariantConverter<WeakReference<T>>
+struct juce::VariantConverter<juce::WeakReference<T>>
 {
-    static WeakReference<T> fromVar(const var& v)
+    static juce::WeakReference<T> fromVar(const var& v)
     {
         if (v.isUndefined() || v.isVoid())
             return nullptr;
         else
-            return varx::detail::ReferenceCountingVariantConverter<WeakReference<T>>::fromVar(v);
+            return varx::detail::ReferenceCountingVariantConverter<juce::WeakReference<T>>::fromVar(v);
     }
-
-    static var toVar(const WeakReference<T>& weakReference)
+    
+    static juce::var toVar(const juce::WeakReference<T>& weakReference)
     {
-        return varx::detail::ReferenceCountingVariantConverter<WeakReference<T>>::toVar(weakReference);
+        return varx::detail::ReferenceCountingVariantConverter<juce::WeakReference<T>>::toVar(weakReference);
     }
 };
-}

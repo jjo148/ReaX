@@ -79,7 +79,7 @@ Observable Observable::range(int first, int last, unsigned int step)
 
     auto o = rxcpp::observable<>::range<int>(first, last, step, rxcpp::identity_immediate());
 
-    return Impl::fromRxCpp(o.map(toVar<int>));
+    return Impl::fromRxCpp(o.map([](int i) { return toVar(i); }));
 }
 
 Observable Observable::range(double first, double last, unsigned int step)
@@ -89,7 +89,7 @@ Observable Observable::range(double first, double last, unsigned int step)
 
     auto o = rxcpp::observable<>::range<double>(first, last, step, rxcpp::identity_immediate());
 
-    return Impl::fromRxCpp(o.map(toVar<double>));
+    return Impl::fromRxCpp(o.map([](double d) { return toVar(d); }));
 }
 
 Observable Observable::repeat(const var& item)
@@ -401,7 +401,7 @@ Observable Observable::observeOn(const Scheduler& scheduler) const
 
 Observable::operator var() const
 {
-    return toVar<Observable>(*this);
+    return toVar(*this);
 }
 
 juce::Array<var> Observable::toArray(const std::function<void(Error)>& onError) const
