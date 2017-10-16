@@ -13,8 +13,10 @@ Observer Subject::asObserver() const
     return *this;
 }
 
-BehaviorSubject::BehaviorSubject(const juce::var& initial)
-: Subject(std::make_shared<BehaviorSubjectImpl>(initial)) {}
+std::shared_ptr<Subject::Impl> BehaviorSubject::CreateImpl(const juce::var& initial)
+{
+    return std::make_shared<BehaviorSubjectImpl>(initial);
+}
 
 var BehaviorSubject::getLatestItem() const
 {

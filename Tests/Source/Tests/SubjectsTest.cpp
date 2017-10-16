@@ -68,6 +68,12 @@ TEST_CASE("BehaviorSubject",
         subject.onCompleted();
         subject.onCompleted();
     }
+    
+    IT("can receive an initial value of a custom type, without wrapping with toVar()")
+    {
+        BehaviorSubject subject(Point<int>(13, 556));
+        REQUIRE(fromVar<Point<int>>(subject.getLatestItem()) == Point<int>(13, 556));
+    }
 }
 
 

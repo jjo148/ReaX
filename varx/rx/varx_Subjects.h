@@ -41,12 +41,18 @@ class BehaviorSubject : public Subject
 {
 public:
     /** Creates a new instance with a given initial item */
-    explicit BehaviorSubject(const juce::var& initial);
+    template<typename T>
+    explicit BehaviorSubject(T&& initial)
+    : Subject(CreateImpl(toVar(std::forward<T>(initial))))
+    {}
 
     /** Returns the most recently emitted item. If no items have been emitted, it returns the initial item. */
     juce::var getLatestItem() const;
 
 private:
+    explicit BehaviorSubject(const juce::var& initial);
+    static std::shared_ptr<Impl> CreateImpl(const juce::var& initial);
+    
     JUCE_LEAK_DETECTOR(BehaviorSubject)
 };
 
