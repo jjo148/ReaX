@@ -60,6 +60,7 @@ private:
     {
         ScopedPointer<Component> component(new Component());
         component->setSize(1, 1);
+        setUsingNativeTitleBar(true);
         setContentOwned(component.release(), true);
         setVisible(true);
     }
