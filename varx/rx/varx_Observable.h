@@ -478,6 +478,8 @@ class ObservableBase
 {
 protected:
     friend class SubjectBase;
+    template<typename T>
+    friend class TypedObservable;
     
     using var = juce::var;
     
@@ -549,7 +551,7 @@ template<typename T>
 class TypedObserver;
 
 
-template<typename T>
+template<typename T = void>
 class TypedObservable : public ObservableBase
 {
 public:
@@ -616,32 +618,6 @@ public:
     }
 
     /**
-     Creates an Observable from a given JUCE Value. The returned Observable **only emits items until it is destroyed**, so you are responsible for managing its lifetime. Or use Reactive<Value>, which will handle this.
-     
-     The returned Observable notifies the onComplete handler when it's destroyed. @see Observable::subscribe
-     
-     When calling Value::setValue, it notifies asynchronously. So **the returned Observable emits the new value asynchronously.** If you call setValue immediately before destroying the returned Observable, the new value will not be emitted.
-     */
-    template<typename U = T>
-    static auto fromValue(juce::Value value) -> typename std::enable_if<std::is_same<juce::var, U>::value, TypedObservable<juce::var>>::type
-    {
-        return ObservableBase::fromValue(value);
-    }
-
-    /**
-     Returns an Observable that emits one item every `interval`, starting at the time of subscription (where the first item is emitted). The emitted items are `1`, `2`, `3`, and so on.
-     
-     The Observable emits endlessly, but you can use Observable::take to get a finite number of items (for example).
-     
-     The interval has millisecond resolution.
-     */
-    template<typename U = T>
-    static auto interval(const juce::RelativeTime& interval) -> typename std::enable_if<std::is_integral<U>::value, TypedObservable<T>>::type
-    {
-        return ObservableBase::interval(interval);
-    }
-
-    /**
      Creates an Observable which emits a single item.
      
      The value is emitted immediately on each new subscription.
@@ -658,37 +634,6 @@ public:
     {
         return ObservableBase::never();
     }
-
-    ///@{
-    /**
-     Creates an Observable which emits a range of items, starting at `first` to (and including) `last`. It completes after emitting the `last` item.
-     
-     ​ **Throws an exception if first > last.**
-     
-     For example:
-     
-     Observable::range(3, 7, 3) // {3, 6, 7}
-     Observable::range(17.5, 22.8, 2) // {17.5, 19.5, 21.5, 22.8}
-     */
-    template<typename U = T>
-    static auto range(T first, T last, unsigned int step = 1) -> typename std::enable_if<std::is_integral<U>::value, TypedObservable<T>>::type
-    {
-        return ObservableBase::integralRange(first, last, step);
-    }
-    
-    template<typename U = T>
-    static auto range(T first, T last, unsigned int step = 1) -> typename std::enable_if<std::is_same<U, float>::value, TypedObservable<float>>::type
-    {
-        return ObservableBase::floatRange(first, last, step);
-    }
-    
-    template<typename U = T>
-    static auto range(T first, T last, unsigned int step = 1) -> typename std::enable_if<std::is_same<U, double>::value, TypedObservable<double>>::type
-    {
-        return ObservableBase::doubleRange(first, last, step);
-    }
-    
-    ///@}
 
     /**
      Creates an Observable which emits a given item repeatedly.
@@ -747,9 +692,6 @@ public:
     using CallResult = decltype(std::declval<Transform>()(std::declval<Args>()...));
 
 #pragma mark - Operators
-    
-    
-    
     ///@{
     /**
      Returns an Observable that emits **whenever** an item is emitted by either this Observable **or** o1, o2, …. It combines the **latest** item from each Observable via the given function and emits the result of this function.
@@ -759,7 +701,7 @@ public:
      @see Observable::withLatestFrom
      */
     template<typename T1, typename Transform>
-    auto combineLatest(const TypedObservable<T1>& o1, Transform&& transform) const -> TypedObservable<CallResult<Transform, T, T1>>
+    TypedObservable<CallResult<Transform, T, T1>> combineLatest(const TypedObservable<T1>& o1, Transform&& transform) const
     {
         return ObservableBase::combineLatest(o1, [transform](const var& v0, const var& v1) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1)));
@@ -839,7 +781,7 @@ public:
      @see Observable::merge, Observable::switchOnNext.
      */
     template<typename Transform>
-    auto flatMap(Transform&& transform) const -> typename std::enable_if<IsObservable<CallResult<Transform, T>>::value, TypedObservable<typename CallResult<Transform, T>::ItemType>>::type
+    typename std::enable_if<IsObservable<CallResult<Transform, T>>::value, TypedObservable<typename CallResult<Transform, T>::ItemType>>::type flatMap(Transform&& transform) const
     {
         return ObservableBase::flatMap([transform](const var& item) {
             return transform(fromVar<T>(item));
@@ -852,7 +794,7 @@ public:
      If `f` returns an Observable, you can use Observable::switchOnNext afterwards.
      */
     template<typename Transform>
-    auto map(Transform&& transform) const -> TypedObservable<CallResult<Transform, T>>
+    TypedObservable<CallResult<Transform, T>> map(Transform&& transform) const
     {
         return ObservableBase::map([transform](const var& item) {
             return toVar(transform(fromVar<T>(item)));
@@ -937,7 +879,7 @@ public:
      Returns an Observable that emits the items emitted by the Observables which this Observable emits.
      */
     template<typename U = T>
-    auto switchOnNext() const -> typename std::enable_if<IsObservable<U>::value, T>::type
+    typename std::enable_if<IsObservable<U>::value, U>::type switchOnNext() const
     {
         return ObservableBase::switchOnNext();
     }
@@ -986,7 +928,7 @@ public:
      This is different from Observable::combineLatest because it only emits when this Observable emits an item (not when o1, o2, … emit items).
      */
     template<typename T1, typename Transform>
-    auto withLatestFrom(const TypedObservable<T1>& o1, Transform&& transform) const -> TypedObservable<CallResult<Transform, T, T1>>
+    TypedObservable<CallResult<Transform, T, T1>> withLatestFrom(const TypedObservable<T1>& o1, Transform&& transform) const
     {
         return ObservableBase::withLatestFrom(o1, [transform](const var& v0, const var& v1) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1)));
@@ -1003,7 +945,7 @@ public:
      The returned Observable only emits as many items as the number of items emitted by the source Observable that emits the fewest items.
      */
     template<typename T1, typename Transform>
-    auto zip(const TypedObservable<T1>& o1, Transform&& transform) const -> TypedObservable<CallResult<Transform, T, T1>>
+    TypedObservable<CallResult<Transform, T, T1>> zip(const TypedObservable<T1>& o1, Transform&& transform) const
     {
         return ObservableBase::zip(o1, [transform](const var& v0, const var& v1) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1)));
@@ -1062,3 +1004,62 @@ private:
     
     JUCE_LEAK_DETECTOR(TypedObservable)
 };
+
+template<>
+class TypedObservable<void>
+{
+public:
+    /**
+     Creates an Observable from a given JUCE Value. The returned Observable **only emits items until it is destroyed**, so you are responsible for managing its lifetime. Or use Reactive<Value>, which will handle this.
+     
+     The returned Observable notifies the onComplete handler when it's destroyed. @see Observable::subscribe
+     
+     When calling Value::setValue, it notifies asynchronously. So **the returned Observable emits the new value asynchronously.** If you call setValue immediately before destroying the returned Observable, the new value will not be emitted.
+     */
+    static TypedObservable<juce::var> fromValue(juce::Value value)
+    {
+        return ObservableBase::fromValue(value);
+    }
+    
+    /**
+     Returns an Observable that emits one item every `interval`, starting at the time of subscription (where the first item is emitted). The emitted items are `1`, `2`, `3`, and so on.
+     
+     The Observable emits endlessly, but you can use Observable::take to get a finite number of items (for example).
+     
+     The interval has millisecond resolution.
+     */
+    static TypedObservable<int> interval(const juce::RelativeTime& interval)
+    {
+        return ObservableBase::interval(interval);
+    }
+    
+    /**
+     Creates an Observable which emits a range of items, starting at `first` to (and including) `last`. It completes after emitting the `last` item.
+     
+     ​ **Throws an exception if first > last.**
+     
+     For example:
+     
+     Observable::range(3, 7, 3) // {3, 6, 7}
+     Observable::range(17.5, 22.8, 2) // {17.5, 19.5, 21.5, 22.8}
+     */
+    template<typename T>
+    static TypedObservable<T> range(T first, T last, unsigned int step = 1)
+    {
+        static_assert(std::is_integral<T>::value, "first and last must be integral.");
+        return ObservableBase::integralRange(first, last, step);
+    }
+};
+
+
+template<>
+inline TypedObservable<float> TypedObservable<void>::range(float first, float last, unsigned int step)
+{
+    return ObservableBase::floatRange(first, last, step);
+}
+
+template<>
+inline TypedObservable<double> TypedObservable<void>::range(double first, double last, unsigned int step)
+{
+    return ObservableBase::doubleRange(first, last, step);
+}

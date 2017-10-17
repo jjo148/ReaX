@@ -522,10 +522,10 @@ TEST_CASE("TypedObservable<T>")
 {
     auto o1 = TypedObservable<Point<int>>::just(Point<int>(14, -2));
     auto o2 = TypedObservable<double>::from({3.14, 5.2, 110.3});
-    auto o3 = TypedObservable<var>::fromValue(Value());
-    auto o4 = TypedObservable<long>::interval(RelativeTime());
-    auto o5 = TypedObservable<int>::range(4, 18);
-    auto o6 = TypedObservable<double>::range(4.5345, 15.13f);
+    auto o3 = TypedObservable<>::fromValue(Value());
+    auto o4 = TypedObservable<>::interval(RelativeTime());
+    auto o5 = TypedObservable<>::range(4, 18);
+    auto o6 = TypedObservable<>::range(4.5345f, 15.13f);
     
     o1.subscribe([](const Point<int>& p) {});
     
@@ -539,7 +539,7 @@ TEST_CASE("TypedObservable<T>")
     combined.subscribe([](String s) {});
     
     auto higherOrder = o2.map([](float f) {
-        return TypedObservable<int>::range(0, f + 10.1);
+        return TypedObservable<>::range(0.0, f + 10.1);
     });
     
     auto firstOrder = higherOrder.switchOnNext();
