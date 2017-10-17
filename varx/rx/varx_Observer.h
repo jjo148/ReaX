@@ -32,6 +32,9 @@ private:
     template<typename T>
     friend class TypedObserver;
     
+    template<typename T>
+    friend class TypedObservable;
+    
     struct Impl;
     typedef std::shared_ptr<Impl> Impl_ptr;
     explicit Observer(const Impl_ptr& impl);

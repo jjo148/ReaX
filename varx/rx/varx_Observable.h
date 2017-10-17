@@ -571,7 +571,9 @@ public:
      */
     static TypedObservable<T> create(const std::function<void(const TypedObserver<T>&)>& onSubscribe)
     {
-        return ObservableBase::create(onSubscribe);
+        return ObservableBase::create([onSubscribe](const Observer& observer) {
+            onSubscribe(TypedObserver<T>(observer.impl));
+        });
     }
 
     /**
