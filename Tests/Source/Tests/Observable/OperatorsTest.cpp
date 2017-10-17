@@ -208,6 +208,22 @@ TEST_CASE("Observable::filter",
 
         varxRequireItems(items, 5.43);
     }
+    
+    IT("works with std::bind")
+    {
+        auto source = Observable::range(14, 19);
+        
+        struct Test {
+            bool test(int item) { return item < 17; }
+        };
+        
+        Test t;
+        auto predicate = std::bind(&Test::test, &t, std::placeholders::_1);
+        auto filtered = source.filter(predicate);
+        
+        varxCollectItems(filtered, items);
+        varxRequireItems(items, 14, 15, 16);
+    }
 }
 
 
