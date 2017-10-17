@@ -518,6 +518,34 @@ TEST_CASE("Observable::repeat",
     }
 }
 
+TEST_CASE("TypedObservable<T>")
+{
+    auto o1 = TypedObservable<Point<int>>::just(Point<int>(14, -2));
+    auto o2 = TypedObservable<double>::from({3.14, 5.2, 110.3});
+    auto o3 = TypedObservable<var>::fromValue(Value());
+    auto o4 = TypedObservable<long>::interval(RelativeTime());
+    auto o5 = TypedObservable<int>::range(4, 18);
+    auto o6 = TypedObservable<double>::range(4.5345, 15.13f);
+    
+    o1.subscribe([](const Point<int>& p) {});
+    
+//    TypedObserver<Point<String>> *observer;
+//    o1.subscribe(*observer);
+    
+    auto combined = o1.combineLatest(o6, [](Point<int> p, double f) {
+        return String(p.x) + ", " + String(p.y) + ", " + String(f);
+    });
+    
+    combined.subscribe([](String s) {});
+    
+    auto higherOrder = o2.map([](float f) {
+        return TypedObservable<int>::range(0, f + 10.1);
+    });
+    
+    auto firstOrder = higherOrder.switchOnNext();
+    firstOrder.subscribe([](int i) {});
+}
+
 
 // Dummy struct that just counts copy and move constructions
 struct CopyAndMoveConstructible

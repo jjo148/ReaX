@@ -4,6 +4,7 @@ namespace varx {
 namespace detail {
     template<typename T>
     using IsEnum = typename std::enable_if<std::is_enum<T>::value>::type;
+    
     template<typename T>
     using IsCopyConstructible = typename std::enable_if<!std::is_enum<T>::value && std::is_copy_constructible<T>::value>::type;
     
@@ -124,7 +125,7 @@ inline juce::var toVar(T&& t)
  
  **If you use Observable::distinctUntilChanged(), make sure to provide a custom comparison function, which actually compares your type in a meaningful way.**
  */
-#define VARX_DEFINE_VARIANT_CONVERTER(__t) template<> struct juce::VariantConverter<__t> : public varx::detail::VariantConverter<__t> {};
+#define VARX_DEFINE_VARIANT_CONVERTER(__t) template<> struct juce::VariantConverter<__t> : varx::detail::VariantConverter<__t> {};
 
 
 // Define VariantConverters for common types
@@ -142,7 +143,7 @@ VARX_DEFINE_VARIANT_CONVERTER(juce::Colour)
 
 // Define a VariantConverter that converts from/to any std::function
 template<typename ReturnType, typename... Args>
-struct juce::VariantConverter<std::function<ReturnType(Args...)>> : public varx::detail::VariantConverter<std::function<typename std::decay<ReturnType>::type(typename std::decay<Args>::type...)>>
+struct juce::VariantConverter<std::function<ReturnType(Args...)>> : varx::detail::VariantConverter<std::function<typename std::decay<ReturnType>::type(typename std::decay<Args>::type...)>>
 {
 };
 

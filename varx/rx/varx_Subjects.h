@@ -52,7 +52,7 @@ public:
 private:
     explicit BehaviorSubject(const juce::var& initial);
     static std::shared_ptr<Impl> CreateImpl(const juce::var& initial);
-    
+
     JUCE_LEAK_DETECTOR(BehaviorSubject)
 };
 
@@ -92,4 +92,69 @@ public:
 
 private:
     JUCE_LEAK_DETECTOR(ReplaySubject)
+};
+
+
+class SubjectBase
+{
+private:
+    friend class TypedBehaviorSubjectImpl;
+    friend class TypedPublishSubjectImpl;
+    friend class TypedReplaySubjectImpl;
+    
+    template<typename T>
+    friend class TypedBehaviorSubject;
+    template<typename T>
+    friend class TypedPublishSubject;
+    template<typename T>
+    friend class TypedReplaySubject;
+
+    class Impl;
+    typedef std::shared_ptr<Impl> Impl_ptr;
+    explicit SubjectBase(const Impl_ptr& impl);
+    Impl_ptr impl;
+    
+    Observer::Impl_ptr asObserver() const;
+    ObservableBase::Impl_ptr asObservable() const;
+
+    static Impl_ptr MakeBehaviorSubjectImpl(juce::var&& initial);
+    static Impl_ptr MakePublishSubjectImpl();
+    static Impl_ptr MakeReplaySubjectImpl(size_t bufferSize);
+
+    juce::var getLatestItem() const;
+};
+
+template<typename T>
+class TypedBehaviorSubject : private SubjectBase, public TypedObserver<T>, public TypedObservable<T>
+{
+public:
+    /** Creates a new instance with a given initial item */
+    explicit TypedBehaviorSubject(const T& initial)
+    : SubjectBase(MakeBehaviorSubjectImpl(toVar(initial))),
+      TypedObserver<T>(asObserver()),
+      TypedObservable<T>(asObservable())
+    {}
+
+    /** Returns the most recently emitted item. If no items have been emitted, it returns the initial item. */
+    T getLatestItem() const
+    {
+        return fromVar<T>(SubjectBase::getLatestItem());
+    }
+
+private:
+    JUCE_LEAK_DETECTOR(TypedBehaviorSubject)
+};
+
+template<typename T>
+class TypedPublishSubject : private SubjectBase, public TypedObserver<T>, public TypedObservable<T>
+{
+public:
+    TypedPublishSubject()
+    : SubjectBase(MakePublishSubjectImpl()),
+      TypedObserver<T>(asObserver()),
+      TypedObservable<T>(asObservable())
+    {}
+
+private:
+    JUCE_LEAK_DETECTOR(TypedPublishSubject)
 };

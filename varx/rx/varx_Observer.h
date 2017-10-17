@@ -1,7 +1,5 @@
 #pragma once
 
-class Observable;
-
 /**
     Retrieves items. You can call onNext to notify the Observer with a new item.
  
@@ -28,11 +26,56 @@ public:
 private:
     friend class Subject;
     friend class Observable;
-    struct Impl;
-    explicit Observer(const std::shared_ptr<Impl>& impl);
-    std::shared_ptr<Impl> impl;
+    friend class ObservableBase;
+    friend class SubjectBase;
     
+    template<typename T>
+    friend class TypedObserver;
+    
+    struct Impl;
+    typedef std::shared_ptr<Impl> Impl_ptr;
+    explicit Observer(const Impl_ptr& impl);
+    Impl_ptr impl;
+
     void _onNext(const juce::var& next) const;
 
     JUCE_LEAK_DETECTOR(Observer)
+};
+
+template<typename T>
+class TypedObserver : private Observer
+{
+public:
+    void onNext(const T& item) const
+    {
+        Observer::onNext(toVar(item));
+    }
+
+    void onError(const Error& error) const
+    {
+        Observer::onError(error);
+    }
+
+    void onCompleted() const
+    {
+        Observer::onCompleted();
+    }
+
+private:
+    friend class ObservableBase;
+    
+    template<typename U>
+    friend class TypedObservable;
+    template<typename U>
+    friend class TypedBehaviorSubject;
+    template<typename U>
+    friend class TypedPublishSubject;
+    template<typename U>
+    friend class TypedReplaySubject;
+
+    TypedObserver(const Impl_ptr& impl)
+    : Observer(impl)
+    {}
+
+    JUCE_LEAK_DETECTOR(TypedObserver)
 };

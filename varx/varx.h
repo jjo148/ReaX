@@ -45,13 +45,17 @@ namespace varx {
 
 #include "rx/varx_Disposable.h"
 #include "rx/varx_DisposeBag.h"
-#include "rx/varx_Observable.h"
 #include "rx/varx_Observer.h"
+#include "rx/varx_Observable.h"
 #include "rx/varx_Scheduler.h"
 #include "rx/varx_Subjects.h"
 }
 
 VARX_DEFINE_VARIANT_CONVERTER(varx::Observable)
+VARX_DEFINE_VARIANT_CONVERTER(varx::ObservableBase)
+
+template<typename T>
+struct juce::VariantConverter<varx::TypedObservable<T>> : juce::VariantConverter<varx::ObservableBase> {};
 
 namespace varx {
 #include "util/internal/varx_ReleasePool.h"
