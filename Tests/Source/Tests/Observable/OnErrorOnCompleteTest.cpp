@@ -5,17 +5,17 @@ TEST_CASE("Observable onError",
           "[Observable][onError]")
 {
     // Create an Observable that throws on subscribe
-    auto syncThrow = Observable::create([](Observer) { throw std::runtime_error("Error!"); });
+    auto syncThrow = TypedObservable<String>::create([](TypedObserver<String>) { throw std::runtime_error("Error!"); });
 
     IT("calls onError on subscribe")
     {
-        REQUIRE_THROWS_WITH(syncThrow.subscribe([](var) {}, std::rethrow_exception), "Error!");
+        REQUIRE_THROWS_WITH(syncThrow.subscribe([](String) {}, std::rethrow_exception), "Error!");
     }
 
     IT("takes an onError handler and calls it without throwing")
     {
         bool called = false;
-        syncThrow.subscribe([](var) {}, [&](Error) { called = true; });
+        syncThrow.subscribe([](String) {}, [&](Error) { called = true; });
 
         REQUIRE(called);
     }
@@ -23,18 +23,18 @@ TEST_CASE("Observable onError",
     IT("calls onError asynchronously")
     {
         // Create an Observable that throws asynchronously
-        auto asyncThrow = Observable::create([](Observer observer) {
+        auto asyncThrow = TypedObservable<int>::create([](TypedObserver<int> observer) {
             MessageManager::getInstance()->callAsync([observer]() {
                 observer.onNext(3);
             });
         });
-        asyncThrow = asyncThrow.map([](var v) {
+        asyncThrow = asyncThrow.map([](int i) {
             throw std::runtime_error("Async Error!");
-            return v;
+            return i;
         });
 
         bool called = false;
-        asyncThrow.subscribe([](var) {}, [&](Error) { called = true; });
+        asyncThrow.subscribe([](int) {}, [&](Error) { called = true; });
 
         CHECK_FALSE(called);
         varxRunDispatchLoop();
@@ -53,7 +53,7 @@ TEST_CASE("Observable onComplete",
 
     IT("calls onComplete synchronously")
     {
-        Observable::just(2).subscribe([](var) {}, [](Error) {}, onComplete);
+        TypedObservable<int>::just(2).subscribe([](int) {}, [](Error) {}, onComplete);
         REQUIRE(called);
     }
 }
