@@ -19,7 +19,7 @@ private:
     explicit SubjectBase(const Impl_ptr& impl);
     Impl_ptr impl;
     
-    ObserverBase::Impl_ptr asObserver() const;
+    detail::ObserverImpl asObserver() const;
     ObservableBase::Impl_ptr asObservable() const;
 
     static Impl_ptr MakeBehaviorSubjectImpl(juce::var&& initial);

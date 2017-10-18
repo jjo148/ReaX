@@ -27,7 +27,7 @@ protected:
     using Function8 = std::function<var(const var&, const var&, const var&, const var&, const var&, const var&, const var&, const var&)>;
 
     // Creation
-    static Impl_ptr create(const std::function<void(const ObserverBase&)>& onSubscribe);
+    static Impl_ptr create(const std::function<void(const detail::ObserverImpl&)>& onSubscribe);
     static Impl_ptr defer(const std::function<ObservableBase()>& factory);
     static Impl_ptr empty();
     static Impl_ptr error(const std::exception& error);
@@ -46,7 +46,7 @@ protected:
     Disposable subscribe(const std::function<void(const var&)>& onNext,
                          const std::function<void(Error)>& onError,
                          const std::function<void()>& onCompleted) const;
-    Disposable subscribe(const ObserverBase& observer) const;
+    Disposable subscribe(const detail::ObserverImpl& observer) const;
 
     // Operators
     Impl_ptr combineLatest(const ObservableBase& o1, const Function2& transform) const;
@@ -136,8 +136,8 @@ public:
      */
     static Observable<T> create(const std::function<void(const Observer<T>&)>& onSubscribe)
     {
-        return ObservableBase::create([onSubscribe](const ObserverBase& observer) {
-            onSubscribe(Observer<T>(observer.impl));
+        return ObservableBase::create([onSubscribe](const detail::ObserverImpl& impl) {
+            onSubscribe(Observer<T>(impl));
         });
     }
 
@@ -252,7 +252,7 @@ public:
     template<typename U>
     typename std::enable_if<std::is_convertible<T, U>::value, Disposable>::type subscribe(const Observer<U>& observer) const
     {
-        return ObservableBase::subscribe(observer);
+        return ObservableBase::subscribe(observer.impl);
     }
     ///@}
 

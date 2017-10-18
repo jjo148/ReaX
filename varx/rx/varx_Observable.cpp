@@ -11,10 +11,10 @@ ObservableBase::ObservableBase(const Impl_ptr& impl)
 : impl(impl)
 {}
 
-ObservableBase::Impl_ptr ObservableBase::create(const std::function<void(const ObserverBase&)>& onSubscribe)
+ObservableBase::Impl_ptr ObservableBase::create(const std::function<void(const detail::ObserverImpl&)>& onSubscribe)
 {
-    return Impl::fromRxCpp(rxcpp::observable<>::create<var>([onSubscribe](rxcpp::subscriber<var> s) {
-        onSubscribe(ObserverBase(std::make_shared<ObserverBase::Impl>(s)));
+    return Impl::fromRxCpp(rxcpp::observable<>::create<var>([onSubscribe](const rxcpp_subscriber& s) {
+        onSubscribe(detail::ObserverImpl(any(s)));
     }));
 }
 
@@ -98,9 +98,9 @@ Disposable ObservableBase::subscribe(const std::function<void(const var&)>& onNe
     return Disposable(std::make_shared<Disposable::Impl>(disposable));
 }
 
-Disposable ObservableBase::subscribe(const ObserverBase& observer) const
+Disposable ObservableBase::subscribe(const detail::ObserverImpl& observer) const
 {
-    auto disposable = impl->wrapped.subscribe(observer.impl->wrapped);
+    auto disposable = impl->wrapped.subscribe(observer.wrapped.get<rxcpp_subscriber>());
     
     return Disposable(std::make_shared<Disposable::Impl>(disposable));
 }

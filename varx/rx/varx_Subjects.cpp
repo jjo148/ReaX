@@ -3,9 +3,9 @@ SubjectBase::SubjectBase(const SubjectBase::Impl_ptr& impl)
 : impl(impl)
 {}
 
-ObserverBase::Impl_ptr SubjectBase::asObserver() const
+detail::ObserverImpl SubjectBase::asObserver() const
 {
-    return std::make_shared<ObserverBase::Impl>(impl->getSubscriber());
+    return detail::ObserverImpl(any(impl->getSubscriber()));
 }
 
 ObservableBase::Impl_ptr SubjectBase::asObservable() const

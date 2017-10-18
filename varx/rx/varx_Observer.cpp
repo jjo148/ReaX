@@ -4,24 +4,15 @@ detail::ObserverImpl::ObserverImpl(const varx::any& wrapped)
 
 void detail::ObserverImpl::onNext(const juce::var &next) const
 {
-    wrapped.get<rxcpp::subscriber<var>>();
+    wrapped.get<rxcpp_subscriber>().on_next(next);
 }
 
-
-ObserverBase::ObserverBase(const std::shared_ptr<Impl>& impl)
-: impl(impl) {}
-
-void ObserverBase::onNext(const juce::var& next) const
+void detail::ObserverImpl::onError(Error error) const
 {
-    impl->wrapped.on_next(next);
+    wrapped.get<rxcpp_subscriber>().on_error(error);
 }
 
-void ObserverBase::onError(Error error) const
+void detail::ObserverImpl::onCompleted() const
 {
-    impl->wrapped.on_error(error);
-}
-
-void ObserverBase::onCompleted() const
-{
-    impl->wrapped.on_completed();
+    wrapped.get<rxcpp_subscriber>().on_completed();
 }

@@ -5,6 +5,8 @@
 namespace varx {
 using namespace juce;
 
+typedef rxcpp::subscriber<var> rxcpp_subscriber;
+
 template<class T>
 using shared_ptr = std::shared_ptr<T>;
 
