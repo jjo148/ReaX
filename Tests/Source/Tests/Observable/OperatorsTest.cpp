@@ -1,71 +1,71 @@
 #include "../../Other/TestPrefix.h"
 
 
-template<typename Var, typename... Vars>
-var transform(Var v, Vars... vars)
+template<typename T, typename... Ts>
+String transform(T t, Ts... ts)
 {
-    return v.toString() + transform(vars...).toString();
+    return t + transform(ts...);
 }
 
 template<>
-var transform<var>(var v)
+String transform<String>(String s)
 {
-    return v;
+    return s;
 }
 
 TEST_CASE("Observable::combineLatest",
           "[Observable][Observable::combineLatest]")
 {
-    Array<var> items;
+    Array<String> items;
     OwnedArray<TypedObservable<String>> os;
     for (int i = 0; i < 8; i++)
         os.add(new TypedObservable<String>(TypedObservable<String>::just(String(i) + " ")));
 
     IT("works with arity 1")
     {
-        const auto f = transform<var, var>;
+        const auto f = transform<String, String>;
         varxCollectItems(os[0]->combineLatest(*os[1], f), items);
         varxRequireItems(items, "0 1 ");
     }
 
     IT("works with arity 2")
     {
-        const auto f = transform<var, var, var>;
+        const auto f = transform<String, String, String>;
         varxCollectItems(os[0]->combineLatest(*os[1], *os[2], f), items);
         varxRequireItems(items, "0 1 2 ");
     }
 
     IT("works with arity 3")
     {
-        const auto f = transform<var, var, var, var>;
+        const auto f = transform<String, String, String, String>;
         varxCollectItems(os[0]->combineLatest(*os[1], *os[2], *os[3], f), items);
         varxRequireItems(items, "0 1 2 3 ");
     }
 
     IT("works with arity 4")
     {
-        const auto f = transform<var, var, var, var, var>;
+        const auto f = transform<String, String, String, String, String>;
         varxCollectItems(os[0]->combineLatest(*os[1], *os[2], *os[3], *os[4], f), items);
         varxRequireItems(items, "0 1 2 3 4 ");
     }
 
     IT("works with arity 5")
     {
-        const auto f = transform<var, var, var, var, var, var>;
+        const auto f = transform<String, String, String, String, String, String>;
         varxCollectItems(os[0]->combineLatest(*os[1], *os[2], *os[3], *os[4], *os[5], f), items);
         varxRequireItems(items, "0 1 2 3 4 5 ");
     }
 
     IT("works with arity 6")
     {
-        const auto f = transform<var, var, var, var, var, var, var>;
+        const auto f = transform<String, String, String, String, String, String, String>;
         varxCollectItems(os[0]->combineLatest(*os[1], *os[2], *os[3], *os[4], *os[5], *os[6], f), items);
         varxRequireItems(items, "0 1 2 3 4 5 6 ");
     }
 
     IT("works with arity 7")
     {
-        const auto f = transform<var, var, var, var, var, var, var, var>;
+        const auto f = transform<String, String, String, String, String, String, String, String>;
         varxCollectItems(os[0]->combineLatest(*os[1], *os[2], *os[3], *os[4], *os[5], *os[6], *os[7], f), items);
         varxRequireItems(items, "0 1 2 3 4 5 6 7 ");
     }
@@ -79,8 +79,8 @@ TEST_CASE("Observable::concat",
 
     IT("concatenates the values emitted by the source Observables")
     {
-        auto observable = Observable::from({ "Hello", "World" });
-        auto another = Observable::from({ 1.5, 2.32, 5.6 });
+        auto observable = TypedObservable<var>::from({ "Hello", "World" });
+        auto another = TypedObservable<var>::from({ 1.5, 2.32, 5.6 });
         varxCollectItems(observable.concat(another), items);
 
         varxRequireItems(items, var("Hello"), var("World"), var(1.5), var(2.32), var(5.6));
@@ -95,7 +95,7 @@ TEST_CASE("Observable::distinctUntilChanged",
     {
         Array<var> originalItems;
         Array<var> filteredItems;
-        PublishSubject subject;
+        TypedPublishSubject<var> subject;
 
         varxCollectItems(subject, originalItems);
         varxCollectItems(subject.distinctUntilChanged(), filteredItems);
@@ -112,39 +112,19 @@ TEST_CASE("Observable::distinctUntilChanged",
         varxRequireItems(filteredItems, var(3), var(5), var(3));
     }
     
-    IT("emits consecutive duplicate Point<int>s when no type parameter is given")
+    IT("doesn't emit consecutive duplicate Point<int>s")
     {
-        Array<var> items;
-        PublishSubject subject;
-        
-        // Don't declare type paramter. var::operator== will be used for comparison:
-        varxCollectItems(subject.distinctUntilChanged(), items);
-        
-        subject.onNext(Point<int>(27, 12));
-        subject.onNext(Point<int>(27, 12));
-        subject.onNext(Point<int>(27, 15));
-        
-        CHECK(items.size() == 3);
-        REQUIRE(fromVar<Point<int>>(items[0]) == Point<int>(27, 12));
-        REQUIRE(fromVar<Point<int>>(items[1]) == Point<int>(27, 12));
-        REQUIRE(fromVar<Point<int>>(items[2]) == Point<int>(27, 15));
-    }
-    
-    IT("doesn't emit consecutive duplicate Point<int>s when the correct type parameter is given")
-    {
-        Array<var> items;
-        PublishSubject subject;
+        Array<Point<int>> items;
+        TypedPublishSubject<Point<int>> subject;
         
         // Declare Point<int> as the type parameter, to use Point<int>::operator== for comparison:
-        varxCollectItems(subject.distinctUntilChanged<Point<int>>(), items);
+        varxCollectItems(subject.distinctUntilChanged(), items);
         
         subject.onNext(Point<int>(27, 12));
         subject.onNext(Point<int>(27, 12));
         subject.onNext(Point<int>(27, 14));
         
-        CHECK(items.size() == 2);
-        REQUIRE(fromVar<Point<int>>(items[0]) == Point<int>(27, 12));
-        REQUIRE(fromVar<Point<int>>(items[1]) == Point<int>(27, 14));
+        varxRequireItems(items, Point<int>(27, 12), Point<int>(27, 14));
     }
 }
 
@@ -152,8 +132,8 @@ TEST_CASE("Observable::distinctUntilChanged",
 TEST_CASE("Observable::elementAt",
           "[Observable][Observable::elementAt]")
 {
-    auto observable = Observable::from({ 17.4, 3.0, 1.5, 6.77 });
-    Array<var> items;
+    auto observable = TypedObservable<float>::from({ 17.4, 3.0, 1.5, 6.77 });
+    Array<double> items;
 
     IT("emits only the item at the given index")
     {
@@ -167,12 +147,10 @@ TEST_CASE("Observable::elementAt",
 TEST_CASE("Observable::filter",
           "[Observable][Observable::filter]")
 {
-    Array<var> items;
-    auto source = Observable::range(4, 9, 1);
-
     IT("filters ints")
     {
-        auto source = Observable::range(4, 9, 1);
+        Array<int> items;
+        auto source = TypedObservable<>::range(4, 9, 1);
         auto filtered = source.filter([](int i) {
             return (i % 2 == 0);
         });
@@ -183,7 +161,8 @@ TEST_CASE("Observable::filter",
 
     IT("filters Strings")
     {
-        auto source = Observable::from({ "Hello", "Great", "World", "Hey" });
+        Array<String> items;
+        auto source = TypedObservable<String>::from({ "Hello", "Great", "World", "Hey" });
         auto filtered = source.filter([](String s) {
             return s[0] == 'H';
         });
@@ -194,7 +173,8 @@ TEST_CASE("Observable::filter",
 
     IT("filters an Observable which emits different types")
     {
-        auto source = Observable::from({ var(3), var("Hello"), var(5.43) });
+        Array<var> items;
+        auto source = TypedObservable<var>::from({ var(3), var("Hello"), var(5.43) });
         auto filtered = source.filter([](var v) {
             return v.isDouble();
         });
@@ -205,7 +185,8 @@ TEST_CASE("Observable::filter",
     
     IT("works with std::bind")
     {
-        auto source = Observable::range(14, 19);
+        Array<int> items;
+        auto source = TypedObservable<>::range(14, 19);
         
         struct Test {
             bool test(int item) { return item < 17; }
@@ -224,12 +205,12 @@ TEST_CASE("Observable::filter",
 TEST_CASE("Observable::flatMap",
           "[Observable][Observable::flatMap]")
 {
-    Array<var> items;
+    Array<String> items;
 
     IT("merges the values emitted by the returned Observables")
     {
-        auto o = Observable::from({ "Hello", "World" }).flatMap([](String s) {
-            return Observable::from({ s.toLowerCase(), s.toUpperCase() + "!" });
+        auto o = TypedObservable<String>::from({ "Hello", "World" }).flatMap([](String s) {
+            return TypedObservable<String>::from({ s.toLowerCase(), s.toUpperCase() + "!" });
         });
         varxCollectItems(o, items);
 
@@ -241,8 +222,8 @@ TEST_CASE("Observable::flatMap",
 TEST_CASE("Observable::map",
           "[Observable][Observable::map]")
 {
-    Array<var> items;
-    auto source = Observable::range(4, 7, 2);
+    Array<int> items;
+    auto source = TypedObservable<>::range(4, 7, 2);
 
     IT("emits values synchronously")
     {
@@ -257,37 +238,36 @@ TEST_CASE("Observable::map",
 TEST_CASE("Interaction between Observable::map and Observable::switchOnNext",
           "[Observable][Observable::map][Observable::switchOnNext]")
 {
-    Array<var> items;
-
     IT("supports returning Observables in map, even nested twice")
     {
-        auto source = Observable::just(1);
+        Array<String> items;
+        auto source = TypedObservable<int>::just(1);
         auto nested = source.map([](int i) {
-            return Observable::just("Hello").map([i](String s) {
-                                                return Observable::just(String(i) + " " + s).operator var();
-                                            })
-                .
-                operator var();
+            return TypedObservable<String>::just("Hello").map([i](String s) {
+                return TypedObservable<var>::just(String(i) + " " + s);
+            });
         });
 
         // Unwrap twice
-        nested = nested.switchOnNext().switchOnNext();
-        varxCollectItems(nested, items);
+        auto unwrapped = nested.switchOnNext().switchOnNext();
+        varxCollectItems(unwrapped, items);
 
         varxRequireItems(items, "1 Hello");
     }
     
-    IT("continues to emit items after the source Observable is gone") {
-        auto source = std::make_shared<Observable>(Observable::just(17));
+    IT("continues to emit items after the source Observable is gone")
+    {
+        Array<int> items;
+        auto source = std::make_shared<TypedObservable<int>>(TypedObservable<int>::just(17));
         auto mapped = source->map([](int next) {
-            return Observable::create([next](Observer observer) {
+            return TypedObservable<int>::create([next](TypedObserver<int> observer) {
                 MessageManager::getInstance()->callAsync([observer, next]() {
                     observer.onNext(next * 3);
                 });
             });
         });
-        mapped = mapped.switchOnNext();
-        varxCollectItems(mapped, items);
+        auto unwrapped = mapped.switchOnNext();
+        varxCollectItems(unwrapped, items);
         
         // There should be no items before running dispatch loop
         CHECK(items.isEmpty());
@@ -298,30 +278,17 @@ TEST_CASE("Interaction between Observable::map and Observable::switchOnNext",
         // The item should be emitted, although there's no reference to the source anymore
         varxRequireItems(items, 17 * 3);
     }
-    
-    IT("emits an error when trying to unwrap a first-order Observable")
-    {
-        auto o = Observable::just(1).switchOnNext();
-        bool onErrorCalled = false;
-        auto onError = [&](Error) {
-            onErrorCalled = true;
-        };
-        DisposeBag disposeBag;
-        o.subscribe([](var) {}, onError).disposedBy(disposeBag);
-
-        REQUIRE(onErrorCalled);
-    }
 }
 
 
 TEST_CASE("Observable::reduce",
           "[Observable][Observable::reduce]")
 {
-    Array<var> items;
+    Array<int> items;
 
     IT("reduces emitted items")
     {
-        auto observable = Observable::from({ 10, 100, 1000 }).reduce(2, [](int accum, int next) {
+        auto observable = TypedObservable<int>::from({ 10, 100, 1000 }).reduce(2, [](int accum, int next) {
             return accum + next;
         });
 
@@ -335,11 +302,11 @@ TEST_CASE("Observable::reduce",
 TEST_CASE("Observable::scan",
           "[Observable][Observable::scan]")
 {
-    Array<var> items;
+    Array<int> items;
 
     IT("applies the transform function to the inputs")
     {
-        auto o = Observable::range(1, 5).scan(10, [](int accum, int currentValue) {
+        auto o = TypedObservable<>::range(1, 5).scan(10, [](int accum, int currentValue) {
             return accum + currentValue;
         });
         varxCollectItems(o, items);
@@ -352,11 +319,11 @@ TEST_CASE("Observable::scan",
 TEST_CASE("Observable::skip",
           "[Observable][Observable::skip]")
 {
-    Array<var> items;
+    Array<int> items;
 
     IT("skips the first 4 items")
     {
-        auto o = Observable::from({ 4, 7, 2, 1, 19, 1, 33, 4 }).skip(4);
+        auto o = TypedObservable<int>::from({ 4, 7, 2, 1, 19, 1, 33, 4 }).skip(4);
         varxCollectItems(o, items);
 
         varxRequireItems(items, 19, 1, 33, 4);
@@ -367,12 +334,12 @@ TEST_CASE("Observable::skip",
 TEST_CASE("Observable::skipUntil",
           "[Observable][Observable::skipUntil]")
 {
-    Array<var> items;
+    Array<String> items;
 
     IT("skips until another Observable emits an item")
     {
-        PublishSubject subject;
-        PublishSubject trigger;
+        TypedPublishSubject<String> subject;
+        TypedPublishSubject<var> trigger;
 
         varxCollectItems(subject.skipUntil(trigger), items);
 
@@ -397,8 +364,8 @@ TEST_CASE("Observable::skipUntil",
 TEST_CASE("Observable::startWith",
           "[Observable][Observable::startWith]")
 {
-    Array<var> items;
-    auto observable = Observable::from({ 17, 3 });
+    Array<int> items;
+    auto observable = TypedObservable<int>::from({ 17, 3 });
 
     IT("prepends items to an existing Observable")
     {
@@ -412,8 +379,8 @@ TEST_CASE("Observable::startWith",
 TEST_CASE("Observable::takeLast",
           "[Observable][Observable::takeLast]")
 {
-    Array<var> items;
-    auto observable = Observable::from({ "First", "Another", "And one more", "Last item" });
+    Array<String> items;
+    auto observable = TypedObservable<String>::from({ "First", "Another", "And one more", "Last item" });
 
     IT("takes the last 2 emitted items")
     {
@@ -427,12 +394,12 @@ TEST_CASE("Observable::takeLast",
 TEST_CASE("Observable::takeUntil",
           "[Observable][Observable::takeUntil]")
 {
-    Array<var> items;
+    Array<String> items;
 
     IT("emits until another Observable emits an item")
     {
-        PublishSubject subject;
-        PublishSubject trigger;
+        TypedPublishSubject<String> subject;
+        TypedPublishSubject<String> trigger;
 
         varxCollectItems(subject.takeUntil(trigger), items);
 
@@ -457,11 +424,11 @@ TEST_CASE("Observable::takeUntil",
 TEST_CASE("Observable::takeWhile",
           "[Observable][Observable::takeWhile]")
 {
-    Array<var> items;
+    Array<int> items;
 
     IT("emits items as long as the predicate returns true")
     {
-        PublishSubject subject;
+        TypedPublishSubject<int> subject;
         const auto predicate = [](int i) {
             return i <= 10;
         };
@@ -486,13 +453,13 @@ TEST_CASE("Observable::takeWhile",
 TEST_CASE("Observable::withLatestFrom",
           "[Observable][Observable::withLatestFrom]")
 {
-    Array<var> items;
-    PublishSubject s1;
-    PublishSubject s2;
+    Array<String> items;
+    TypedPublishSubject<String> s1;
+    TypedPublishSubject<String> s2;
 
     IT("only emits when the first Observable emits")
     {
-        const auto f = transform<var, var>;
+        const auto f = transform<String, String>;
         varxCollectItems(s1.withLatestFrom(s2, f), items);
         CHECK(items.isEmpty());
         s2.onNext("World!");
@@ -501,30 +468,19 @@ TEST_CASE("Observable::withLatestFrom",
 
         varxRequireItems(items, "Hello World!");
     }
-
-    IT("combines items into an array by default")
-    {
-        varxCollectItems(s1.withLatestFrom(s2), items);
-        s1.onNext(1.578);
-        s2.onNext(3.145);
-        CHECK(items.isEmpty());
-        s1.onNext(18.45);
-
-        varxRequireItems(items, Array<var>({ 18.45, 3.145 }));
-    }
 }
 
 
 TEST_CASE("Observable::zip",
           "[Observable][Observable::zip]")
 {
-    Array<var> items;
+    Array<String> items;
 
     IT("zips three Observables together")
     {
-        PublishSubject strings;
-        PublishSubject ints;
-        PublishSubject doubles;
+        TypedPublishSubject<String> strings;
+        TypedPublishSubject<int> ints;
+        TypedPublishSubject<double> doubles;
         const auto combine = [](String s, int i, double d) {
             return "s=" + s + "; i=" + String(i) + "; d=" + String(d);
         };

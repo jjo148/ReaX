@@ -680,9 +680,40 @@ ObservableBase::Impl_ptr ObservableBase::skipUntil(const ObservableBase& other) 
     return Impl::fromRxCpp(impl->wrapped.skip_until(other.impl->wrapped));
 }
 
-ObservableBase::Impl_ptr ObservableBase::startWith(const var& item1) const
+
+ObservableBase::Impl_ptr ObservableBase::startWith(const var& v1) const
 {
-    return impl->startWith(item1);
+    return impl->startWith(v1);
+}
+
+ObservableBase::Impl_ptr ObservableBase::startWith(const var& v1, const var& v2) const
+{
+    return impl->startWith(v1, v2);
+}
+
+ObservableBase::Impl_ptr ObservableBase::startWith(const var& v1, const var& v2, const var& v3) const
+{
+    return impl->startWith(v1, v2, v3);
+}
+
+ObservableBase::Impl_ptr ObservableBase::startWith(const var& v1, const var& v2, const var& v3, const var& v4) const
+{
+    return impl->startWith(v1, v2, v3, v4);
+}
+
+ObservableBase::Impl_ptr ObservableBase::startWith(const var& v1, const var& v2, const var& v3, const var& v4, const var& v5) const
+{
+    return impl->startWith(v1, v2, v3, v4, v5);
+}
+
+ObservableBase::Impl_ptr ObservableBase::startWith(const var& v1, const var& v2, const var& v3, const var& v4, const var& v5, const var& v6) const
+{
+    return impl->startWith(v1, v2, v3, v4, v5, v6);
+}
+
+ObservableBase::Impl_ptr ObservableBase::startWith(const var& v1, const var& v2, const var& v3, const var& v4, const var& v5, const var& v6, const var& v7) const
+{
+    return impl->startWith(v1, v2, v3, v4, v5, v6, v7);
 }
 
 ObservableBase::Impl_ptr ObservableBase::switchOnNext() const
@@ -714,14 +745,74 @@ ObservableBase::Impl_ptr ObservableBase::takeWhile(const std::function<bool(cons
     return Impl::fromRxCpp(impl->wrapped.take_while(predicate));
 }
 
-ObservableBase::Impl_ptr ObservableBase::withLatestFrom(const ObservableBase& o1, const std::function<var(const var&, const var&)>& transform) const
+ObservableBase::Impl_ptr ObservableBase::withLatestFrom(const ObservableBase& o1, const Function2& transform) const
 {
     return impl->withLatestFrom(transform, o1);
 }
 
-ObservableBase::Impl_ptr ObservableBase::zip(const ObservableBase& o1, const std::function<var(const var&, const var&)>& transform) const
+ObservableBase::Impl_ptr ObservableBase::withLatestFrom(const ObservableBase& o1, const ObservableBase& o2, const Function3& transform) const
+{
+    return impl->withLatestFrom(transform, o1, o2);
+}
+
+ObservableBase::Impl_ptr ObservableBase::withLatestFrom(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const Function4& transform) const
+{
+    return impl->withLatestFrom(transform, o1, o2, o3);
+}
+
+ObservableBase::Impl_ptr ObservableBase::withLatestFrom(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const Function5& transform) const
+{
+    return impl->withLatestFrom(transform, o1, o2, o3, o4);
+}
+
+ObservableBase::Impl_ptr ObservableBase::withLatestFrom(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const ObservableBase& o5, const Function6& transform) const
+{
+    return impl->withLatestFrom(transform, o1, o2, o3, o4, o5);
+}
+
+ObservableBase::Impl_ptr ObservableBase::withLatestFrom(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const ObservableBase& o5, const ObservableBase& o6, const Function7& transform) const
+{
+    return impl->withLatestFrom(transform, o1, o2, o3, o4, o5, o6);
+}
+
+ObservableBase::Impl_ptr ObservableBase::withLatestFrom(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const ObservableBase& o5, const ObservableBase& o6, const ObservableBase& o7, const Function8& transform) const
+{
+    return impl->withLatestFrom(transform, o1, o2, o3, o4, o5, o6, o7);
+}
+
+ObservableBase::Impl_ptr ObservableBase::zip(const ObservableBase& o1, const Function2& transform) const
 {
     return impl->zip(transform, o1);
+}
+
+ObservableBase::Impl_ptr ObservableBase::zip(const ObservableBase& o1, const ObservableBase& o2, const Function3& transform) const
+{
+    return impl->zip(transform, o1, o2);
+}
+
+ObservableBase::Impl_ptr ObservableBase::zip(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const Function4& transform) const
+{
+    return impl->zip(transform, o1, o2, o3);
+}
+
+ObservableBase::Impl_ptr ObservableBase::zip(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const Function5& transform) const
+{
+    return impl->zip(transform, o1, o2, o3, o4);
+}
+
+ObservableBase::Impl_ptr ObservableBase::zip(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const ObservableBase& o5, const Function6& transform) const
+{
+    return impl->zip(transform, o1, o2, o3, o4, o5);
+}
+
+ObservableBase::Impl_ptr ObservableBase::zip(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const ObservableBase& o5, const ObservableBase& o6, const Function7& transform) const
+{
+    return impl->zip(transform, o1, o2, o3, o4, o5, o6);
+}
+
+ObservableBase::Impl_ptr ObservableBase::zip(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const ObservableBase& o5, const ObservableBase& o6, const ObservableBase& o7, const Function8& transform) const
+{
+    return impl->zip(transform, o1, o2, o3, o4, o5, o6, o7);
 }
 
 
