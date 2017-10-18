@@ -212,7 +212,7 @@ TEST_CASE("ReplaySubject",
 
     IT("emits previous items limited by the max. buffer size")
     {
-        auto subject = std::make_shared<ReplaySubject>(4);
+        auto subject = std::make_shared<TypedReplaySubject<var>>(4);
 
         // These should be forgotten:
         subject->onNext(17.5);

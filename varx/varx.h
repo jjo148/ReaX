@@ -54,7 +54,6 @@ namespace varx {
 #include "rx/varx_Subjects.h"
 }
 
-VARX_DEFINE_VARIANT_CONVERTER(varx::Observable)
 VARX_DEFINE_VARIANT_CONVERTER(varx::ObservableBase)
 VARX_DEFINE_VARIANT_CONVERTER(varx::Empty)
 
