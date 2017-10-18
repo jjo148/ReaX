@@ -27,7 +27,7 @@ protected:
     using Function8 = std::function<var(const var&, const var&, const var&, const var&, const var&, const var&, const var&, const var&)>;
 
     // Creation
-    static Impl_ptr create(const std::function<void(const detail::ObserverImpl&)>& onSubscribe);
+    static Impl_ptr create(const std::function<void(detail::ObserverImpl&&)>& onSubscribe);
     static Impl_ptr defer(const std::function<ObservableBase()>& factory);
     static Impl_ptr empty();
     static Impl_ptr error(const std::exception& error);
@@ -136,8 +136,8 @@ public:
      */
     static Observable<T> create(const std::function<void(const Observer<T>&)>& onSubscribe)
     {
-        return ObservableBase::create([onSubscribe](const detail::ObserverImpl& impl) {
-            onSubscribe(Observer<T>(impl));
+        return ObservableBase::create([onSubscribe](detail::ObserverImpl&& impl) {
+            onSubscribe(Observer<T>(std::move(impl)));
         });
     }
 

@@ -11,7 +11,7 @@ ObservableBase::ObservableBase(const Impl_ptr& impl)
 : impl(impl)
 {}
 
-ObservableBase::Impl_ptr ObservableBase::create(const std::function<void(const detail::ObserverImpl&)>& onSubscribe)
+ObservableBase::Impl_ptr ObservableBase::create(const std::function<void(detail::ObserverImpl&&)>& onSubscribe)
 {
     return Impl::fromRxCpp(rxcpp::observable<>::create<var>([onSubscribe](const rxcpp_subscriber& s) {
         onSubscribe(detail::ObserverImpl(any(s)));

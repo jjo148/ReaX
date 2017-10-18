@@ -3,7 +3,7 @@
 namespace detail {
     struct ObserverImpl
     {
-        ObserverImpl(const varx::any& wrapped);
+        ObserverImpl(varx::any&& wrapped);
         void onNext(const juce::var& next) const;
         void onError(Error error) const;
         void onCompleted() const;
@@ -56,8 +56,8 @@ private:
     
     const detail::ObserverImpl impl;
     
-    Observer(const detail::ObserverImpl& impl)
-    : impl(impl)
+    Observer(detail::ObserverImpl&& impl)
+    : impl(std::move(impl))
     {}
 
     JUCE_LEAK_DETECTOR(Observer)

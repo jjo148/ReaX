@@ -1,5 +1,5 @@
-detail::ObserverImpl::ObserverImpl(const varx::any& wrapped)
-: wrapped(wrapped)
+detail::ObserverImpl::ObserverImpl(varx::any&& wrapped)
+: wrapped(std::move(wrapped))
 {}
 
 void detail::ObserverImpl::onNext(const juce::var &next) const
