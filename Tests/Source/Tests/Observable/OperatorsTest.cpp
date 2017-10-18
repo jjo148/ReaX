@@ -17,9 +17,9 @@ TEST_CASE("Observable::combineLatest",
           "[Observable][Observable::combineLatest]")
 {
     Array<var> items;
-    OwnedArray<Observable> os;
+    OwnedArray<TypedObservable<String>> os;
     for (int i = 0; i < 8; i++)
-        os.add(new Observable(Observable::just(String(i) + " ")));
+        os.add(new TypedObservable<String>(TypedObservable<String>::just(String(i) + " ")));
 
     IT("works with arity 1")
     {
@@ -68,12 +68,6 @@ TEST_CASE("Observable::combineLatest",
         const auto f = transform<var, var, var, var, var, var, var, var>;
         varxCollectItems(os[0]->combineLatest(*os[1], *os[2], *os[3], *os[4], *os[5], *os[6], *os[7], f), items);
         varxRequireItems(items, "0 1 2 3 4 5 6 7 ");
-    }
-
-    IT("combines items into an array by default")
-    {
-        varxCollectItems(os[0]->combineLatest(*os[1], *os[3]), items);
-        varxRequireItems(items, Array<var>({ "0 ", "1 ", "3 " }));
     }
 }
 

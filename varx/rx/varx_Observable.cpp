@@ -578,9 +578,39 @@ Disposable ObservableBase::subscribe(const Observer& observer) const
 
 #pragma mark - Operators
 
-ObservableBase::Impl_ptr ObservableBase::combineLatest(const ObservableBase& o1, const std::function<var(const var&, const var&)>& transform) const
+ObservableBase::Impl_ptr ObservableBase::combineLatest(const ObservableBase& o1, const Function2& transform) const
 {
     return impl->combineLatest(transform, o1);
+}
+
+ObservableBase::Impl_ptr ObservableBase::combineLatest(const ObservableBase& o1, const ObservableBase& o2, const Function3& transform) const
+{
+    return impl->combineLatest(transform, o1, o2);
+}
+
+ObservableBase::Impl_ptr ObservableBase::combineLatest(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const Function4& transform) const
+{
+    return impl->combineLatest(transform, o1, o2, o3);
+}
+
+ObservableBase::Impl_ptr ObservableBase::combineLatest(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const Function5& transform) const
+{
+    return impl->combineLatest(transform, o1, o2, o3, o4);
+}
+
+ObservableBase::Impl_ptr ObservableBase::combineLatest(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const ObservableBase& o5, const Function6& transform) const
+{
+    return impl->combineLatest(transform, o1, o2, o3, o4, o5);
+}
+
+ObservableBase::Impl_ptr ObservableBase::combineLatest(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const ObservableBase& o5, const ObservableBase& o6, const Function7& transform) const
+{
+    return impl->combineLatest(transform, o1, o2, o3, o4, o5, o6);
+}
+
+ObservableBase::Impl_ptr ObservableBase::combineLatest(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const ObservableBase& o5, const ObservableBase& o6, const ObservableBase& o7, const Function8& transform) const
+{
+    return impl->combineLatest(transform, o1, o2, o3, o4, o5, o6, o7);
 }
 
 ObservableBase::Impl_ptr ObservableBase::concat(const ObservableBase& o1) const
