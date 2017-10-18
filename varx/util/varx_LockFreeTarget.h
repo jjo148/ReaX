@@ -14,8 +14,8 @@ public:
     /** Creates a new instance. Before retrieving items, getValue() returns an unitialized value. */
     LockFreeTarget()
     {
-        subject.subscribe([this](const juce::var& newValue) {
-            latestValue.store(fromVar<T>(newValue));
+        subject.subscribe([this](const T& newValue) {
+            latestValue.store(newValue);
         }).disposedBy(disposeBag);
     }
     
@@ -28,15 +28,16 @@ public:
     /** Returns the latest retrieved item atomically. It just calls getValue(). */
     inline operator T() const { return getValue(); }
     
+#warning Should probably just inherit from TypedObserver<T>
     /** Returns the Observer for the target. Items pushed to the Observer are stored atomically. */
-    inline Observer asObserver() const { return subject; }
+    inline TypedObserver<T> asObserver() const { return subject; }
     
     /** Returns the Observer for the target. It just calls asObserver(). */
-    operator Observer() const { return asObserver(); }
+    operator TypedObserver<T>() const { return asObserver(); }
     
 private:
     std::atomic<T> latestValue;
-    PublishSubject subject;
+    TypedPublishSubject<T> subject;
     DisposeBag disposeBag;
     
     JUCE_LEAK_DETECTOR(LockFreeTarget)
@@ -56,8 +57,8 @@ public:
     /** Creates a new instance. You must not call getValue() before retrieving items. */
     LockFreeTarget()
     {
-        subject.subscribe([this](const juce::var& newValue) {
-            const auto latest = std::make_shared<T>(fromVar<T>(newValue));
+        subject.subscribe([this](const T& newValue) {
+            const auto latest = std::make_shared<T>(newValue);
             detail::ReleasePool::get().add(latest);
             std::atomic_store(&latestValue, latest);
         }).disposedBy(disposeBag);
@@ -78,14 +79,14 @@ public:
     inline operator T() const { return getValue(); }
     
     /** Returns the Observer for the target. Items pushed to the Observer are stored atomically. You should push items to the Observer from a non-realtime thread. */
-    inline Observer asObserver() const { return subject; }
+    inline TypedObserver<T> asObserver() const { return subject; }
     
     /** Returns the Observer for the target. It just calls asObserver(). */
-    operator Observer() const { return asObserver(); }
+    operator TypedObserver<T>() const { return asObserver(); }
     
 private:
     std::shared_ptr<T> latestValue;
-    PublishSubject subject;
+    TypedPublishSubject<T> subject;
     DisposeBag disposeBag;
     
     JUCE_LEAK_DETECTOR(LockFreeTarget)

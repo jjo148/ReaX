@@ -6,8 +6,8 @@ TEST_CASE("LockFreeTarget",
     IT("retrieves values for primitive types")
     {
         LockFreeTarget<float> target;
-        BehaviorSubject subject(5.467f);
-        subject.subscribe(target);
+        TypedBehaviorSubject<float> subject(5.467f);
+        subject.subscribe(target.asObserver());
         CHECK(target.getValue() == 5.467f);
         
         subject.onNext(100.24f);
@@ -20,8 +20,8 @@ TEST_CASE("LockFreeTarget",
     IT("retrieves String values")
     {
         LockFreeTarget<String> target;
-        PublishSubject subject;
-        subject.subscribe(target);
+        TypedPublishSubject<String> subject;
+        subject.subscribe(target.asObserver());
         
         subject.onNext("Hello");
         CHECK(target.getValue() == "Hello");
@@ -33,8 +33,8 @@ TEST_CASE("LockFreeTarget",
     IT("retrieves values for other non-primitive types")
     {
         LockFreeTarget<Point<int>> target;
-        PublishSubject subject;
-        subject.subscribe(target);
+        TypedPublishSubject<Point<int>> subject;
+        subject.subscribe(target.asObserver());
         
         subject.onNext(Point<int>(43, 29));
         CHECK(target.getValue() == Point<int>(43, 29));
@@ -54,10 +54,10 @@ TEST_CASE("LockFreeTarget",
         LockFreeTarget<bool> boolTarget;
         LockFreeTarget<double> doubleTarget;
         
-        PublishSubject subject;
-        subject.subscribe(intTarget);
-        subject.subscribe(boolTarget);
-        subject.subscribe(doubleTarget);
+        TypedPublishSubject<var> subject;
+        subject.subscribe(intTarget.asObserver());
+        subject.subscribe(boolTarget.asObserver());
+        subject.subscribe(doubleTarget.asObserver());
         
         subject.onNext(3.474);
         
@@ -71,16 +71,16 @@ TEST_CASE("LockFreeTarget",
         CHECK(detail::ReleasePool::get().size() == 0);
         
         // After one onNext, there should be 1 item in the ReleasePool
-        PublishSubject pointSubject;
+        TypedPublishSubject<Point<float>> pointSubject;
         LockFreeTarget<Point<float>> pointTarget;
-        pointSubject.subscribe(pointTarget);
+        pointSubject.subscribe(pointTarget.asObserver());
         pointSubject.onNext(Point<float>(4.52f, 1.23f));
         REQUIRE(detail::ReleasePool::get().size() == 1);
         
         // After another onNext, there should be 2 items
-        PublishSubject stringSubject;
+        TypedPublishSubject<String> stringSubject;
         LockFreeTarget<String> stringTarget;
-        stringSubject.subscribe(stringTarget);
+        stringSubject.subscribe(stringTarget.asObserver());
         stringSubject.onNext("Hello");
         REQUIRE(detail::ReleasePool::get().size() == 2);
         

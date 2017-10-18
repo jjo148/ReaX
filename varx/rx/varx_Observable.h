@@ -720,11 +720,12 @@ public:
      
      The returned Disposable can be used to unsubscribe the Observer, so it stops being notified by this Observable. **The Observer keeps receiving values until you call Disposable::dispose, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
      */
-    Disposable subscribe(const TypedObserver<T>& observer) const
+    template<typename U>
+    typename std::enable_if<std::is_convertible<T, U>::value, Disposable>::type subscribe(const TypedObserver<U>& observer) const
     {
         return ObservableBase::subscribe(observer);
     }
-        ///@}
+    ///@}
 
 
 #pragma mark - Helper Functions

@@ -67,24 +67,23 @@ public:
         triggerAsyncUpdate();
     }
     
+#warning Should probably just inherit from Observable<T>
     /** Returns an Observable that emits every item added through onNext(). Items are emitted on the JUCE message thread. */
-    inline Observable asObservable() const { return subject; }
+    inline TypedObservable<T> asObservable() const { return subject; }
 
     /** Calls asObservable(). */
-    operator Observable() const { return asObservable(); }
+    operator TypedObservable<T>() const { return asObservable(); }
 
 private:
     moodycamel::ConcurrentQueue<T> queue;
-    PublishSubject subject;
+    TypedPublishSubject<T> subject;
 
     void handleAsyncUpdate() override
     {
         // Forward all items from the queue to the subject
         T item;
-        while (queue.try_dequeue(item)) {
-            // If there's an error here, you probably need to implement juce::VariantConverter<T> for your type T.
+        while (queue.try_dequeue(item))
             subject.onNext(item);
-        }
     }
 
     JUCE_LEAK_DETECTOR(LockFreeSource)
