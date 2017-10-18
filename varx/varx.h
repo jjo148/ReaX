@@ -41,11 +41,12 @@ END_JUCE_MODULE_DECLARATION
 #include "util/varx_VariantConverters.h"
 
 namespace varx {
+#include "util/internal/varx_any.h"
+    
     typedef std::exception_ptr Error;
     struct Empty {};
     inline bool operator==(const Empty& lhs, const Empty& rhs){ return true; }
     inline bool operator!=(const Empty& lhs, const Empty& rhs){ return !(lhs == rhs); }
-
 #include "rx/varx_Disposable.h"
 #include "rx/varx_DisposeBag.h"
 #include "rx/varx_Observer.h"

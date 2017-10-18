@@ -29,6 +29,7 @@ using shared_ptr = std::shared_ptr<T>;
 #include "rx/varx_Scheduler.cpp"
 #include "rx/varx_Subjects.cpp"
 
+#include "util/internal/varx_any.cpp"
 #include "util/internal/varx_ReleasePool.cpp"
 #include "util/varx_LockFreeSource.cpp"
 #include "util/varx_PrintFunctions.cpp"

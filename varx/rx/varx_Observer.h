@@ -4,10 +4,13 @@ namespace detail {
     class ObserverImpl
     {
     public:
-        virtual ~ObserverImpl() {}
-        virtual void onNext(const juce::var& next) const = 0;
-        virtual void onError(Error error) const = 0;
-        virtual void onCompleted() const = 0;
+        ObserverImpl(const varx::any& wrapped);
+        void onNext(const juce::var& next) const;
+        void onError(Error error) const;
+        void onCompleted() const;
+        
+    protected:
+        const varx::any wrapped;
     };
 }
 
