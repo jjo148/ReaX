@@ -104,8 +104,8 @@ class Reactive<SliderType, detail::IsSlider<SliderType>> : public SliderType
     GetValueFromText_Function getValueFromText_Function;
     GetTextFromValue_Function getTextFromValue_Function;
 
-    TypedPublishSubject<GetValueFromText_Function> getValueFromText_Subject;
-    TypedPublishSubject<GetTextFromValue_Function> getTextFromValue_Subject;
+    PublishSubject<GetValueFromText_Function> getValueFromText_Subject;
+    PublishSubject<GetTextFromValue_Function> getTextFromValue_Subject;
 
 public:
     /** Creates a new instance. @see juce::Slider::Slider. */

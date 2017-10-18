@@ -4,7 +4,7 @@
 TEST_CASE("BehaviorSubject",
           "[Subject][BehaviorSubject]")
 {
-    TypedBehaviorSubject<var> subject("Initial Item");
+    BehaviorSubject<var> subject("Initial Item");
 
     // Subscribe to the subject's Observable
     Array<var> items;
@@ -36,7 +36,7 @@ TEST_CASE("BehaviorSubject",
 
     IT("emits an error when calling onError")
     {
-        TypedBehaviorSubject<int> subject(17);
+        BehaviorSubject<int> subject(17);
         bool onErrorCalled = false;
         subject.onError(Error());
         subject.subscribe([](int) {}, [&](Error) { onErrorCalled = true; });
@@ -54,7 +54,7 @@ TEST_CASE("BehaviorSubject",
 
     IT("does not call onCompleted when destroying the subject")
     {
-        auto subject = std::make_shared<TypedBehaviorSubject<int>>(3);
+        auto subject = std::make_shared<BehaviorSubject<int>>(3);
         bool completed = false;
         subject->subscribe([](int) {}, [](Error) {}, [&]() { completed = true; });
         subject.reset();
@@ -71,7 +71,7 @@ TEST_CASE("BehaviorSubject",
     
     IT("can receive an initial value of a custom type, without wrapping with toVar()")
     {
-        TypedBehaviorSubject<Point<int>> subject(Point<int>(13, 556));
+        BehaviorSubject<Point<int>> subject(Point<int>(13, 556));
         REQUIRE(subject.getLatestItem() == Point<int>(13, 556));
     }
 }
@@ -80,7 +80,7 @@ TEST_CASE("BehaviorSubject",
 TEST_CASE("PublishSubject",
           "[Subject][PublishSubject]")
 {
-    TypedPublishSubject<var> subject;
+    PublishSubject<var> subject;
     DisposeBag disposeBag;
 
     // Subscribe to the subject's Observable
@@ -123,8 +123,8 @@ TEST_CASE("PublishSubject",
 
     IT("emits after destruction, if there's still an Observer pushing items")
     {
-        auto subject = std::make_shared<TypedPublishSubject<int>>();
-        TypedObserver<int> observer = *subject;
+        auto subject = std::make_shared<PublishSubject<int>>();
+        Observer<int> observer = *subject;
 
         varxCollectItems(*subject, items);
         subject.reset();
@@ -135,7 +135,7 @@ TEST_CASE("PublishSubject",
 
     IT("emits an error when calling onError")
     {
-        TypedPublishSubject<int> subject;
+        PublishSubject<int> subject;
         bool onErrorCalled = false;
         subject.onError(Error());
         subject.subscribe([](int) {}, [&](Error) { onErrorCalled = true; }).disposedBy(disposeBag);
@@ -144,7 +144,7 @@ TEST_CASE("PublishSubject",
 
     CONTEXT("onCompleted")
     {
-        auto subject = std::make_shared<TypedPublishSubject<int>>();
+        auto subject = std::make_shared<PublishSubject<int>>();
         bool completed = false;
 
         IT("notifies onCompleted when calling onCompleted")
@@ -177,7 +177,7 @@ TEST_CASE("PublishSubject",
 TEST_CASE("ReplaySubject",
           "[Subject][ReplaySubject]")
 {
-    TypedReplaySubject<var> subject;
+    ReplaySubject<var> subject;
     DisposeBag disposeBag;
 
     // Subscribe to the subject's Observable
@@ -212,7 +212,7 @@ TEST_CASE("ReplaySubject",
 
     IT("emits previous items limited by the max. buffer size")
     {
-        auto subject = std::make_shared<TypedReplaySubject<var>>(4);
+        auto subject = std::make_shared<ReplaySubject<var>>(4);
 
         // These should be forgotten:
         subject->onNext(17.5);
@@ -240,8 +240,8 @@ TEST_CASE("ReplaySubject",
 
     IT("emits after destruction, if there's still an Observer pushing items")
     {
-        auto subject = std::make_shared<TypedReplaySubject<int>>();
-        TypedObserver<int> observer = *subject;
+        auto subject = std::make_shared<ReplaySubject<int>>();
+        Observer<int> observer = *subject;
 
         varxCollectItems(*subject, items);
         subject.reset();
@@ -252,7 +252,7 @@ TEST_CASE("ReplaySubject",
 
     IT("emits an error when calling onError")
     {
-        TypedReplaySubject<int> subject;
+        ReplaySubject<int> subject;
         bool onErrorCalled = false;
         subject.onError(Error());
         subject.subscribe([](int) {}, [&](Error) { onErrorCalled = true; }).disposedBy(disposeBag);
@@ -261,7 +261,7 @@ TEST_CASE("ReplaySubject",
 
     CONTEXT("onCompleted")
     {
-        auto subject = std::make_shared<TypedReplaySubject<String>>();
+        auto subject = std::make_shared<ReplaySubject<String>>();
         bool completed = false;
 
         IT("notifies onCompleted when calling onCompleted")

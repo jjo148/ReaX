@@ -5,7 +5,7 @@ TEST_CASE("Observable onError",
           "[Observable][onError]")
 {
     // Create an Observable that throws on subscribe
-    auto syncThrow = TypedObservable<String>::create([](TypedObserver<String>) { throw std::runtime_error("Error!"); });
+    auto syncThrow = Observable<String>::create([](Observer<String>) { throw std::runtime_error("Error!"); });
 
     IT("calls onError on subscribe")
     {
@@ -23,7 +23,7 @@ TEST_CASE("Observable onError",
     IT("calls onError asynchronously")
     {
         // Create an Observable that throws asynchronously
-        auto asyncThrow = TypedObservable<int>::create([](TypedObserver<int> observer) {
+        auto asyncThrow = Observable<int>::create([](Observer<int> observer) {
             MessageManager::getInstance()->callAsync([observer]() {
                 observer.onNext(3);
             });
@@ -53,7 +53,7 @@ TEST_CASE("Observable onComplete",
 
     IT("calls onComplete synchronously")
     {
-        TypedObservable<int>::just(2).subscribe([](int) {}, [](Error) {}, onComplete);
+        Observable<int>::just(2).subscribe([](int) {}, [](Error) {}, onComplete);
         REQUIRE(called);
     }
 }

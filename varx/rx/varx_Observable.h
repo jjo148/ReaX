@@ -7,7 +7,7 @@ class ObservableBase
 protected:
     friend class SubjectBase;
     template<typename T>
-    friend class TypedObservable;
+    friend class Observable;
 
     using var = juce::var;
 
@@ -27,7 +27,7 @@ protected:
     using Function8 = std::function<var(const var&, const var&, const var&, const var&, const var&, const var&, const var&, const var&)>;
 
     // Creation
-    static Impl_ptr create(const std::function<void(const Observer&)>& onSubscribe);
+    static Impl_ptr create(const std::function<void(const ObserverBase&)>& onSubscribe);
     static Impl_ptr defer(const std::function<ObservableBase()>& factory);
     static Impl_ptr empty();
     static Impl_ptr error(const std::exception& error);
@@ -46,7 +46,7 @@ protected:
     Disposable subscribe(const std::function<void(const var&)>& onNext,
                          const std::function<void(Error)>& onError,
                          const std::function<void()>& onCompleted) const;
-    Disposable subscribe(const Observer& observer) const;
+    Disposable subscribe(const ObserverBase& observer) const;
 
     // Operators
     Impl_ptr combineLatest(const ObservableBase& o1, const Function2& transform) const;
@@ -108,12 +108,12 @@ protected:
 
 
 template<typename T>
-class TypedObserver;
+class Observer;
 
 
 #warning Should probably inherit privately
 template<typename T = void>
-class TypedObservable : public ObservableBase
+class Observable : public ObservableBase
 {
 public:
     typedef T ItemType;
@@ -124,7 +124,7 @@ public:
     };
 
     template<typename U>
-    struct IsObservable<TypedObservable<U>> : std::true_type
+    struct IsObservable<Observable<U>> : std::true_type
     {
     };
 
@@ -134,17 +134,17 @@ public:
      
      In the onSubscribe function, you get an Observer. You can call Observer::onNext on it to emit values from the Observable.
      */
-    static TypedObservable<T> create(const std::function<void(const TypedObserver<T>&)>& onSubscribe)
+    static Observable<T> create(const std::function<void(const Observer<T>&)>& onSubscribe)
     {
-        return ObservableBase::create([onSubscribe](const Observer& observer) {
-            onSubscribe(TypedObserver<T>(observer.impl));
+        return ObservableBase::create([onSubscribe](const ObserverBase& observer) {
+            onSubscribe(Observer<T>(observer.impl));
         });
     }
 
     /**
      Creates a new Observable for each subscriber, by calling the `factory` function on each new subscription.
      */
-    static TypedObservable<T> defer(const std::function<TypedObservable<T>()>& factory)
+    static Observable<T> defer(const std::function<Observable<T>()>& factory)
     {
         return ObservableBase::defer(factory);
     }
@@ -152,7 +152,7 @@ public:
     /**
      Creates an Observable that doesn't emit any items and notifies onComplete immediately.
      */
-    static TypedObservable<T> empty()
+    static Observable<T> empty()
     {
         return ObservableBase::empty();
     }
@@ -160,7 +160,7 @@ public:
     /**
      Creates an Observable which doesn't emit any items, and immediately notifies onError.
      */
-    static TypedObservable<T> error(const std::exception& error)
+    static Observable<T> error(const std::exception& error)
     {
         return ObservableBase::error(error);
     }
@@ -174,7 +174,7 @@ public:
      
      Observable::from({var(3), var("four")})
      */
-    static TypedObservable<T> from(const juce::Array<T>& array)
+    static Observable<T> from(const juce::Array<T>& array)
     {
         juce::Array<var> items;
 
@@ -189,7 +189,7 @@ public:
      
      The value is emitted immediately on each new subscription.
      */
-    static TypedObservable<T> just(const T& value)
+    static Observable<T> just(const T& value)
     {
         return ObservableBase::just(toVar(value));
     }
@@ -197,7 +197,7 @@ public:
     /**
      Creates an Observable that never emits any events and never terminates.
      */
-    static TypedObservable<T> never()
+    static Observable<T> never()
     {
         return ObservableBase::never();
     }
@@ -207,12 +207,12 @@ public:
      
      An optional `times` parameter specifies how often the item should be repeated. If omitted, the item will is repeated indefinitely.
      */
-    static TypedObservable<T> repeat(const T& item)
+    static Observable<T> repeat(const T& item)
     {
         return ObservableBase::repeat(toVar(item));
     }
     /** \overload */
-    static TypedObservable<T> repeat(const T& item, unsigned int times)
+    static Observable<T> repeat(const T& item, unsigned int times)
     {
         return ObservableBase::repeat(toVar(item), times);
     }
@@ -250,7 +250,7 @@ public:
      The returned Disposable can be used to unsubscribe the Observer, so it stops being notified by this Observable. **The Observer keeps receiving values until you call Disposable::dispose, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
      */
     template<typename U>
-    typename std::enable_if<std::is_convertible<T, U>::value, Disposable>::type subscribe(const TypedObserver<U>& observer) const
+    typename std::enable_if<std::is_convertible<T, U>::value, Disposable>::type subscribe(const Observer<U>& observer) const
     {
         return ObservableBase::subscribe(observer);
     }
@@ -272,7 +272,7 @@ public:
      */
 #warning Ugly, should be changed
     template<typename T1, typename Transform = std::function<std::tuple<T, T1>(const T, const T1)>>
-    TypedObservable<CallResult<Transform, T, T1>> combineLatest(const TypedObservable<T1>& o1, Transform&& transform = std::make_tuple<T, T1>) const
+    Observable<CallResult<Transform, T, T1>> combineLatest(const Observable<T1>& o1, Transform&& transform = std::make_tuple<T, T1>) const
     {
         return ObservableBase::combineLatest(o1, [transform](const var& v0, const var& v1) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1)));
@@ -281,7 +281,7 @@ public:
 
     /** \overload */
     template<typename T1, typename T2, typename Transform = std::function<std::tuple<T, T1, T2>(const T, const T1, const T2)>>
-    TypedObservable<CallResult<Transform, T, T1, T2>> combineLatest(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, Transform&& transform = std::make_tuple<T, T1, T2>) const
+    Observable<CallResult<Transform, T, T1, T2>> combineLatest(const Observable<T1>& o1, const Observable<T2>& o2, Transform&& transform = std::make_tuple<T, T1, T2>) const
     {
         return ObservableBase::combineLatest(o1, o2, [transform](const var& v0, const var& v1, const var& v2) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2)));
@@ -290,7 +290,7 @@ public:
 
     /** \overload */
     template<typename T1, typename T2, typename T3, typename Transform = std::function<std::tuple<T, T1, T2, T3>(const T, const T1, const T2, const T3)>>
-    TypedObservable<CallResult<Transform, T, T1, T2, T3>> combineLatest(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, const TypedObservable<T3>& o3, Transform&& transform = std::make_tuple<T, T1, T3>) const
+    Observable<CallResult<Transform, T, T1, T2, T3>> combineLatest(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, Transform&& transform = std::make_tuple<T, T1, T3>) const
     {
         return ObservableBase::combineLatest(o1, o2, o3, [transform](const var& v0, const var& v1, const var& v2, const var& v3) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2), fromVar<T3>(v3)));
@@ -299,7 +299,7 @@ public:
 
     /** \overload */
     template<typename T1, typename T2, typename T3, typename T4, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1, T2, T3, T4>> combineLatest(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, const TypedObservable<T3>& o3, const TypedObservable<T4>& o4, Transform&& transform) const
+    Observable<CallResult<Transform, T, T1, T2, T3, T4>> combineLatest(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, Transform&& transform) const
     {
         return ObservableBase::combineLatest(o1, o2, o3, o4, [transform](const var& v0, const var& v1, const var& v2, const var& v3, const var& v4) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2), fromVar<T3>(v3), fromVar<T4>(v4)));
@@ -308,7 +308,7 @@ public:
 
     /** \overload */
     template<typename T1, typename T2, typename T3, typename T4, typename T5, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1, T2, T3, T4, T5>> combineLatest(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, const TypedObservable<T3>& o3, const TypedObservable<T4>& o4, const TypedObservable<T5>& o5, Transform&& transform) const
+    Observable<CallResult<Transform, T, T1, T2, T3, T4, T5>> combineLatest(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, const Observable<T5>& o5, Transform&& transform) const
     {
         return ObservableBase::combineLatest(o1, o2, o3, o4, o5, [transform](const var& v0, const var& v1, const var& v2, const var& v3, const var& v4, const var& v5) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2), fromVar<T3>(v3), fromVar<T4>(v4), fromVar<T5>(v5)));
@@ -317,7 +317,7 @@ public:
 
     /** \overload */
     template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1, T2, T3, T4, T5, T6>> combineLatest(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, const TypedObservable<T3>& o3, const TypedObservable<T4>& o4, const TypedObservable<T5>& o5, const TypedObservable<T6>& o6, Transform&& transform) const
+    Observable<CallResult<Transform, T, T1, T2, T3, T4, T5, T6>> combineLatest(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, const Observable<T5>& o5, const Observable<T6>& o6, Transform&& transform) const
     {
         return ObservableBase::combineLatest(o1, o2, o3, o4, o5, o6, [transform](const var& v0, const var& v1, const var& v2, const var& v3, const var& v4, const var& v5, const var& v6) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2), fromVar<T3>(v3), fromVar<T4>(v4), fromVar<T5>(v5), fromVar<T6>(v6)));
@@ -326,7 +326,7 @@ public:
 
     /** \overload */
     template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1, T2, T3, T4, T5, T6, T7>> combineLatest(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, const TypedObservable<T3>& o3, const TypedObservable<T4>& o4, const TypedObservable<T5>& o5, const TypedObservable<T6>& o6, const TypedObservable<T7>& o7, Transform&& transform) const
+    Observable<CallResult<Transform, T, T1, T2, T3, T4, T5, T6, T7>> combineLatest(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, const Observable<T5>& o5, const Observable<T6>& o6, const Observable<T7>& o7, Transform&& transform) const
     {
         return ObservableBase::combineLatest(o1, o2, o3, o4, o5, o6, o7, [transform](const var& v0, const var& v1, const var& v2, const var& v3, const var& v4, const var& v5, const var& v6, const var& v7) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2), fromVar<T3>(v3), fromVar<T4>(v4), fromVar<T5>(v5), fromVar<T6>(v6), fromVar<T7>(v7)));
@@ -340,7 +340,7 @@ public:
      
      It only subscribes to o1 when this Observable has completed. And only subscribes to o2 when o1 has completed, and so on.
      */
-    TypedObservable<T> concat(const TypedObservable<T>& o1) const
+    Observable<T> concat(const Observable<T>& o1) const
     {
         return ObservableBase::concat(o1);
     }
@@ -353,7 +353,7 @@ public:
      
      The interval has millisecond resolution.
      */
-    TypedObservable<T> debounce(const juce::RelativeTime& interval) const
+    Observable<T> debounce(const juce::RelativeTime& interval) const
     {
         return ObservableBase::debounce(interval);
     }
@@ -367,7 +367,7 @@ public:
      
      If, for some reason, the custom type T doesn't have operator==, you can pass a custom equality function.
      */
-    TypedObservable<T> distinctUntilChanged(const std::function<bool(const T&, const T&)>& equals = std::equal_to<T>()) const
+    Observable<T> distinctUntilChanged(const std::function<bool(const T&, const T&)>& equals = std::equal_to<T>()) const
     {
         return ObservableBase::distinctUntilChanged([equals](const var& lhs, const var& rhs) {
             return equals(fromVar<T>(lhs), fromVar<T>(rhs));
@@ -377,7 +377,7 @@ public:
     /**
      Returns an Observable which emits only one item: The `index`th item emitted by this Observable.
      */
-    TypedObservable<T> elementAt(int index) const
+    Observable<T> elementAt(int index) const
     {
         return ObservableBase::elementAt(index);
     }
@@ -385,7 +385,7 @@ public:
     /**
      Returns an Observable that emits only those items from this Observable that pass a predicate function.
      */
-    TypedObservable<T> filter(const std::function<bool(const T&)>& predicate) const
+    Observable<T> filter(const std::function<bool(const T&)>& predicate) const
     {
         return ObservableBase::filter([predicate](const var& item) {
             return predicate(fromVar<T>(item));
@@ -406,7 +406,7 @@ public:
      @see Observable::merge, Observable::switchOnNext.
      */
     template<typename Transform>
-    typename std::enable_if<IsObservable<CallResult<Transform, T>>::value, TypedObservable<typename CallResult<Transform, T>::ItemType>>::type flatMap(Transform&& transform) const
+    typename std::enable_if<IsObservable<CallResult<Transform, T>>::value, Observable<typename CallResult<Transform, T>::ItemType>>::type flatMap(Transform&& transform) const
     {
         return ObservableBase::flatMap([transform](const var& item) {
             return transform(fromVar<T>(item));
@@ -419,7 +419,7 @@ public:
      If `f` returns an Observable, you can use Observable::switchOnNext afterwards.
      */
     template<typename Transform>
-    TypedObservable<CallResult<Transform, T>> map(Transform&& transform) const
+    Observable<CallResult<Transform, T>> map(Transform&& transform) const
     {
         return ObservableBase::map([transform](const var& item) {
             return toVar(transform(fromVar<T>(item)));
@@ -432,7 +432,7 @@ public:
      
      An error in one of the source Observables notifies the result Observable's `onError` immediately.
      */
-    TypedObservable<T> merge(const TypedObservable<T>& o1) const
+    Observable<T> merge(const Observable<T>& o1) const
     {
         return ObservableBase::merge(o1);
     }
@@ -442,7 +442,7 @@ public:
     /**
      Begins with a `startValue`, and then applies `f` to all items emitted by this Observable, and returns the aggregate result as a single-element Observable sequence.
      */
-    TypedObservable<T> reduce(const T& startValue, const std::function<T(const T&, const T&)>& f) const
+    Observable<T> reduce(const T& startValue, const std::function<T(const T&, const T&)>& f) const
     {
         return ObservableBase::reduce(toVar(startValue), [f](const var& v1, const var& v2) {
             return toVar(f(fromVar<T>(v1), fromVar<T>(v2)));
@@ -456,7 +456,7 @@ public:
      
      The interval has millisecond resolution.
      */
-    TypedObservable<T> sample(const juce::RelativeTime& interval) const
+    Observable<T> sample(const juce::RelativeTime& interval) const
     {
         return ObservableBase::sample(interval);
     }
@@ -466,7 +466,7 @@ public:
      
      The first parameter to `f` is the accumulator, the second is the current item.
      */
-    TypedObservable<T> scan(const T& startValue, const std::function<T(const T&, const T&)>& f) const
+    Observable<T> scan(const T& startValue, const std::function<T(const T&, const T&)>& f) const
     {
         return ObservableBase::scan(toVar(startValue), [f](const var& v1, const var& v2) {
             return toVar(f(fromVar<T>(v1), fromVar<T>(v2)));
@@ -476,7 +476,7 @@ public:
     /**
      Returns an Observable which suppresses emitting the first `numItems` items from this Observable.
      */
-    TypedObservable<T> skip(unsigned int numItems) const
+    Observable<T> skip(unsigned int numItems) const
     {
         return ObservableBase::skip(numItems);
     }
@@ -485,7 +485,7 @@ public:
      Returns an Observable which suppresses emitting items from this Observable until the `other` Observable sequence emits an item.
      */
     template<typename T1>
-    TypedObservable<T> skipUntil(const TypedObservable<T1>& other) const
+    Observable<T> skipUntil(const Observable<T1>& other) const
     {
         return ObservableBase::skipUntil(other);
     }
@@ -494,43 +494,43 @@ public:
     /**
      Emits the given item(s) before beginning to emit the items in this Observable.
      */
-    TypedObservable<T> startWith(const T& v1) const
+    Observable<T> startWith(const T& v1) const
     {
         return ObservableBase::startWith(v1);
     }
     
     /** \overload */
-    TypedObservable<T> startWith(const T& v1, const T& v2) const
+    Observable<T> startWith(const T& v1, const T& v2) const
     {
         return ObservableBase::startWith(v1, v2);
     }
     
     /** \overload */
-    TypedObservable<T> startWith(const T& v1, const T& v2, const T& v3) const
+    Observable<T> startWith(const T& v1, const T& v2, const T& v3) const
     {
         return ObservableBase::startWith(v1, v2, v3);
     }
     
     /** \overload */
-    TypedObservable<T> startWith(const T& v1, const T& v2, const T& v3, const T& v4) const
+    Observable<T> startWith(const T& v1, const T& v2, const T& v3, const T& v4) const
     {
         return ObservableBase::startWith(v1, v2, v3, v4);
     }
     
     /** \overload */
-    TypedObservable<T> startWith(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5) const
+    Observable<T> startWith(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5) const
     {
         return ObservableBase::startWith(v1, v2, v3, v4, v5);
     }
     
     /** \overload */
-    TypedObservable<T> startWith(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6) const
+    Observable<T> startWith(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6) const
     {
         return ObservableBase::startWith(v1, v2, v3, v4, v5, v6);
     }
     
     /** \overload */
-    TypedObservable<T> startWith(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6, const T& v7) const
+    Observable<T> startWith(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6, const T& v7) const
     {
         return ObservableBase::startWith(v1, v2, v3, v4, v5, v6, v7);
     }
@@ -550,7 +550,7 @@ public:
     /**
      Returns an Observable that emits only the first `numItems` items from this Observable.
      */
-    TypedObservable<T> take(unsigned int numItems) const
+    Observable<T> take(unsigned int numItems) const
     {
         return ObservableBase::take(numItems);
     }
@@ -558,7 +558,7 @@ public:
     /**
      Returns an Observable that emits only the last `numItems` items from this Observable.
      */
-    TypedObservable<T> takeLast(unsigned int numItems) const
+    Observable<T> takeLast(unsigned int numItems) const
     {
         return ObservableBase::takeLast(numItems);
     }
@@ -567,7 +567,7 @@ public:
      Emits items from this Observable until the `other` Observable sequence emits an item.
      */
     template<typename U>
-    TypedObservable<T> takeUntil(const TypedObservable<U>& other) const
+    Observable<T> takeUntil(const Observable<U>& other) const
     {
         return ObservableBase::takeUntil(other);
     }
@@ -577,7 +577,7 @@ public:
      
      The predicate is called on each item emitted by this Observable, until it returns `false`.
      */
-    TypedObservable<T> takeWhile(const std::function<bool(const T&)>& predicate) const
+    Observable<T> takeWhile(const std::function<bool(const T&)>& predicate) const
     {
         return ObservableBase::takeWhile([predicate](const var& item) {
             return predicate(fromVar<T>(item));
@@ -591,7 +591,7 @@ public:
      This is different from Observable::combineLatest because it only emits when this Observable emits an item (not when o1, o2, … emit items).
      */
     template<typename T1, typename Transform = std::function<std::tuple<T, T1>(const T, const T1)>>
-    TypedObservable<CallResult<Transform, T, T1>> withLatestFrom(const TypedObservable<T1>& o1, Transform&& transform = std::make_tuple<T, T1>) const
+    Observable<CallResult<Transform, T, T1>> withLatestFrom(const Observable<T1>& o1, Transform&& transform = std::make_tuple<T, T1>) const
     {
         return ObservableBase::withLatestFrom(o1, [transform](const var& v0, const var& v1) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1)));
@@ -600,7 +600,7 @@ public:
 
     /** \overload */
     template<typename T1, typename T2, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1, T2>> withLatestFrom(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, Transform&& transform) const
+    Observable<CallResult<Transform, T, T1, T2>> withLatestFrom(const Observable<T1>& o1, const Observable<T2>& o2, Transform&& transform) const
     {
         return ObservableBase::withLatestFrom(o1, o2, [transform](const var& v0, const var& v1, const var& v2) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2)));
@@ -609,7 +609,7 @@ public:
 
     /** \overload */
     template<typename T1, typename T2, typename T3, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1, T2, T3>> withLatestFrom(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, const TypedObservable<T3>& o3, Transform&& transform) const
+    Observable<CallResult<Transform, T, T1, T2, T3>> withLatestFrom(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, Transform&& transform) const
     {
         return ObservableBase::withLatestFrom(o1, o2, o3, [transform](const var& v0, const var& v1, const var& v2, const var& v3) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2), fromVar<T3>(v3)));
@@ -618,7 +618,7 @@ public:
 
     /** \overload */
     template<typename T1, typename T2, typename T3, typename T4, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1, T2, T3, T4>> withLatestFrom(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, const TypedObservable<T3>& o3, const TypedObservable<T4>& o4, Transform&& transform) const
+    Observable<CallResult<Transform, T, T1, T2, T3, T4>> withLatestFrom(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, Transform&& transform) const
     {
         return ObservableBase::withLatestFrom(o1, o2, o3, o4, [transform](const var& v0, const var& v1, const var& v2, const var& v3, const var& v4) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2), fromVar<T3>(v3), fromVar<T4>(v4)));
@@ -627,7 +627,7 @@ public:
 
     /** \overload */
     template<typename T1, typename T2, typename T3, typename T4, typename T5, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1, T2, T3, T4, T5>> withLatestFrom(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, const TypedObservable<T3>& o3, const TypedObservable<T4>& o4, const TypedObservable<T5>& o5, Transform&& transform) const
+    Observable<CallResult<Transform, T, T1, T2, T3, T4, T5>> withLatestFrom(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, const Observable<T5>& o5, Transform&& transform) const
     {
         return ObservableBase::withLatestFrom(o1, o2, o3, o4, o5, [transform](const var& v0, const var& v1, const var& v2, const var& v3, const var& v4, const var& v5) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2), fromVar<T3>(v3), fromVar<T4>(v4), fromVar<T5>(v5)));
@@ -636,7 +636,7 @@ public:
 
     /** \overload */
     template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1, T2, T3, T4, T5, T6>> withLatestFrom(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, const TypedObservable<T3>& o3, const TypedObservable<T4>& o4, const TypedObservable<T5>& o5, const TypedObservable<T6>& o6, Transform&& transform) const
+    Observable<CallResult<Transform, T, T1, T2, T3, T4, T5, T6>> withLatestFrom(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, const Observable<T5>& o5, const Observable<T6>& o6, Transform&& transform) const
     {
         return ObservableBase::withLatestFrom(o1, o2, o3, o4, o5, o6, [transform](const var& v0, const var& v1, const var& v2, const var& v3, const var& v4, const var& v5, const var& v6) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2), fromVar<T3>(v3), fromVar<T4>(v4), fromVar<T5>(v5), fromVar<T6>(v6)));
@@ -645,7 +645,7 @@ public:
 
     /** \overload */
     template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1, T2, T3, T4, T5, T6, T7>> withLatestFrom(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, const TypedObservable<T3>& o3, const TypedObservable<T4>& o4, const TypedObservable<T5>& o5, const TypedObservable<T6>& o6, const TypedObservable<T7>& o7, Transform&& transform) const
+    Observable<CallResult<Transform, T, T1, T2, T3, T4, T5, T6, T7>> withLatestFrom(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, const Observable<T5>& o5, const Observable<T6>& o6, const Observable<T7>& o7, Transform&& transform) const
     {
         return ObservableBase::withLatestFrom(o1, o2, o3, o4, o5, o6, o7, [transform](const var& v0, const var& v1, const var& v2, const var& v3, const var& v4, const var& v5, const var& v6, const var& v7) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2), fromVar<T3>(v3), fromVar<T4>(v4), fromVar<T5>(v5), fromVar<T6>(v6), fromVar<T7>(v7)));
@@ -663,7 +663,7 @@ public:
      The returned Observable only emits as many items as the number of items emitted by the source Observable that emits the fewest items.
      */
     template<typename T1, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1>> zip(const TypedObservable<T1>& o1, Transform&& transform) const
+    Observable<CallResult<Transform, T, T1>> zip(const Observable<T1>& o1, Transform&& transform) const
     {
         return ObservableBase::zip(o1, [transform](const var& v0, const var& v1) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1)));
@@ -672,7 +672,7 @@ public:
 
     /** \overload */
     template<typename T1, typename T2, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1, T2>> zip(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, Transform&& transform) const
+    Observable<CallResult<Transform, T, T1, T2>> zip(const Observable<T1>& o1, const Observable<T2>& o2, Transform&& transform) const
     {
         return ObservableBase::zip(o1, o2, [transform](const var& v0, const var& v1, const var& v2) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2)));
@@ -681,7 +681,7 @@ public:
 
     /** \overload */
     template<typename T1, typename T2, typename T3, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1, T2, T3>> zip(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, const TypedObservable<T3>& o3, Transform&& transform) const
+    Observable<CallResult<Transform, T, T1, T2, T3>> zip(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, Transform&& transform) const
     {
         return ObservableBase::zip(o1, o2, o3, [transform](const var& v0, const var& v1, const var& v2, const var& v3) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2), fromVar<T3>(v3)));
@@ -690,7 +690,7 @@ public:
 
     /** \overload */
     template<typename T1, typename T2, typename T3, typename T4, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1, T2, T3, T4>> zip(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, const TypedObservable<T3>& o3, const TypedObservable<T4>& o4, Transform&& transform) const
+    Observable<CallResult<Transform, T, T1, T2, T3, T4>> zip(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, Transform&& transform) const
     {
         return ObservableBase::zip(o1, o2, o3, o4, [transform](const var& v0, const var& v1, const var& v2, const var& v3, const var& v4) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2), fromVar<T3>(v3), fromVar<T4>(v4)));
@@ -699,7 +699,7 @@ public:
 
     /** \overload */
     template<typename T1, typename T2, typename T3, typename T4, typename T5, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1, T2, T3, T4, T5>> zip(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, const TypedObservable<T3>& o3, const TypedObservable<T4>& o4, const TypedObservable<T5>& o5, Transform&& transform) const
+    Observable<CallResult<Transform, T, T1, T2, T3, T4, T5>> zip(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, const Observable<T5>& o5, Transform&& transform) const
     {
         return ObservableBase::zip(o1, o2, o3, o4, o5, [transform](const var& v0, const var& v1, const var& v2, const var& v3, const var& v4, const var& v5) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2), fromVar<T3>(v3), fromVar<T4>(v4), fromVar<T5>(v5)));
@@ -708,7 +708,7 @@ public:
 
     /** \overload */
     template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1, T2, T3, T4, T5, T6>> zip(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, const TypedObservable<T3>& o3, const TypedObservable<T4>& o4, const TypedObservable<T5>& o5, const TypedObservable<T6>& o6, Transform&& transform) const
+    Observable<CallResult<Transform, T, T1, T2, T3, T4, T5, T6>> zip(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, const Observable<T5>& o5, const Observable<T6>& o6, Transform&& transform) const
     {
         return ObservableBase::zip(o1, o2, o3, o4, o5, o6, [transform](const var& v0, const var& v1, const var& v2, const var& v3, const var& v4, const var& v5, const var& v6) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2), fromVar<T3>(v3), fromVar<T4>(v4), fromVar<T5>(v5), fromVar<T6>(v6)));
@@ -717,7 +717,7 @@ public:
 
     /** \overload */
     template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1, T2, T3, T4, T5, T6, T7>> zip(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, const TypedObservable<T3>& o3, const TypedObservable<T4>& o4, const TypedObservable<T5>& o5, const TypedObservable<T6>& o6, const TypedObservable<T7>& o7, Transform&& transform) const
+    Observable<CallResult<Transform, T, T1, T2, T3, T4, T5, T6, T7>> zip(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, const Observable<T5>& o5, const Observable<T6>& o6, const Observable<T7>& o7, Transform&& transform) const
     {
         return ObservableBase::zip(o1, o2, o3, o4, o5, o6, o7, [transform](const var& v0, const var& v1, const var& v2, const var& v3, const var& v4, const var& v5, const var& v6, const var& v7) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2), fromVar<T3>(v3), fromVar<T4>(v4), fromVar<T5>(v5), fromVar<T6>(v6), fromVar<T7>(v7)));
@@ -742,7 +742,7 @@ public:
      
      @see Scheduler::messageThread, Scheduler::backgroundThread and Scheduler::newThread
      */
-    TypedObservable<T> observeOn(const Scheduler& scheduler) const
+    Observable<T> observeOn(const Scheduler& scheduler) const
     {
         return ObservableBase::observeOn(scheduler);
     }
@@ -768,23 +768,23 @@ public:
 
 private:
     template<typename U>
-    friend class TypedObservable;
+    friend class Observable;
     template<typename U>
-    friend class TypedBehaviorSubject;
+    friend class BehaviorSubject;
     template<typename U>
-    friend class TypedPublishSubject;
+    friend class PublishSubject;
     template<typename U>
-    friend class TypedReplaySubject;
+    friend class ReplaySubject;
 
-    TypedObservable(const Impl_ptr& impl)
+    Observable(const Impl_ptr& impl)
     : ObservableBase(impl)
     {}
 
-    JUCE_LEAK_DETECTOR(TypedObservable)
+    JUCE_LEAK_DETECTOR(Observable)
 };
 
 template<>
-class TypedObservable<void>
+class Observable<void>
 {
 public:
     /**
@@ -794,7 +794,7 @@ public:
      
      When calling Value::setValue, it notifies asynchronously. So **the returned Observable emits the new value asynchronously.** If you call setValue immediately before destroying the returned Observable, the new value will not be emitted.
      */
-    static TypedObservable<juce::var> fromValue(juce::Value value)
+    static Observable<juce::var> fromValue(juce::Value value)
     {
         return ObservableBase::fromValue(value);
     }
@@ -806,7 +806,7 @@ public:
      
      The interval has millisecond resolution.
      */
-    static TypedObservable<int> interval(const juce::RelativeTime& interval)
+    static Observable<int> interval(const juce::RelativeTime& interval)
     {
         return ObservableBase::interval(interval);
     }
@@ -822,7 +822,7 @@ public:
      Observable::range(17.5, 22.8, 2) // {17.5, 19.5, 21.5, 22.8}
      */
     template<typename T>
-    static TypedObservable<T> range(T first, T last, unsigned int step = 1)
+    static Observable<T> range(T first, T last, unsigned int step = 1)
     {
         static_assert(std::is_integral<T>::value, "first and last must be integral.");
         return ObservableBase::integralRange(first, last, step);
@@ -831,13 +831,13 @@ public:
 
 
 template<>
-inline TypedObservable<float> TypedObservable<void>::range(float first, float last, unsigned int step)
+inline Observable<float> Observable<void>::range(float first, float last, unsigned int step)
 {
     return ObservableBase::floatRange(first, last, step);
 }
 
 template<>
-inline TypedObservable<double> TypedObservable<void>::range(double first, double last, unsigned int step)
+inline Observable<double> Observable<void>::range(double first, double last, unsigned int step)
 {
     return ObservableBase::doubleRange(first, last, step);
 }

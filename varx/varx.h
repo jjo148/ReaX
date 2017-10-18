@@ -61,7 +61,7 @@ template<typename... Args>
 struct juce::VariantConverter<std::tuple<Args...>> : varx::detail::VariantConverter<std::tuple<Args...>> {};
 
 template<typename T>
-struct juce::VariantConverter<varx::TypedObservable<T>> : juce::VariantConverter<varx::ObservableBase> {};
+struct juce::VariantConverter<varx::Observable<T>> : juce::VariantConverter<varx::ObservableBase> {};
 
 namespace varx {
 #include "util/internal/varx_ReleasePool.h"

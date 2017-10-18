@@ -6,48 +6,48 @@ var SubjectBase::Impl::getLatestItem() const
     return var::undefined();
 }
 
-TypedBehaviorSubjectImpl::TypedBehaviorSubjectImpl(juce::var&& initial)
+BehaviorSubjectImpl::BehaviorSubjectImpl(juce::var&& initial)
 : wrapped(initial)
 {}
 
-rxcpp::subscriber<var> TypedBehaviorSubjectImpl::getSubscriber() const
+rxcpp::subscriber<var> BehaviorSubjectImpl::getSubscriber() const
 {
     return wrapped.get_subscriber();
 }
 
-rxcpp::observable<var> TypedBehaviorSubjectImpl::asObservable() const
+rxcpp::observable<var> BehaviorSubjectImpl::asObservable() const
 {
     return wrapped.get_observable();
 }
 
-var TypedBehaviorSubjectImpl::getLatestItem() const
+var BehaviorSubjectImpl::getLatestItem() const
 {
     return wrapped.get_value();
 }
 
-TypedPublishSubjectImpl::TypedPublishSubjectImpl()
+PublishSubjectImpl::PublishSubjectImpl()
 {}
 
-rxcpp::subscriber<var> TypedPublishSubjectImpl::getSubscriber() const
+rxcpp::subscriber<var> PublishSubjectImpl::getSubscriber() const
 {
     return wrapped.get_subscriber();
 }
 
-rxcpp::observable<var> TypedPublishSubjectImpl::asObservable() const
+rxcpp::observable<var> PublishSubjectImpl::asObservable() const
 {
     return wrapped.get_observable();
 }
 
-TypedReplaySubjectImpl::TypedReplaySubjectImpl(size_t bufferSize)
+ReplaySubjectImpl::ReplaySubjectImpl(size_t bufferSize)
 : wrapped(bufferSize, rxcpp::identity_immediate())
 {}
 
-rxcpp::subscriber<var> TypedReplaySubjectImpl::getSubscriber() const
+rxcpp::subscriber<var> ReplaySubjectImpl::getSubscriber() const
 {
     return wrapped.get_subscriber();
 }
 
-rxcpp::observable<var> TypedReplaySubjectImpl::asObservable() const
+rxcpp::observable<var> ReplaySubjectImpl::asObservable() const
 {
     return wrapped.get_observable();
 }

@@ -40,7 +40,7 @@ AudioProcessorValueTreeStateExtension::AudioProcessorValueTreeStateExtension(Aud
 
 AudioProcessorValueTreeStateExtension::~AudioProcessorValueTreeStateExtension() {}
 
-TypedBehaviorSubject<var> AudioProcessorValueTreeStateExtension::parameterValue(const String& parameterID) const
+BehaviorSubject<var> AudioProcessorValueTreeStateExtension::parameterValue(const String& parameterID) const
 {
     // Create a Reactive<Value> for the parameter, if not already done
     if (impl->parameterValues.find(parameterID) == impl->parameterValues.end())

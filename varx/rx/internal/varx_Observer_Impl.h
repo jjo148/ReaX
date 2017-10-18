@@ -1,6 +1,6 @@
 #pragma once
 
-struct Observer::Impl
+struct ObserverBase::Impl
 {
     explicit Impl(const rxcpp::subscriber<var>& wrapped);
 

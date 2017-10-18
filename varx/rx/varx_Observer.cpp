@@ -1,17 +1,17 @@
-Observer::Observer(const std::shared_ptr<Impl>& impl)
+ObserverBase::ObserverBase(const std::shared_ptr<Impl>& impl)
 : impl(impl) {}
 
-void Observer::_onNext(const juce::var& next) const
+void ObserverBase::onNext(const juce::var& next) const
 {
     impl->wrapped.on_next(next);
 }
 
-void Observer::onError(Error error) const
+void ObserverBase::onError(Error error) const
 {
     impl->wrapped.on_error(error);
 }
 
-void Observer::onCompleted() const
+void ObserverBase::onCompleted() const
 {
     impl->wrapped.on_completed();
 }

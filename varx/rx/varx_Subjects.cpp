@@ -3,9 +3,9 @@ SubjectBase::SubjectBase(const SubjectBase::Impl_ptr& impl)
 : impl(impl)
 {}
 
-Observer::Impl_ptr SubjectBase::asObserver() const
+ObserverBase::Impl_ptr SubjectBase::asObserver() const
 {
-    return std::make_shared<Observer::Impl>(impl->getSubscriber());
+    return std::make_shared<ObserverBase::Impl>(impl->getSubscriber());
 }
 
 ObservableBase::Impl_ptr SubjectBase::asObservable() const
@@ -15,17 +15,17 @@ ObservableBase::Impl_ptr SubjectBase::asObservable() const
 
 SubjectBase::Impl_ptr SubjectBase::MakeBehaviorSubjectImpl(var&& initial)
 {
-    return std::make_shared<TypedBehaviorSubjectImpl>(std::move(initial));
+    return std::make_shared<BehaviorSubjectImpl>(std::move(initial));
 }
 
 SubjectBase::Impl_ptr SubjectBase::MakePublishSubjectImpl()
 {
-    return std::make_shared<TypedPublishSubjectImpl>();
+    return std::make_shared<PublishSubjectImpl>();
 }
 
 SubjectBase::Impl_ptr SubjectBase::MakeReplaySubjectImpl(size_t bufferSize)
 {
-    return std::make_shared<TypedReplaySubjectImpl>(bufferSize);
+    return std::make_shared<ReplaySubjectImpl>(bufferSize);
 }
 
 var SubjectBase::getLatestItem() const

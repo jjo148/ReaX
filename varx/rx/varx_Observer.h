@@ -7,15 +7,11 @@
  
     @see Subject, Observable::create
  */
-class Observer
+class ObserverBase
 {
 public:
     /** Notifies the Observer with a new item. */
-    template<typename T>
-    void onNext(T&& next) const
-    {
-        _onNext(toVar(std::forward<T>(next)));
-    }
+    void onNext(const juce::var& next) const;
 
     /** Notifies the Observer that an error has occurred. */
     void onError(Error error) const;
@@ -25,60 +21,55 @@ public:
 
 private:
     friend class Subject;
-    friend class Observable;
     friend class ObservableBase;
     friend class SubjectBase;
     
     template<typename T>
-    friend class TypedObserver;
+    friend class Observer;
     
     template<typename T>
-    friend class TypedObservable;
+    friend class Observable;
     
     struct Impl;
     typedef std::shared_ptr<Impl> Impl_ptr;
-    explicit Observer(const Impl_ptr& impl);
+    explicit ObserverBase(const Impl_ptr& impl);
     Impl_ptr impl;
-
-    void _onNext(const juce::var& next) const;
-
-    JUCE_LEAK_DETECTOR(Observer)
 };
 
 template<typename T>
-class TypedObserver : private Observer
+class Observer : private ObserverBase
 {
 public:
     void onNext(const T& item) const
     {
-        Observer::onNext(toVar(item));
+        ObserverBase::onNext(toVar(item));
     }
 
     void onError(const Error& error) const
     {
-        Observer::onError(error);
+        ObserverBase::onError(error);
     }
 
     void onCompleted() const
     {
-        Observer::onCompleted();
+        ObserverBase::onCompleted();
     }
 
 private:
     friend class ObservableBase;
     
     template<typename U>
-    friend class TypedObservable;
+    friend class Observable;
     template<typename U>
-    friend class TypedBehaviorSubject;
+    friend class BehaviorSubject;
     template<typename U>
-    friend class TypedPublishSubject;
+    friend class PublishSubject;
     template<typename U>
-    friend class TypedReplaySubject;
+    friend class ReplaySubject;
 
-    TypedObserver(const Impl_ptr& impl)
-    : Observer(impl)
+    Observer(const Impl_ptr& impl)
+    : ObserverBase(impl)
     {}
 
-    JUCE_LEAK_DETECTOR(TypedObserver)
+    JUCE_LEAK_DETECTOR(Observer)
 };

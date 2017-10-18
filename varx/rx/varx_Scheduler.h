@@ -22,7 +22,6 @@ public:
 private:
     struct Impl;
     std::shared_ptr<Impl> impl;
-    friend class Observable;
     friend class ObservableBase;
     Scheduler(const std::shared_ptr<Impl>&);
 

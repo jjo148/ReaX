@@ -4,16 +4,16 @@ ComponentExtension::ComponentExtension(Component& parent)
 : parent(parent),
   visible(parent.isVisible())
 {
-    Array<TypedPublishSubject<Colour>> colourSubjects;
-    storeSubject = [colourSubjects](const TypedPublishSubject<Colour>& subject) mutable { colourSubjects.add(subject); };
+    Array<PublishSubject<Colour>> colourSubjects;
+    storeSubject = [colourSubjects](const PublishSubject<Colour>& subject) mutable { colourSubjects.add(subject); };
 
     parent.addComponentListener(this);
     visible.takeUntil(deallocated).subscribe(std::bind(&Component::setVisible, &parent, _1));
 }
 
-TypedObserver<Colour> ComponentExtension::colour(int colourId) const
+Observer<Colour> ComponentExtension::colour(int colourId) const
 {
-    TypedPublishSubject<Colour> subject;
+    PublishSubject<Colour> subject;
 
     subject.takeUntil(deallocated).subscribe([colourId, this](const Colour& colour) {
         this->parent.setColour(colourId, colour);
@@ -164,7 +164,7 @@ void LabelExtension::editorHidden(Label* parent, TextEditor&)
 }
 
 
-SliderExtension::SliderExtension(juce::Slider& parent, const TypedObserver<std::function<double(const juce::String&)>>& getValueFromText, const TypedObserver<std::function<juce::String(double)>>& getTextFromValue)
+SliderExtension::SliderExtension(juce::Slider& parent, const Observer<std::function<double(const juce::String&)>>& getValueFromText, const Observer<std::function<juce::String(double)>>& getTextFromValue)
 : ComponentExtension(parent),
   _dragging(false),
   _discardChangesWhenHidingTextBox(false),

@@ -9,10 +9,10 @@ public:
     virtual var getLatestItem() const;
 };
 
-class TypedBehaviorSubjectImpl : public SubjectBase::Impl
+class BehaviorSubjectImpl : public SubjectBase::Impl
 {
 public:
-    TypedBehaviorSubjectImpl(juce::var&& initial);
+    BehaviorSubjectImpl(juce::var&& initial);
     
     rxcpp::subscriber<var> getSubscriber() const override;
     rxcpp::observable<var> asObservable() const override;
@@ -21,13 +21,13 @@ public:
 private:
     const rxcpp::subjects::behavior<var> wrapped;
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TypedBehaviorSubjectImpl)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(BehaviorSubjectImpl)
 };
 
-class TypedPublishSubjectImpl : public SubjectBase::Impl
+class PublishSubjectImpl : public SubjectBase::Impl
 {
 public:
-    TypedPublishSubjectImpl();
+    PublishSubjectImpl();
     
     rxcpp::subscriber<var> getSubscriber() const override;
     rxcpp::observable<var> asObservable() const override;
@@ -35,13 +35,13 @@ public:
 private:
     const rxcpp::subjects::subject<var> wrapped;
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TypedPublishSubjectImpl)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PublishSubjectImpl)
 };
 
-class TypedReplaySubjectImpl : public SubjectBase::Impl
+class ReplaySubjectImpl : public SubjectBase::Impl
 {
 public:
-    TypedReplaySubjectImpl(size_t bufferSize);
+    ReplaySubjectImpl(size_t bufferSize);
     
     rxcpp::subscriber<var> getSubscriber() const override;
     rxcpp::observable<var> asObservable() const override;
@@ -49,5 +49,5 @@ public:
 private:
     const rxcpp::subjects::replay<var, rxcpp::identity_one_worker> wrapped;
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TypedReplaySubjectImpl)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ReplaySubjectImpl)
 };

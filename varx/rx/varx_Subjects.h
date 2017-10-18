@@ -3,23 +3,23 @@
 class SubjectBase
 {
 private:
-    friend class TypedBehaviorSubjectImpl;
-    friend class TypedPublishSubjectImpl;
-    friend class TypedReplaySubjectImpl;
+    friend class BehaviorSubjectImpl;
+    friend class PublishSubjectImpl;
+    friend class ReplaySubjectImpl;
     
     template<typename T>
-    friend class TypedBehaviorSubject;
+    friend class BehaviorSubject;
     template<typename T>
-    friend class TypedPublishSubject;
+    friend class PublishSubject;
     template<typename T>
-    friend class TypedReplaySubject;
+    friend class ReplaySubject;
 
     class Impl;
     typedef std::shared_ptr<Impl> Impl_ptr;
     explicit SubjectBase(const Impl_ptr& impl);
     Impl_ptr impl;
     
-    Observer::Impl_ptr asObserver() const;
+    ObserverBase::Impl_ptr asObserver() const;
     ObservableBase::Impl_ptr asObservable() const;
 
     static Impl_ptr MakeBehaviorSubjectImpl(juce::var&& initial);
@@ -34,14 +34,14 @@ private:
  A subject that starts with an initial item. On subscribe, it emits the most recently emitted item. It then continues to emit any items that are passed to onNext.
  */
 template<typename T>
-class TypedBehaviorSubject : private SubjectBase, public TypedObserver<T>, public TypedObservable<T>
+class BehaviorSubject : private SubjectBase, public Observer<T>, public Observable<T>
 {
 public:
     /** Creates a new instance with a given initial item */
-    explicit TypedBehaviorSubject(const T& initial)
+    explicit BehaviorSubject(const T& initial)
     : SubjectBase(MakeBehaviorSubjectImpl(toVar(initial))),
-      TypedObserver<T>(asObserver()),
-      TypedObservable<T>(asObservable())
+      Observer<T>(asObserver()),
+      Observable<T>(asObservable())
     {}
 
     /** Returns the most recently emitted item. If no items have been emitted, it returns the initial item. */
@@ -51,7 +51,7 @@ public:
     }
 
 private:
-    JUCE_LEAK_DETECTOR(TypedBehaviorSubject)
+    JUCE_LEAK_DETECTOR(BehaviorSubject)
 };
 
 
@@ -59,25 +59,25 @@ private:
  A subject that initially doesn't have a value. It does not emit an item on subscribe, and emits only those items that are passed to onNext *after the time of the disposable*.
  */
 template<typename T>
-class TypedPublishSubject : private SubjectBase, public TypedObserver<T>, public TypedObservable<T>
+class PublishSubject : private SubjectBase, public Observer<T>, public Observable<T>
 {
 public:
     /** Creates a new instance. */
-    TypedPublishSubject()
+    PublishSubject()
     : SubjectBase(MakePublishSubjectImpl()),
-      TypedObserver<T>(asObserver()),
-      TypedObservable<T>(asObservable())
+      Observer<T>(asObserver()),
+      Observable<T>(asObservable())
     {}
 
 private:
-    JUCE_LEAK_DETECTOR(TypedPublishSubject)
+    JUCE_LEAK_DETECTOR(PublishSubject)
 };
 
 /**
  A Subject that, on every new disposable, notifies the Observer with all of the items that were emitted since the ReplaySubject was created. It then continues to emit any items that are passed to onNext.
  */
 template<typename T>
-class TypedReplaySubject : private SubjectBase, public TypedObserver<T>, public TypedObservable<T>
+class ReplaySubject : private SubjectBase, public Observer<T>, public Observable<T>
 {
 public:
     /**
@@ -85,12 +85,12 @@ public:
      
      The `bufferSize` is the maximum number of items to remember and replay. Defaults to remembering "all" items (within memory boundaries). The buffer size is increased as items are emitted (not allocated upfront).
      */
-    explicit TypedReplaySubject(size_t bufferSize = std::numeric_limits<size_t>::max())
+    explicit ReplaySubject(size_t bufferSize = std::numeric_limits<size_t>::max())
     : SubjectBase(MakeReplaySubjectImpl(bufferSize)),
-    TypedObserver<T>(asObserver()),
-    TypedObservable<T>(asObservable())
+    Observer<T>(asObserver()),
+    Observable<T>(asObservable())
     {}
     
 private:
-    JUCE_LEAK_DETECTOR(TypedReplaySubject)
+    JUCE_LEAK_DETECTOR(ReplaySubject)
 };

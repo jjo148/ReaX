@@ -69,14 +69,14 @@ public:
     
 #warning Should probably just inherit from Observable<T>
     /** Returns an Observable that emits every item added through onNext(). Items are emitted on the JUCE message thread. */
-    inline TypedObservable<T> asObservable() const { return subject; }
+    inline Observable<T> asObservable() const { return subject; }
 
     /** Calls asObservable(). */
-    operator TypedObservable<T>() const { return asObservable(); }
+    operator Observable<T>() const { return asObservable(); }
 
 private:
     moodycamel::ConcurrentQueue<T> queue;
-    TypedPublishSubject<T> subject;
+    PublishSubject<T> subject;
 
     void handleAsyncUpdate() override
     {

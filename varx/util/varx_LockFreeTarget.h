@@ -28,16 +28,16 @@ public:
     /** Returns the latest retrieved item atomically. It just calls getValue(). */
     inline operator T() const { return getValue(); }
     
-#warning Should probably just inherit from TypedObserver<T>
+#warning Should probably just inherit from Observer<T>
     /** Returns the Observer for the target. Items pushed to the Observer are stored atomically. */
-    inline TypedObserver<T> asObserver() const { return subject; }
+    inline Observer<T> asObserver() const { return subject; }
     
     /** Returns the Observer for the target. It just calls asObserver(). */
-    operator TypedObserver<T>() const { return asObserver(); }
+    operator Observer<T>() const { return asObserver(); }
     
 private:
     std::atomic<T> latestValue;
-    TypedPublishSubject<T> subject;
+    PublishSubject<T> subject;
     DisposeBag disposeBag;
     
     JUCE_LEAK_DETECTOR(LockFreeTarget)
@@ -79,14 +79,14 @@ public:
     inline operator T() const { return getValue(); }
     
     /** Returns the Observer for the target. Items pushed to the Observer are stored atomically. You should push items to the Observer from a non-realtime thread. */
-    inline TypedObserver<T> asObserver() const { return subject; }
+    inline Observer<T> asObserver() const { return subject; }
     
     /** Returns the Observer for the target. It just calls asObserver(). */
-    operator TypedObserver<T>() const { return asObserver(); }
+    operator Observer<T>() const { return asObserver(); }
     
 private:
     std::shared_ptr<T> latestValue;
-    TypedPublishSubject<T> subject;
+    PublishSubject<T> subject;
     DisposeBag disposeBag;
     
     JUCE_LEAK_DETECTOR(LockFreeTarget)

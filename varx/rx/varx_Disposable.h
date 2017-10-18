@@ -36,7 +36,6 @@ private:
     struct Impl;
     const std::shared_ptr<Impl> impl;
 
-    friend class Observable;
     friend class ObservableBase;
     friend class DisposeBag;
     explicit Disposable(const std::shared_ptr<Impl>&);

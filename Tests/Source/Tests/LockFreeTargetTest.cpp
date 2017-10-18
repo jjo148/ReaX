@@ -6,7 +6,7 @@ TEST_CASE("LockFreeTarget",
     IT("retrieves values for primitive types")
     {
         LockFreeTarget<float> target;
-        TypedBehaviorSubject<float> subject(5.467f);
+        BehaviorSubject<float> subject(5.467f);
         subject.subscribe(target.asObserver());
         CHECK(target.getValue() == 5.467f);
         
@@ -20,7 +20,7 @@ TEST_CASE("LockFreeTarget",
     IT("retrieves String values")
     {
         LockFreeTarget<String> target;
-        TypedPublishSubject<String> subject;
+        PublishSubject<String> subject;
         subject.subscribe(target.asObserver());
         
         subject.onNext("Hello");
@@ -33,7 +33,7 @@ TEST_CASE("LockFreeTarget",
     IT("retrieves values for other non-primitive types")
     {
         LockFreeTarget<Point<int>> target;
-        TypedPublishSubject<Point<int>> subject;
+        PublishSubject<Point<int>> subject;
         subject.subscribe(target.asObserver());
         
         subject.onNext(Point<int>(43, 29));
@@ -54,7 +54,7 @@ TEST_CASE("LockFreeTarget",
         LockFreeTarget<bool> boolTarget;
         LockFreeTarget<double> doubleTarget;
         
-        TypedPublishSubject<var> subject;
+        PublishSubject<var> subject;
         subject.subscribe(intTarget.asObserver());
         subject.subscribe(boolTarget.asObserver());
         subject.subscribe(doubleTarget.asObserver());
@@ -71,14 +71,14 @@ TEST_CASE("LockFreeTarget",
         CHECK(detail::ReleasePool::get().size() == 0);
         
         // After one onNext, there should be 1 item in the ReleasePool
-        TypedPublishSubject<Point<float>> pointSubject;
+        PublishSubject<Point<float>> pointSubject;
         LockFreeTarget<Point<float>> pointTarget;
         pointSubject.subscribe(pointTarget.asObserver());
         pointSubject.onNext(Point<float>(4.52f, 1.23f));
         REQUIRE(detail::ReleasePool::get().size() == 1);
         
         // After another onNext, there should be 2 items
-        TypedPublishSubject<String> stringSubject;
+        PublishSubject<String> stringSubject;
         LockFreeTarget<String> stringTarget;
         stringSubject.subscribe(stringTarget.asObserver());
         stringSubject.onNext("Hello");

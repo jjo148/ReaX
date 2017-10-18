@@ -4,7 +4,7 @@
 TEST_CASE("Observable::observeOn",
           "[Observable][Observable::observeOn]")
 {
-    auto observable = TypedObservable<int>::from({ 1, 2, 3 });
+    auto observable = Observable<int>::from({ 1, 2, 3 });
     Array<int> items;
 
     IT("can schedule to a background thread and two new threads")
