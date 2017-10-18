@@ -104,8 +104,8 @@ class Reactive<SliderType, detail::IsSlider<SliderType>> : public SliderType
     GetValueFromText_Function getValueFromText_Function;
     GetTextFromValue_Function getTextFromValue_Function;
 
-    PublishSubject getValueFromText_Subject;
-    PublishSubject getTextFromValue_Subject;
+    TypedPublishSubject<GetValueFromText_Function> getValueFromText_Subject;
+    TypedPublishSubject<GetTextFromValue_Function> getTextFromValue_Subject;
 
 public:
     /** Creates a new instance. @see juce::Slider::Slider. */
@@ -114,12 +114,12 @@ public:
     : SliderType(std::forward<Args>(args)...),
       rx(*this, getValueFromText_Subject, getTextFromValue_Subject)
     {
-        getValueFromText_Subject.takeUntil(rx.deallocated).subscribe([this](juce::var function) {
-            this->getValueFromText_Function = fromVar<GetValueFromText_Function>(function);
+        getValueFromText_Subject.takeUntil(rx.deallocated).subscribe([this](const GetValueFromText_Function& function) {
+            this->getValueFromText_Function = function;
         });
 
-        getTextFromValue_Subject.takeUntil(rx.deallocated).subscribe([this](juce::var function) {
-            this->getTextFromValue_Function = fromVar<GetTextFromValue_Function>(function);
+        getTextFromValue_Subject.takeUntil(rx.deallocated).subscribe([this](const GetTextFromValue_Function& function) {
+            this->getTextFromValue_Function = function;
             this->updateText();
         });
     }

@@ -25,7 +25,7 @@ AudioProcessorExtension::AudioProcessorExtension(AudioProcessor& parent)
 
 void AudioProcessorExtension::audioProcessorChanged(AudioProcessor* processor)
 {
-    _processorChanged.onNext(var::undefined());
+    _processorChanged.onNext(Empty());
 }
 
 struct AudioProcessorValueTreeStateExtension::Impl
@@ -40,7 +40,7 @@ AudioProcessorValueTreeStateExtension::AudioProcessorValueTreeStateExtension(Aud
 
 AudioProcessorValueTreeStateExtension::~AudioProcessorValueTreeStateExtension() {}
 
-BehaviorSubject AudioProcessorValueTreeStateExtension::parameterValue(const String& parameterID) const
+TypedBehaviorSubject<var> AudioProcessorValueTreeStateExtension::parameterValue(const String& parameterID) const
 {
     // Create a Reactive<Value> for the parameter, if not already done
     if (impl->parameterValues.find(parameterID) == impl->parameterValues.end())

@@ -42,6 +42,9 @@ END_JUCE_MODULE_DECLARATION
 
 namespace varx {
     typedef std::exception_ptr Error;
+    struct Empty {};
+    inline bool operator==(const Empty& lhs, const Empty& rhs){ return true; }
+    inline bool operator!=(const Empty& lhs, const Empty& rhs){ return !(lhs == rhs); }
 
 #include "rx/varx_Disposable.h"
 #include "rx/varx_DisposeBag.h"
@@ -53,6 +56,10 @@ namespace varx {
 
 VARX_DEFINE_VARIANT_CONVERTER(varx::Observable)
 VARX_DEFINE_VARIANT_CONVERTER(varx::ObservableBase)
+VARX_DEFINE_VARIANT_CONVERTER(varx::Empty)
+
+template<typename... Args>
+struct juce::VariantConverter<std::tuple<Args...>> : varx::detail::VariantConverter<std::tuple<Args...>> {};
 
 template<typename T>
 struct juce::VariantConverter<varx::TypedObservable<T>> : juce::VariantConverter<varx::ObservableBase> {};

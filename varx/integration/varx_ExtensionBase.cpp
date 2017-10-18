@@ -1,9 +1,9 @@
 ExtensionBase::ExtensionBase()
-: _deallocated(1),
+: _deallocated(/* bufferSize: */ 1),
 deallocated(_deallocated) {}
 
 ExtensionBase::~ExtensionBase()
 {
-    _deallocated.onNext(var::undefined());
+    _deallocated.onNext(Empty());
     _deallocated.onCompleted();
 }

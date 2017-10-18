@@ -89,7 +89,7 @@ TEST_CASE("Reactive<AudioProcessor>",
           "[Reactive<AudioProcessor>][AudioProcessorExtension]")
 {
     DummyAudioProcessor processor;
-    Array<var> items;
+    Array<Empty> items;
     
     varxCollectItems(processor.rx.processorChanged, items);
     
@@ -101,15 +101,15 @@ TEST_CASE("Reactive<AudioProcessor>",
     IT("emits when setting the latency")
     {
         processor.setLatencySamples(256);
-        varxRequireItems(items, var::undefined());
+        varxRequireItems(items, Empty());
         
         // Set to same value as before, shouldn't emit
         processor.setLatencySamples(256);
-        varxRequireItems(items, var::undefined());
+        varxRequireItems(items, Empty());
         
         // Set to different value, should emit
         processor.setLatencySamples(512);
-        varxRequireItems(items, var::undefined(), var::undefined());
+        varxRequireItems(items, Empty(), Empty());
     }
 }
 

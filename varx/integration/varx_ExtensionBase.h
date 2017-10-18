@@ -5,7 +5,7 @@
  */
 class ExtensionBase
 {
-    const ReplaySubject _deallocated;
+    const TypedReplaySubject<Empty> _deallocated;
     
 public:
     /** Notifies the ExtensionBase::deallocated Observable with an item, and onCompleted. */
@@ -15,10 +15,8 @@ public:
      An Observable which emits a single item and notifies onCompleted when the ExtensionBase instance is destroyed.
      
      If a subscription is done afterwards, it will still receive the item and the onCompleted notification.
-     
-     ​ **Type: undefined**
      */
-    const Observable deallocated;
+    const TypedObservable<Empty> deallocated;
     
 protected:
     ExtensionBase();

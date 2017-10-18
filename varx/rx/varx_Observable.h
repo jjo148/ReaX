@@ -741,8 +741,9 @@ public:
      
      @see Observable::withLatestFrom
      */
-    template<typename T1, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1>> combineLatest(const TypedObservable<T1>& o1, Transform&& transform) const
+#warning Ugly, should be changed
+    template<typename T1, typename Transform = std::function<std::tuple<T, T1>(const T, const T1)>>
+    TypedObservable<CallResult<Transform, T, T1>> combineLatest(const TypedObservable<T1>& o1, Transform&& transform = std::make_tuple<T, T1>) const
     {
         return ObservableBase::combineLatest(o1, [transform](const var& v0, const var& v1) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1)));
@@ -750,8 +751,8 @@ public:
     }
 
     /** \overload */
-    template<typename T1, typename T2, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1, T2>> combineLatest(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, Transform&& transform) const
+    template<typename T1, typename T2, typename Transform = std::function<std::tuple<T, T1, T2>(const T, const T1, const T2)>>
+    TypedObservable<CallResult<Transform, T, T1, T2>> combineLatest(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, Transform&& transform = std::make_tuple<T, T1, T2>) const
     {
         return ObservableBase::combineLatest(o1, o2, [transform](const var& v0, const var& v1, const var& v2) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2)));
@@ -759,8 +760,8 @@ public:
     }
 
     /** \overload */
-    template<typename T1, typename T2, typename T3, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1, T2, T3>> combineLatest(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, const TypedObservable<T3>& o3, Transform&& transform) const
+    template<typename T1, typename T2, typename T3, typename Transform = std::function<std::tuple<T, T1, T2, T3>(const T, const T1, const T2, const T3)>>
+    TypedObservable<CallResult<Transform, T, T1, T2, T3>> combineLatest(const TypedObservable<T1>& o1, const TypedObservable<T2>& o2, const TypedObservable<T3>& o3, Transform&& transform = std::make_tuple<T, T1, T3>) const
     {
         return ObservableBase::combineLatest(o1, o2, o3, [transform](const var& v0, const var& v1, const var& v2, const var& v3) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1), fromVar<T2>(v2), fromVar<T3>(v3)));
@@ -1060,8 +1061,8 @@ public:
      
      This is different from Observable::combineLatest because it only emits when this Observable emits an item (not when o1, o2, … emit items).
      */
-    template<typename T1, typename Transform>
-    TypedObservable<CallResult<Transform, T, T1>> withLatestFrom(const TypedObservable<T1>& o1, Transform&& transform) const
+    template<typename T1, typename Transform = std::function<std::tuple<T, T1>(const T, const T1)>>
+    TypedObservable<CallResult<Transform, T, T1>> withLatestFrom(const TypedObservable<T1>& o1, Transform&& transform = std::make_tuple<T, T1>) const
     {
         return ObservableBase::withLatestFrom(o1, [transform](const var& v0, const var& v1) {
             return toVar(transform(fromVar<T>(v0), fromVar<T1>(v1)));
