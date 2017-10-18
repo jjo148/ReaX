@@ -6,7 +6,7 @@ TEST_CASE("Observer",
 {
     IT("Emits items pushed to onNext")
     {
-        auto o = Observable::create([](Observer observer) {
+        auto o = TypedObservable<var>::create([](TypedObserver<var> observer) {
             observer.onNext(3);
             observer.onNext("Hello");
         });
@@ -19,23 +19,23 @@ TEST_CASE("Observer",
 
     IT("emits an error when calling onError")
     {
-        auto o = Observable::create([](Observer observer) {
+        auto o = TypedObservable<int>::create([](TypedObserver<int> observer) {
             observer.onError(Error());
         });
 
         bool onErrorCalled = false;
-        o.subscribe([](var) {}, [&](Error) { onErrorCalled = true; });
+        o.subscribe([](int) {}, [&](Error) { onErrorCalled = true; });
         REQUIRE(onErrorCalled);
     }
 
     IT("notifies onCompleted")
     {
-        auto o = Observable::create([](Observer observer) {
+        auto o = TypedObservable<float>::create([](TypedObserver<float> observer) {
             observer.onCompleted();
         });
 
         bool completed = false;
-        o.subscribe([](var) {}, [](Error) {}, [&]() { completed = true; });
+        o.subscribe([](float) {}, [](Error) {}, [&]() { completed = true; });
 
         REQUIRE(completed);
     }
@@ -45,7 +45,7 @@ TEST_CASE("Observer",
         DisposeBag disposeBag;
 
         // Create subject
-        BehaviorSubject subject("Initial Value");
+        TypedBehaviorSubject<var> subject("Initial Value");
         CHECK(subject.getLatestItem() == "Initial Value");
 
         // Collect items from subject
@@ -53,8 +53,8 @@ TEST_CASE("Observer",
         varxCollectItems(subject, items);
 
         // Subscribe observer to some observable
-        Observer observer = subject.asObserver();
-        Observable::from({ 3, 4, 5 }).subscribe(observer).disposedBy(disposeBag);
+        TypedObserver<var> observer = subject;
+        TypedObservable<var>::from({ 3, 4, 5 }).subscribe(observer).disposedBy(disposeBag);
 
         // Subject should received items from Observable
         varxRequireItems(items, var("Initial Value"), var(3), var(4), var(5));
