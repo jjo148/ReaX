@@ -3,6 +3,8 @@
 class Scheduler;
 
 namespace detail {
+struct ObserverImpl;
+
 struct ObservableImpl
 {
     ObservableImpl(any&& wrapped);
@@ -238,7 +240,7 @@ public:
                               onError,
                               onCompleted);
     }
-    
+
     /**
      Subscribes an Observer to an Observable. The Observer is notified whenever the Observable emits an item, or notifies an onError / onCompleted.
      
@@ -249,7 +251,7 @@ public:
     {
         return impl.subscribe(observer.impl);
     }
-    ///@}
+        ///@}
 
 
 #pragma mark - Helper Functions
