@@ -70,7 +70,7 @@ namespace detail {
 #pragma mark - Creation
 
 ObservableImpl::ObservableImpl(any&& wrapped)
-: wrapped(wrapped)
+: wrapped(std::move(wrapped))
 {}
 
 ObservableImpl ObservableImpl::create(const std::function<void(detail::ObserverImpl&&)>& onSubscribe)
