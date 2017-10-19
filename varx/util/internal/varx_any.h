@@ -1,10 +1,11 @@
 #pragma once
 
+namespace detail {
 class any
 {
 public:
     template<typename T>
-    explicit any(const T& t)
+    any(const T& t)
     : wrapped(std::make_shared<Wrapped<T>>(t))
     {}
 
@@ -47,3 +48,4 @@ private:
 
     std::shared_ptr<WrappedBase> wrapped;
 };
+}

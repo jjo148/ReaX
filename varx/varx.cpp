@@ -20,7 +20,6 @@ using shared_ptr = std::shared_ptr<T>;
 #include "rx/internal/varx_Disposable_Impl.cpp"
 #include "rx/internal/varx_DisposeBag_Impl.h"
 #include "rx/internal/varx_Observable_Impl.cpp"
-#include "rx/internal/varx_Observer_Impl.cpp"
 #include "rx/internal/varx_Scheduler_Impl.cpp"
 #include "rx/internal/varx_Subjects_Impl.cpp"
 

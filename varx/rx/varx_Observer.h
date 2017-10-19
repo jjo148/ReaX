@@ -3,12 +3,12 @@
 namespace detail {
     struct ObserverImpl
     {
-        ObserverImpl(varx::any&& wrapped);
+        ObserverImpl(any&& wrapped);
         void onNext(const juce::var& next) const;
         void onError(Error error) const;
         void onCompleted() const;
         
-        const varx::any wrapped;
+        const any wrapped;
     };
 }
 

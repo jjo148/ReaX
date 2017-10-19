@@ -5,7 +5,7 @@ SubjectBase::SubjectBase(const SubjectBase::Impl_ptr& impl)
 
 detail::ObserverImpl SubjectBase::asObserver() const
 {
-    return detail::ObserverImpl(any(impl->getSubscriber()));
+    return detail::ObserverImpl(impl->getSubscriber());
 }
 
 ObservableBase::Impl_ptr SubjectBase::asObservable() const

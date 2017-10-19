@@ -1,4 +1,4 @@
-detail::ObserverImpl::ObserverImpl(varx::any&& wrapped)
+detail::ObserverImpl::ObserverImpl(any&& wrapped)
 : wrapped(std::move(wrapped))
 {}
 
