@@ -520,35 +520,6 @@ TEST_CASE("Observable::repeat",
     }
 }
 
-TEST_CASE("Observable<T>")
-{
-#warning This can be removed as soon as all other tests have been ported
-    auto o1 = Observable<Point<int>>::just(Point<int>(14, -2));
-    auto o2 = Observable<double>::from({3.14, 5.2, 110.3});
-    auto o3 = Observable<>::fromValue(Value());
-    auto o4 = Observable<>::interval(RelativeTime());
-    auto o5 = Observable<>::range(4, 18);
-    auto o6 = Observable<>::range(4.5345f, 15.13f);
-    
-    o1.subscribe([](const Point<int>& p) {});
-    
-//    Observer<Point<String>> *observer;
-//    o1.subscribe(*observer);
-    
-    auto combined = o1.combineLatest(o6, [](Point<int> p, double f) {
-        return String(p.x) + ", " + String(p.y) + ", " + String(f);
-    });
-    
-    combined.subscribe([](String s) {});
-    
-    auto higherOrder = o2.map([](float f) {
-        return Observable<>::range(0.0, f + 10.1);
-    });
-    
-    auto firstOrder = higherOrder.switchOnNext();
-    firstOrder.subscribe([](int i) {});
-}
-
 
 // Dummy struct that just counts copy and move constructions
 struct CopyAndMoveConstructible

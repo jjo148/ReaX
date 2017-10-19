@@ -1,375 +1,475 @@
 namespace {
-    std::chrono::milliseconds durationFromRelativeTime(const juce::RelativeTime& relativeTime)
-    {
-        return std::chrono::milliseconds(relativeTime.inMilliseconds());
-    }
+std::chrono::milliseconds durationFromRelativeTime(const juce::RelativeTime& relativeTime)
+{
+    return std::chrono::milliseconds(relativeTime.inMilliseconds());
 }
+
+const std::runtime_error InvalidRangeError("Invalid range.");
+typedef detail::any any;
+
+template<typename T>
+rxcpp::observable<any> _range(const T& first, const T& last, unsigned int step)
+{
+    if (first > last)
+        throw InvalidRangeError;
+
+    auto o = rxcpp::observable<>::range<T>(first, last, step, rxcpp::identity_immediate());
+
+    return o.map([](const T& item) { return any(item); });
+}
+
+inline const rxcpp::observable<any>& unwrap(const any& wrapped)
+{
+    return wrapped.get<rxcpp::observable<any>>();
+}
+
+inline any wrap(const rxcpp::observable<any>& observable)
+{
+    return any(observable);
+}
+
+template<typename Transform, typename... Os>
+rxcpp::observable<any> _combineLatest(const any& wrapped, Transform&& transform, Os&&... observables)
+{
+    return unwrap(wrapped).combine_latest(transform, unwrap(observables.wrapped)...);
+}
+
+template<typename... Os>
+rxcpp::observable<any> _concat(const any& wrapped, Os&&... observables)
+{
+    return unwrap(wrapped).concat(unwrap(observables.wrapped)...);
+}
+
+template<typename... Os>
+rxcpp::observable<any> _merge(const any& wrapped, Os&&... observables)
+{
+    return unwrap(wrapped).merge(unwrap(observables.wrapped)...);
+}
+
+template<typename... Items>
+rxcpp::observable<any> _startWith(const any& wrapped, Items&&... items)
+{
+    return unwrap(wrapped).start_with(items...);
+}
+
+template<typename Transform, typename... Os>
+rxcpp::observable<any> _withLatestFrom(const any& wrapped, Transform&& transform, Os&&... observables)
+{
+    return unwrap(wrapped).with_latest_from(transform, unwrap(observables.wrapped)...);
+}
+
+template<typename Transform, typename... Os>
+rxcpp::observable<any> _zip(const any& wrapped, Transform&& transform, Os&&... observables)
+{
+    return unwrap(wrapped).zip(transform, unwrap(observables.wrapped)...);
+}
+}
+
+namespace detail {
 
 #pragma mark - Creation
 
-ObservableBase::ObservableBase(const Impl_ptr& impl)
-: impl(impl)
+ObservableImpl::ObservableImpl(any&& wrapped)
+: wrapped(wrapped)
 {}
 
-ObservableBase::Impl_ptr ObservableBase::create(const std::function<void(detail::ObserverImpl&&)>& onSubscribe)
+ObservableImpl ObservableImpl::create(const std::function<void(detail::ObserverImpl&&)>& onSubscribe)
 {
-    return Impl::fromRxCpp(rxcpp::observable<>::create<var>([onSubscribe](const rxcpp_subscriber& s) {
-        onSubscribe(detail::ObserverImpl(s));
+    return wrap(rxcpp::observable<>::create<any>([onSubscribe](const rxcpp_subscriber& s) {
+        onSubscribe(detail::ObserverImpl(any(s)));
     }));
 }
 
-ObservableBase::Impl_ptr ObservableBase::defer(const std::function<ObservableBase()>& factory)
+ObservableImpl ObservableImpl::defer(const std::function<ObservableImpl()>& factory)
 {
-    return Impl::fromRxCpp(rxcpp::observable<>::defer([factory]() {
-        return factory().impl->wrapped;
+    return wrap(rxcpp::observable<>::defer([factory]() {
+        return factory().wrapped.get<rxcpp::observable<any>>();
     }));
 }
 
-ObservableBase::Impl_ptr ObservableBase::empty()
+ObservableImpl ObservableImpl::empty()
 {
-    return Impl::fromRxCpp(rxcpp::observable<>::empty<var>());
+    return from({});
 }
 
-ObservableBase::Impl_ptr ObservableBase::error(const std::exception& error)
+ObservableImpl ObservableImpl::error(const std::exception& error)
 {
-    return Impl::fromRxCpp(rxcpp::observable<>::error<var>(error));
+    return wrap(rxcpp::observable<>::error<any>(error));
 }
 
-ObservableBase::Impl_ptr ObservableBase::from(Array<var>&& items)
+ObservableImpl ObservableImpl::from(Array<any>&& items)
 {
-    return Impl::fromRxCpp(rxcpp::observable<>::iterate(std::move(items), rxcpp::identity_immediate()));
+    return wrap(rxcpp::observable<>::iterate(std::move(items), rxcpp::identity_immediate()));
 }
 
-ObservableBase::Impl_ptr ObservableBase::fromValue(Value value)
+ObservableImpl ObservableImpl::fromValue(Value value)
 {
-    return Impl::fromValue(value);
+    return ObservableImpl::never();
+
+#warning Implement
+    /*
+    // An Observable::Impl that holds a Value to keep receiving changes until the Observable is destroyed.
+    class ValueObservableImpl : public Impl, private Value::Listener
+    {
+    public:
+        ValueObservableImpl(const Value& inputValue)
+        : value(inputValue),
+        subject(inputValue)
+        {
+            wrapped = subject.get_observable();
+            value.addListener(this);
+        }
+     
+        ~ValueObservableImpl()
+        {
+            value.removeListener(this);
+            subject.get_subscriber().on_completed();
+        }
+     
+        void valueChanged(Value& newValue) override
+        {
+            subject.get_subscriber().on_next(newValue);
+        }
+     
+    private:
+        Value value;
+        const rxcpp::subjects::behavior<var> subject;
+    };
+    
+    return std::make_shared<ValueObservableImpl>(value);
+     */
 }
 
-ObservableBase::Impl_ptr ObservableBase::interval(const juce::RelativeTime& period)
+ObservableImpl ObservableImpl::interval(const juce::RelativeTime& period)
 {
     auto o = rxcpp::observable<>::interval(durationFromRelativeTime(period));
-    return Impl::fromRxCpp(o.map(toVar<long long>));
+    return wrap(o.map([](long long item) { return any(item); }));
 }
 
-ObservableBase::Impl_ptr ObservableBase::just(const var& value)
+ObservableImpl ObservableImpl::just(const any& value)
 {
-    return Impl::fromRxCpp(rxcpp::observable<>::just(value));
+    return wrap(rxcpp::observable<>::just(value));
 }
 
-ObservableBase::Impl_ptr ObservableBase::never()
+ObservableImpl ObservableImpl::never()
 {
-    return Impl::fromRxCpp(rxcpp::observable<>::never<var>());
+    return wrap(rxcpp::observable<>::never<any>());
 }
 
-ObservableBase::Impl_ptr ObservableBase::integralRange(long long first, long long last, unsigned int step)
+ObservableImpl ObservableImpl::integralRange(long long first, long long last, unsigned int step)
 {
-    return Impl::range(first, last, step);
+    return wrap(_range(first, last, step));
 }
 
-ObservableBase::Impl_ptr ObservableBase::floatRange(float first, float last, unsigned int step)
+ObservableImpl ObservableImpl::floatRange(float first, float last, unsigned int step)
 {
-    return Impl::range(first, last, step);
+    return wrap(_range(first, last, step));
 }
 
-ObservableBase::Impl_ptr ObservableBase::doubleRange(double first, double last, unsigned int step)
+ObservableImpl ObservableImpl::doubleRange(double first, double last, unsigned int step)
 {
-    return Impl::range(first, last, step);
+    return wrap(_range(first, last, step));
 }
 
-ObservableBase::Impl_ptr ObservableBase::repeat(const var& item)
+ObservableImpl ObservableImpl::repeat(const any& item)
 {
-    return Impl::fromRxCpp(rxcpp::observable<>::just(item).repeat());
+    return wrap(rxcpp::observable<>::just(item).repeat());
 }
 
-ObservableBase::Impl_ptr ObservableBase::repeat(const var& item, unsigned int times)
+ObservableImpl ObservableImpl::repeat(const any& item, unsigned int times)
 {
-    return Impl::fromRxCpp(rxcpp::observable<>::just(item).repeat(times));
+    return wrap(rxcpp::observable<>::just(item).repeat(times));
 }
 
 
 #pragma mark - Disposable
 
-Disposable ObservableBase::subscribe(const std::function<void(const var&)>& onNext,
+Disposable ObservableImpl::subscribe(const std::function<void(const any&)>& onNext,
                                      const std::function<void(Error)>& onError,
                                      const std::function<void()>& onCompleted) const
 {
-    auto disposable = impl->wrapped.subscribe(onNext, onError, onCompleted);
-    
+    auto disposable = unwrap(wrapped).subscribe(onNext, onError, onCompleted);
+
     return Disposable(std::make_shared<Disposable::Impl>(disposable));
 }
 
-Disposable ObservableBase::subscribe(const detail::ObserverImpl& observer) const
+Disposable ObservableImpl::subscribe(const detail::ObserverImpl& observer) const
 {
-    auto disposable = impl->wrapped.subscribe(observer.wrapped.get<rxcpp_subscriber>());
-    
+    auto disposable = unwrap(wrapped).subscribe(observer.wrapped.get<rxcpp_subscriber>());
+
     return Disposable(std::make_shared<Disposable::Impl>(disposable));
 }
 
 
 #pragma mark - Operators
 
-ObservableBase::Impl_ptr ObservableBase::combineLatest(const ObservableBase& o1, const Function2& transform) const
+ObservableImpl ObservableImpl::combineLatest(const ObservableImpl& o1, const Function2& transform) const
 {
-    return impl->combineLatest(transform, o1);
+    return wrap(_combineLatest(wrapped, transform, o1));
 }
 
-ObservableBase::Impl_ptr ObservableBase::combineLatest(const ObservableBase& o1, const ObservableBase& o2, const Function3& transform) const
+ObservableImpl ObservableImpl::combineLatest(const ObservableImpl& o1, const ObservableImpl& o2, const Function3& transform) const
 {
-    return impl->combineLatest(transform, o1, o2);
+    return wrap(_combineLatest(wrapped, transform, o1, o2));
 }
 
-ObservableBase::Impl_ptr ObservableBase::combineLatest(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const Function4& transform) const
+ObservableImpl ObservableImpl::combineLatest(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const Function4& transform) const
 {
-    return impl->combineLatest(transform, o1, o2, o3);
+    return wrap(_combineLatest(wrapped, transform, o1, o2, o3));
 }
 
-ObservableBase::Impl_ptr ObservableBase::combineLatest(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const Function5& transform) const
+ObservableImpl ObservableImpl::combineLatest(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const Function5& transform) const
 {
-    return impl->combineLatest(transform, o1, o2, o3, o4);
+    return wrap(_combineLatest(wrapped, transform, o1, o2, o3, o4));
 }
 
-ObservableBase::Impl_ptr ObservableBase::combineLatest(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const ObservableBase& o5, const Function6& transform) const
+ObservableImpl ObservableImpl::combineLatest(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const Function6& transform) const
 {
-    return impl->combineLatest(transform, o1, o2, o3, o4, o5);
+    return wrap(_combineLatest(wrapped, transform, o1, o2, o3, o4, o5));
 }
 
-ObservableBase::Impl_ptr ObservableBase::combineLatest(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const ObservableBase& o5, const ObservableBase& o6, const Function7& transform) const
+ObservableImpl ObservableImpl::combineLatest(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const Function7& transform) const
 {
-    return impl->combineLatest(transform, o1, o2, o3, o4, o5, o6);
+    return wrap(_combineLatest(wrapped, transform, o1, o2, o3, o4, o5, o6));
 }
 
-ObservableBase::Impl_ptr ObservableBase::combineLatest(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const ObservableBase& o5, const ObservableBase& o6, const ObservableBase& o7, const Function8& transform) const
+ObservableImpl ObservableImpl::combineLatest(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const ObservableImpl& o7, const Function8& transform) const
 {
-    return impl->combineLatest(transform, o1, o2, o3, o4, o5, o6, o7);
+    return wrap(_combineLatest(wrapped, transform, o1, o2, o3, o4, o5, o6, o7));
 }
 
-ObservableBase::Impl_ptr ObservableBase::concat(const ObservableBase& o1) const
+ObservableImpl ObservableImpl::concat(const ObservableImpl& o1) const
 {
-    return impl->concat(o1);
+    return wrap(unwrap(wrapped).concat(unwrap(o1.wrapped)));
 }
 
-ObservableBase::Impl_ptr ObservableBase::debounce(const juce::RelativeTime& period) const
+ObservableImpl ObservableImpl::debounce(const juce::RelativeTime& period) const
 {
-    return Impl::fromRxCpp(impl->wrapped.debounce(durationFromRelativeTime(period)));
+    return wrap(unwrap(wrapped).debounce(durationFromRelativeTime(period)));
 }
 
-ObservableBase::Impl_ptr ObservableBase::distinctUntilChanged(const std::function<bool(const var&, const var&)>& equals) const
+ObservableImpl ObservableImpl::distinctUntilChanged(const std::function<bool(const any&, const any&)>& equals) const
 {
-    return Impl::fromRxCpp(impl->wrapped.distinct_until_changed(equals));
+    return wrap(unwrap(wrapped).distinct_until_changed(equals));
 }
 
-ObservableBase::Impl_ptr ObservableBase::elementAt(int index) const
+ObservableImpl ObservableImpl::elementAt(int index) const
 {
-    return Impl::fromRxCpp(impl->wrapped.element_at(index));
+    return wrap(unwrap(wrapped).element_at(index));
 }
 
-ObservableBase::Impl_ptr ObservableBase::filter(const std::function<bool(const var&)>& predicate) const
+ObservableImpl ObservableImpl::filter(const std::function<bool(const any&)>& predicate) const
 {
-    return Impl::fromRxCpp(impl->wrapped.filter(predicate));
+    return wrap(unwrap(wrapped).filter(predicate));
 }
 
-ObservableBase::Impl_ptr ObservableBase::flatMap(const std::function<ObservableBase(const var&)>& f) const
+ObservableImpl ObservableImpl::flatMap(const std::function<ObservableImpl(const any&)>& f) const
 {
-    return Impl::fromRxCpp(impl->wrapped.flat_map([f](const var& value) {
-        return f(value).impl->wrapped;
+    return wrap(unwrap(wrapped).flat_map([f](const any& value) {
+        return unwrap(f(value).wrapped);
     }));
 }
 
-ObservableBase::Impl_ptr ObservableBase::map(const std::function<var(const var&)>& transform) const
+ObservableImpl ObservableImpl::map(const std::function<any(const any&)>& transform) const
 {
-    return Impl::fromRxCpp(impl->wrapped.map(transform));
+    return wrap(unwrap(wrapped).map(transform));
 }
 
-ObservableBase::Impl_ptr ObservableBase::merge(const ObservableBase& o1) const
+#warning Add merge overloads, and a test for arity 8
+ObservableImpl ObservableImpl::merge(const ObservableImpl& o1) const
 {
-    return impl->merge(o1);
+    return wrap(unwrap(wrapped).merge(unwrap(o1.wrapped)));
 }
 
-ObservableBase::Impl_ptr ObservableBase::reduce(const var& startValue, const std::function<var(const var&, const var&)>& f) const
+ObservableImpl ObservableImpl::reduce(const any& startValue, const std::function<any(const any&, const any&)>& f) const
 {
-    return Impl::fromRxCpp(impl->wrapped.reduce(startValue, f));
+    return wrap(unwrap(wrapped).reduce(startValue, f));
 }
 
-ObservableBase::Impl_ptr ObservableBase::sample(const juce::RelativeTime& interval) const
+ObservableImpl ObservableImpl::sample(const juce::RelativeTime& interval) const
 {
-    return Impl::fromRxCpp(impl->wrapped.sample_with_time(durationFromRelativeTime(interval)));
+    return wrap(unwrap(wrapped).sample_with_time(durationFromRelativeTime(interval)));
 }
 
-ObservableBase::Impl_ptr ObservableBase::scan(const var& startValue, const std::function<var(const var&, const var&)>& f) const
+ObservableImpl ObservableImpl::scan(const any& startValue, const std::function<any(const any&, const any&)>& f) const
 {
-    return Impl::fromRxCpp(impl->wrapped.scan(startValue, f));
+    return wrap(unwrap(wrapped).scan(startValue, f));
 }
 
-ObservableBase::Impl_ptr ObservableBase::skip(unsigned int numItems) const
+ObservableImpl ObservableImpl::skip(unsigned int numItems) const
 {
-    return Impl::fromRxCpp(impl->wrapped.skip(numItems));
+    return wrap(unwrap(wrapped).skip(numItems));
 }
 
-ObservableBase::Impl_ptr ObservableBase::skipUntil(const ObservableBase& other) const
+ObservableImpl ObservableImpl::skipUntil(const ObservableImpl& other) const
 {
-    return Impl::fromRxCpp(impl->wrapped.skip_until(other.impl->wrapped));
+    return wrap(unwrap(wrapped).skip_until(unwrap(other.wrapped)));
 }
 
 
-ObservableBase::Impl_ptr ObservableBase::startWith(const var& v1) const
+ObservableImpl ObservableImpl::startWith(const any& v1) const
 {
-    return impl->startWith(v1);
+    return wrap(_startWith(wrapped, v1));
 }
 
-ObservableBase::Impl_ptr ObservableBase::startWith(const var& v1, const var& v2) const
+ObservableImpl ObservableImpl::startWith(const any& v1, const any& v2) const
 {
-    return impl->startWith(v1, v2);
+    return wrap(_startWith(wrapped, v1, v2));
 }
 
-ObservableBase::Impl_ptr ObservableBase::startWith(const var& v1, const var& v2, const var& v3) const
+ObservableImpl ObservableImpl::startWith(const any& v1, const any& v2, const any& v3) const
 {
-    return impl->startWith(v1, v2, v3);
+    return wrap(_startWith(wrapped, v1, v2, v3));
 }
 
-ObservableBase::Impl_ptr ObservableBase::startWith(const var& v1, const var& v2, const var& v3, const var& v4) const
+ObservableImpl ObservableImpl::startWith(const any& v1, const any& v2, const any& v3, const any& v4) const
 {
-    return impl->startWith(v1, v2, v3, v4);
+    return wrap(_startWith(wrapped, v1, v2, v3, v4));
 }
 
-ObservableBase::Impl_ptr ObservableBase::startWith(const var& v1, const var& v2, const var& v3, const var& v4, const var& v5) const
+ObservableImpl ObservableImpl::startWith(const any& v1, const any& v2, const any& v3, const any& v4, const any& v5) const
 {
-    return impl->startWith(v1, v2, v3, v4, v5);
+    return wrap(_startWith(wrapped, v1, v2, v3, v4, v5));
 }
 
-ObservableBase::Impl_ptr ObservableBase::startWith(const var& v1, const var& v2, const var& v3, const var& v4, const var& v5, const var& v6) const
+ObservableImpl ObservableImpl::startWith(const any& v1, const any& v2, const any& v3, const any& v4, const any& v5, const any& v6) const
 {
-    return impl->startWith(v1, v2, v3, v4, v5, v6);
+    return wrap(_startWith(wrapped, v1, v2, v3, v4, v5, v6));
 }
 
-ObservableBase::Impl_ptr ObservableBase::startWith(const var& v1, const var& v2, const var& v3, const var& v4, const var& v5, const var& v6, const var& v7) const
+ObservableImpl ObservableImpl::startWith(const any& v1, const any& v2, const any& v3, const any& v4, const any& v5, const any& v6, const any& v7) const
 {
-    return impl->startWith(v1, v2, v3, v4, v5, v6, v7);
+    return wrap(_startWith(wrapped, v1, v2, v3, v4, v5, v6, v7));
 }
 
-ObservableBase::Impl_ptr ObservableBase::switchOnNext() const
+ObservableImpl ObservableImpl::switchOnNext() const
 {
-    rxcpp::observable<rxcpp::observable<var>> unwrapped = impl->wrapped.map([](const var& observable) {
-        return fromVar<ObservableBase>(observable).impl->wrapped;
+    rxcpp::observable<rxcpp::observable<any>> unwrapped = unwrap(wrapped).map([](const any& observable) {
+        return unwrap(observable.get<ObservableImpl>().wrapped);
     });
-    
-    return Impl::fromRxCpp(unwrapped.switch_on_next());
+
+    return wrap(unwrapped.switch_on_next());
 }
 
-ObservableBase::Impl_ptr ObservableBase::take(unsigned int numItems) const
+ObservableImpl ObservableImpl::take(unsigned int numItems) const
 {
-    return Impl::fromRxCpp(impl->wrapped.take(numItems));
+    return wrap(unwrap(wrapped).take(numItems));
 }
 
-ObservableBase::Impl_ptr ObservableBase::takeLast(unsigned int numItems) const
+ObservableImpl ObservableImpl::takeLast(unsigned int numItems) const
 {
-    return Impl::fromRxCpp(impl->wrapped.take_last(numItems));
+    return wrap(unwrap(wrapped).take_last(numItems));
 }
 
-ObservableBase::Impl_ptr ObservableBase::takeUntil(const ObservableBase& other) const
+ObservableImpl ObservableImpl::takeUntil(const ObservableImpl& other) const
 {
-    return Impl::fromRxCpp(impl->wrapped.take_until(other.impl->wrapped));
+    return wrap(unwrap(wrapped).take_until(unwrap(other.wrapped)));
 }
 
-ObservableBase::Impl_ptr ObservableBase::takeWhile(const std::function<bool(const var&)>& predicate) const
+ObservableImpl ObservableImpl::takeWhile(const std::function<bool(const any&)>& predicate) const
 {
-    return Impl::fromRxCpp(impl->wrapped.take_while(predicate));
+    return wrap(unwrap(wrapped).take_while(predicate));
 }
 
-ObservableBase::Impl_ptr ObservableBase::withLatestFrom(const ObservableBase& o1, const Function2& transform) const
+ObservableImpl ObservableImpl::withLatestFrom(const ObservableImpl& o1, const Function2& transform) const
 {
-    return impl->withLatestFrom(transform, o1);
+    return wrap(_withLatestFrom(wrapped, transform, o1));
 }
 
-ObservableBase::Impl_ptr ObservableBase::withLatestFrom(const ObservableBase& o1, const ObservableBase& o2, const Function3& transform) const
+ObservableImpl ObservableImpl::withLatestFrom(const ObservableImpl& o1, const ObservableImpl& o2, const Function3& transform) const
 {
-    return impl->withLatestFrom(transform, o1, o2);
+    return wrap(_withLatestFrom(wrapped, transform, o1, o2));
 }
 
-ObservableBase::Impl_ptr ObservableBase::withLatestFrom(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const Function4& transform) const
+ObservableImpl ObservableImpl::withLatestFrom(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const Function4& transform) const
 {
-    return impl->withLatestFrom(transform, o1, o2, o3);
+    return wrap(_withLatestFrom(wrapped, transform, o1, o2, o3));
 }
 
-ObservableBase::Impl_ptr ObservableBase::withLatestFrom(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const Function5& transform) const
+ObservableImpl ObservableImpl::withLatestFrom(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const Function5& transform) const
 {
-    return impl->withLatestFrom(transform, o1, o2, o3, o4);
+    return wrap(_withLatestFrom(wrapped, transform, o1, o2, o3, o4));
 }
 
-ObservableBase::Impl_ptr ObservableBase::withLatestFrom(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const ObservableBase& o5, const Function6& transform) const
+ObservableImpl ObservableImpl::withLatestFrom(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const Function6& transform) const
 {
-    return impl->withLatestFrom(transform, o1, o2, o3, o4, o5);
+    return wrap(_withLatestFrom(wrapped, transform, o1, o2, o3, o4, o5));
 }
 
-ObservableBase::Impl_ptr ObservableBase::withLatestFrom(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const ObservableBase& o5, const ObservableBase& o6, const Function7& transform) const
+ObservableImpl ObservableImpl::withLatestFrom(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const Function7& transform) const
 {
-    return impl->withLatestFrom(transform, o1, o2, o3, o4, o5, o6);
+    return wrap(_withLatestFrom(wrapped, transform, o1, o2, o3, o4, o5, o6));
 }
 
-ObservableBase::Impl_ptr ObservableBase::withLatestFrom(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const ObservableBase& o5, const ObservableBase& o6, const ObservableBase& o7, const Function8& transform) const
+ObservableImpl ObservableImpl::withLatestFrom(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const ObservableImpl& o7, const Function8& transform) const
 {
-    return impl->withLatestFrom(transform, o1, o2, o3, o4, o5, o6, o7);
+    return wrap(_withLatestFrom(wrapped, transform, o1, o2, o3, o4, o5, o6, o7));
 }
 
-ObservableBase::Impl_ptr ObservableBase::zip(const ObservableBase& o1, const Function2& transform) const
+ObservableImpl ObservableImpl::zip(const ObservableImpl& o1, const Function2& transform) const
 {
-    return impl->zip(transform, o1);
+    return wrap(_zip(wrapped, transform, o1));
 }
 
-ObservableBase::Impl_ptr ObservableBase::zip(const ObservableBase& o1, const ObservableBase& o2, const Function3& transform) const
+ObservableImpl ObservableImpl::zip(const ObservableImpl& o1, const ObservableImpl& o2, const Function3& transform) const
 {
-    return impl->zip(transform, o1, o2);
+    return wrap(_zip(wrapped, transform, o1, o2));
 }
 
-ObservableBase::Impl_ptr ObservableBase::zip(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const Function4& transform) const
+ObservableImpl ObservableImpl::zip(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const Function4& transform) const
 {
-    return impl->zip(transform, o1, o2, o3);
+    return wrap(_zip(wrapped, transform, o1, o2, o3));
 }
 
-ObservableBase::Impl_ptr ObservableBase::zip(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const Function5& transform) const
+ObservableImpl ObservableImpl::zip(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const Function5& transform) const
 {
-    return impl->zip(transform, o1, o2, o3, o4);
+    return wrap(_zip(wrapped, transform, o1, o2, o3, o4));
 }
 
-ObservableBase::Impl_ptr ObservableBase::zip(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const ObservableBase& o5, const Function6& transform) const
+ObservableImpl ObservableImpl::zip(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const Function6& transform) const
 {
-    return impl->zip(transform, o1, o2, o3, o4, o5);
+    return wrap(_zip(wrapped, transform, o1, o2, o3, o4, o5));
 }
 
-ObservableBase::Impl_ptr ObservableBase::zip(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const ObservableBase& o5, const ObservableBase& o6, const Function7& transform) const
+ObservableImpl ObservableImpl::zip(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const Function7& transform) const
 {
-    return impl->zip(transform, o1, o2, o3, o4, o5, o6);
+    return wrap(_zip(wrapped, transform, o1, o2, o3, o4, o5, o6));
 }
 
-ObservableBase::Impl_ptr ObservableBase::zip(const ObservableBase& o1, const ObservableBase& o2, const ObservableBase& o3, const ObservableBase& o4, const ObservableBase& o5, const ObservableBase& o6, const ObservableBase& o7, const Function8& transform) const
+ObservableImpl ObservableImpl::zip(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const ObservableImpl& o7, const Function8& transform) const
 {
-    return impl->zip(transform, o1, o2, o3, o4, o5, o6, o7);
+    return wrap(_zip(wrapped, transform, o1, o2, o3, o4, o5, o6, o7));
 }
 
 
 #pragma mark - Scheduling
 
-ObservableBase::Impl_ptr ObservableBase::observeOn(const Scheduler& scheduler) const
+ObservableImpl ObservableImpl::observeOn(const Scheduler& scheduler) const
 {
-    return Impl::fromRxCpp(scheduler.impl->schedule(impl->wrapped));
+    return wrap(scheduler.impl->schedule(unwrap(wrapped)));
 }
 
 
 #pragma mark - Misc
 
-juce::Array<var> ObservableBase::toArray(const std::function<void(Error)>& onError) const
+juce::Array<any> ObservableImpl::toArray(const std::function<void(Error)>& onError) const
 {
-    Array<var> items;
-    impl->wrapped.as_blocking().subscribe([&](const var& item) {
+    Array<any> items;
+
+    unwrap(wrapped).as_blocking().subscribe([&](const any& item) {
         items.add(item);
-    }, onError);
+    },
+                                            onError);
+
     return items;
 }
 
-void ObservableBase::TerminateOnError(const Error&)
+void ObservableImpl::TerminateOnError(const Error&)
 {
     // error implicitly ignored, abort
     std::terminate();
 }
 
-void ObservableBase::EmptyOnCompleted()
+void ObservableImpl::EmptyOnCompleted()
 {}
+}

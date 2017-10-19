@@ -5,7 +5,7 @@
 namespace varx {
 using namespace juce;
 
-typedef rxcpp::subscriber<var> rxcpp_subscriber;
+typedef rxcpp::subscriber<detail::any> rxcpp_subscriber;
 
 template<class T>
 using shared_ptr = std::shared_ptr<T>;
@@ -19,9 +19,7 @@ using shared_ptr = std::shared_ptr<T>;
 
 #include "rx/internal/varx_Disposable_Impl.cpp"
 #include "rx/internal/varx_DisposeBag_Impl.h"
-#include "rx/internal/varx_Observable_Impl.cpp"
 #include "rx/internal/varx_Scheduler_Impl.cpp"
-#include "rx/internal/varx_Subjects_Impl.cpp"
 
 #include "rx/varx_Disposable.cpp"
 #include "rx/varx_DisposeBag.cpp"

@@ -4,7 +4,7 @@ namespace detail {
     struct ObserverImpl
     {
         ObserverImpl(any&& wrapped);
-        void onNext(const juce::var& next) const;
+        void onNext(any&& next) const;
         void onError(Error error) const;
         void onCompleted() const;
         
@@ -26,7 +26,7 @@ public:
     /** Notifies the Observer with a new item. */
     void onNext(const T& item) const
     {
-        impl.onNext(toVar(item));
+        impl.onNext(detail::any(item));
     }
 
     /** Notifies the Observer that an error has occurred. */
@@ -40,6 +40,11 @@ public:
     {
         impl.onCompleted();
     }
+    
+protected:
+    Observer(const detail::ObserverImpl& impl)
+    : impl(impl)
+    {}
 
 private:
 #warning Maybe remove these
@@ -55,10 +60,6 @@ private:
     friend class ReplaySubject;
     
     const detail::ObserverImpl impl;
-    
-    Observer(detail::ObserverImpl&& impl)
-    : impl(std::move(impl))
-    {}
 
     JUCE_LEAK_DETECTOR(Observer)
 };

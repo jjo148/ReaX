@@ -22,7 +22,7 @@ public:
 private:
     struct Impl;
     std::shared_ptr<Impl> impl;
-    friend class ObservableBase;
+    friend class detail::ObservableImpl;
     Scheduler(const std::shared_ptr<Impl>&);
 
     JUCE_LEAK_DETECTOR(Scheduler)

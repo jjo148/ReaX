@@ -1,34 +1,41 @@
-#warning impl can probably passed by rvalue ref
-SubjectBase::SubjectBase(const SubjectBase::Impl_ptr& impl)
-: impl(impl)
+using std::move;
+
+namespace detail {
+SubjectImpl SubjectImpl::MakeBehaviorSubjectImpl(any&& initial)
+{
+    rxcpp::subjects::behavior<any> subject(initial);
+    auto observer = subject.get_subscriber();
+    auto observable = subject.get_observable();
+
+    return SubjectImpl(any(move(subject)), any(move(observer)), any(move(observable)));
+}
+
+SubjectImpl SubjectImpl::MakePublishSubjectImpl()
+{
+    rxcpp::subjects::subject<any> subject;
+    auto observer = subject.get_subscriber();
+    auto observable = subject.get_observable();
+
+    return SubjectImpl(any(move(subject)), any(move(observer)), any(move(observable)));
+}
+
+SubjectImpl SubjectImpl::MakeReplaySubjectImpl(size_t bufferSize)
+{
+    rxcpp::subjects::replay<any, rxcpp::identity_one_worker> subject(bufferSize, rxcpp::identity_immediate());
+    auto observer = subject.get_subscriber();
+    auto observable = subject.get_observable();
+
+    return SubjectImpl(any(move(subject)), any(move(observer)), any(move(observable)));
+}
+
+any SubjectImpl::getLatestItem() const
+{
+    return wrapped.get<rxcpp::subjects::behavior<any>>().get_value();
+}
+
+SubjectImpl::SubjectImpl(any&& subject, any&& observer, any&& observable)
+: ObserverImpl(move(observer)),
+  ObservableImpl(move(observable)),
+  wrapped(move(subject))
 {}
-
-detail::ObserverImpl SubjectBase::asObserver() const
-{
-    return detail::ObserverImpl(impl->getSubscriber());
-}
-
-ObservableBase::Impl_ptr SubjectBase::asObservable() const
-{
-    return std::make_shared<ObservableBase::Impl>(impl->asObservable());
-}
-
-SubjectBase::Impl_ptr SubjectBase::MakeBehaviorSubjectImpl(var&& initial)
-{
-    return std::make_shared<BehaviorSubjectImpl>(std::move(initial));
-}
-
-SubjectBase::Impl_ptr SubjectBase::MakePublishSubjectImpl()
-{
-    return std::make_shared<PublishSubjectImpl>();
-}
-
-SubjectBase::Impl_ptr SubjectBase::MakeReplaySubjectImpl(size_t bufferSize)
-{
-    return std::make_shared<ReplaySubjectImpl>(bufferSize);
-}
-
-var SubjectBase::getLatestItem() const
-{
-    return impl->getLatestItem();
 }

@@ -55,14 +55,14 @@ namespace varx {
 #include "rx/varx_Subjects.h"
 }
 
-VARX_DEFINE_VARIANT_CONVERTER(varx::ObservableBase)
+VARX_DEFINE_VARIANT_CONVERTER(varx::detail::ObservableImpl)
 VARX_DEFINE_VARIANT_CONVERTER(varx::Empty)
 
 template<typename... Args>
 struct juce::VariantConverter<std::tuple<Args...>> : varx::detail::VariantConverter<std::tuple<Args...>> {};
 
 template<typename T>
-struct juce::VariantConverter<varx::Observable<T>> : juce::VariantConverter<varx::ObservableBase> {};
+struct juce::VariantConverter<varx::Observable<T>> : varx::detail::VariantConverter<varx::Observable<T>> {};
 
 namespace varx {
 #include "util/internal/varx_ReleasePool.h"

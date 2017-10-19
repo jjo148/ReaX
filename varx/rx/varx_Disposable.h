@@ -1,5 +1,9 @@
 #pragma once
 
+namespace detail {
+    class ObservableImpl;
+}
+
 class DisposeBag;
 
 /**
@@ -36,7 +40,7 @@ private:
     struct Impl;
     const std::shared_ptr<Impl> impl;
 
-    friend class ObservableBase;
+    friend class detail::ObservableImpl;
     friend class DisposeBag;
     explicit Disposable(const std::shared_ptr<Impl>&);
 

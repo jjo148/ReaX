@@ -1,18 +1,20 @@
-detail::ObserverImpl::ObserverImpl(any&& wrapped)
+namespace detail {
+ObserverImpl::ObserverImpl(any&& wrapped)
 : wrapped(std::move(wrapped))
 {}
 
-void detail::ObserverImpl::onNext(const juce::var &next) const
+void ObserverImpl::onNext(any&& next) const
 {
-    wrapped.get<rxcpp_subscriber>().on_next(next);
+    wrapped.get<rxcpp_subscriber>().on_next(std::move(next));
 }
 
-void detail::ObserverImpl::onError(Error error) const
+void ObserverImpl::onError(Error error) const
 {
     wrapped.get<rxcpp_subscriber>().on_error(error);
 }
 
-void detail::ObserverImpl::onCompleted() const
+void ObserverImpl::onCompleted() const
 {
     wrapped.get<rxcpp_subscriber>().on_completed();
+}
 }

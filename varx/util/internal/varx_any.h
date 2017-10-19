@@ -5,7 +5,7 @@ class any
 {
 public:
     template<typename T>
-    any(const T& t)
+    explicit any(const T& t)
     : wrapped(std::make_shared<Wrapped<T>>(t))
     {}
 
@@ -31,6 +31,7 @@ private:
         {}
 
         virtual ~WrappedBase() {}
+        virtual bool equals(const WrappedBase& other) = 0;
 
         const std::type_info& typeInfo;
     };
@@ -43,9 +44,46 @@ private:
           t(t)
         {}
 
+        bool equals(const WrappedBase& other) override
+        {
+            if (auto otherPtr = dynamic_cast<const Wrapped<T>*>(&other))
+                return _equals<T>()(t, otherPtr->t);
+            else
+                return false;
+        }
+
+        template<typename U, typename Enable = void>
+        struct _equals
+        {
+            bool operator()(const U& lhs, const U& rhs)
+            {
+                return (&lhs == &rhs);
+            }
+        };
+
+        template<typename U>
+        struct _equals<U, typename std::enable_if<true, decltype(std::declval<U&>() == std::declval<U&>(), (void)0)>::type>
+        {
+            bool operator()(const U& lhs, const U& rhs)
+            {
+                return (lhs == rhs);
+            }
+        };
+
         const T t;
     };
 
     std::shared_ptr<WrappedBase> wrapped;
+
+    friend bool operator==(const any& lhs, const any& rhs);
 };
+
+inline bool operator==(const any& lhs, const any& rhs)
+{
+    return lhs.wrapped->equals(*rhs.wrapped);
+}
+inline bool operator!=(const any& lhs, const any& rhs)
+{
+    return !(lhs == rhs);
+}
 }

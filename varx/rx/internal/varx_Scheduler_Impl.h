@@ -2,7 +2,7 @@
 
 struct Scheduler::Impl
 {
-    typedef std::function<rxcpp::observable<juce::var>(const rxcpp::observable<juce::var>&)> Schedule;
+    typedef std::function<rxcpp::observable<detail::any>(const rxcpp::observable<detail::any>&)> Schedule;
 
     Impl(const Schedule& schedule);
 
