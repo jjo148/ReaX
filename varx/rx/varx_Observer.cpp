@@ -5,16 +5,16 @@ ObserverImpl::ObserverImpl(any&& wrapped)
 
 void ObserverImpl::onNext(any&& next) const
 {
-    wrapped.get<rxcpp_subscriber>().on_next(std::move(next));
+    wrapped.get<rxcpp::subscriber<any>>().on_next(std::move(next));
 }
 
 void ObserverImpl::onError(Error error) const
 {
-    wrapped.get<rxcpp_subscriber>().on_error(error);
+    wrapped.get<rxcpp::subscriber<any>>().on_error(error);
 }
 
 void ObserverImpl::onCompleted() const
 {
-    wrapped.get<rxcpp_subscriber>().on_completed();
+    wrapped.get<rxcpp::subscriber<any>>().on_completed();
 }
 }

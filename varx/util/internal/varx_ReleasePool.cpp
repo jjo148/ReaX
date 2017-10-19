@@ -45,7 +45,7 @@ void ReleasePool::timerCallback()
     cleanup();
 }
 
-bool ReleasePool::isUnused(const shared_ptr<void>& item)
+bool ReleasePool::isUnused(const std::shared_ptr<void>& item)
 {
     // An item is unused if it's not referenced by anything except for this pool
     return (item.use_count() <= 1);

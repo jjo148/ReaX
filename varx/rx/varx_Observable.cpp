@@ -75,7 +75,7 @@ ObservableImpl::ObservableImpl(any&& wrapped)
 
 ObservableImpl ObservableImpl::create(const std::function<void(detail::ObserverImpl&&)>& onSubscribe)
 {
-    return wrap(rxcpp::observable<>::create<any>([onSubscribe](const rxcpp_subscriber& s) {
+    return wrap(rxcpp::observable<>::create<any>([onSubscribe](const rxcpp::subscriber<any>& s) {
         onSubscribe(detail::ObserverImpl(any(s)));
     }));
 }
@@ -195,7 +195,7 @@ Disposable ObservableImpl::subscribe(const std::function<void(const any&)>& onNe
 
 Disposable ObservableImpl::subscribe(const detail::ObserverImpl& observer) const
 {
-    auto disposable = unwrap(wrapped).subscribe(observer.wrapped.get<rxcpp_subscriber>());
+    auto disposable = unwrap(wrapped).subscribe(observer.wrapped.get<rxcpp::subscriber<any>>());
 
     return Disposable(std::make_shared<Disposable::Impl>(disposable));
 }

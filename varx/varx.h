@@ -22,8 +22,6 @@ END_JUCE_MODULE_DECLARATION
 #include <juce_graphics/juce_graphics.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
-#include "util/internal/concurrentqueue.h"
-
 #include <atomic>
 #include <exception>
 #include <functional>
@@ -35,25 +33,39 @@ END_JUCE_MODULE_DECLARATION
 #include <typeinfo>
 #include <utility>
 #include <vector>
-
-
-#include "util/varx_PrintFunctions.h"
-#include "util/varx_VariantConverters.h"
+#include "util/internal/concurrentqueue.h"
 
 namespace varx {
-#include "util/internal/varx_any.h"
-    
     typedef std::exception_ptr Error;
+    
     struct Empty {};
     inline bool operator==(const Empty& lhs, const Empty& rhs){ return true; }
     inline bool operator!=(const Empty& lhs, const Empty& rhs){ return !(lhs == rhs); }
+}
+
+namespace varx {
+#include "util/internal/varx_any.h"
 #include "rx/varx_Disposable.h"
 #include "rx/varx_DisposeBag.h"
 #include "rx/varx_Observer.h"
 #include "rx/varx_Observable.h"
 #include "rx/varx_Scheduler.h"
 #include "rx/varx_Subjects.h"
+    
+#include "util/internal/varx_ReleasePool.h"
+#include "util/varx_LockFreeSource.h"
+#include "util/varx_LockFreeTarget.h"
+    
+#include "integration/varx_ExtensionBase.h"
+#include "integration/varx_GUIExtensions.h"
+#include "integration/varx_ModelExtensions.h"
+#include "integration/varx_Reactive.h"
+#include "integration/varx_ReactiveGUI.h"
+#include "integration/varx_ReactiveModel.h"
 }
+
+#include "util/varx_VariantConverters.h"
+#include "util/varx_PrintFunctions.h"
 
 VARX_DEFINE_VARIANT_CONVERTER(varx::detail::ObservableImpl)
 VARX_DEFINE_VARIANT_CONVERTER(varx::Empty)
@@ -63,15 +75,3 @@ struct juce::VariantConverter<std::tuple<Args...>> : varx::detail::VariantConver
 
 template<typename T>
 struct juce::VariantConverter<varx::Observable<T>> : varx::detail::VariantConverter<varx::Observable<T>> {};
-
-namespace varx {
-#include "util/internal/varx_ReleasePool.h"
-#include "util/varx_LockFreeSource.h"
-#include "util/varx_LockFreeTarget.h"
-#include "integration/varx_ExtensionBase.h"
-#include "integration/varx_GUIExtensions.h"
-#include "integration/varx_ModelExtensions.h"
-#include "integration/varx_Reactive.h"
-#include "integration/varx_ReactiveGUI.h"
-#include "integration/varx_ReactiveModel.h"
-}
