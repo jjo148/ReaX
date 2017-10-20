@@ -15,7 +15,7 @@ TEST_CASE("Observable onError",
     IT("takes an onError handler and calls it without throwing")
     {
         bool called = false;
-        syncThrow.subscribe([](String) {}, [&](Error) { called = true; });
+        syncThrow.subscribe([](String) {}, [&](std::exception_ptr) { called = true; });
 
         REQUIRE(called);
     }
@@ -34,7 +34,7 @@ TEST_CASE("Observable onError",
         });
 
         bool called = false;
-        asyncThrow.subscribe([](int) {}, [&](Error) { called = true; });
+        asyncThrow.subscribe([](int) {}, [&](std::exception_ptr) { called = true; });
 
         CHECK_FALSE(called);
         varxRunDispatchLoop();
@@ -53,7 +53,7 @@ TEST_CASE("Observable onComplete",
 
     IT("calls onComplete synchronously")
     {
-        Observable<int>::just(2).subscribe([](int) {}, [](Error) {}, onComplete);
+        Observable<int>::just(2).subscribe([](int) {}, [](std::exception_ptr) {}, onComplete);
         REQUIRE(called);
     }
 }

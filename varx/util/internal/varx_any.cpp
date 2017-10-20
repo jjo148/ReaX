@@ -72,28 +72,3 @@ any::Object::Object(const std::type_info& typeInfo)
 
 any::Object::~Object() {}
 }
-
-
-namespace {
-void foo()
-{
-    using detail::any;
-    
-    any test1(3);
-    test1.get<int>();
-    test1.get<String>();
-
-    any test2("Foo");
-    any test3(String("Bar"));
-    any test4(3.4f);
-    any test5(3.4);
-    any test6(false);
-    any test7(int64(4));
-    any test8(Point<int>(2, 4));
-    any test9(any(String("Inception")));
-
-    test1.get<double>();
-
-    test8.get<Point<int>>();
-}
-}

@@ -36,7 +36,6 @@ END_JUCE_MODULE_DECLARATION
 #include "util/internal/concurrentqueue.h"
 
 namespace varx {
-typedef std::exception_ptr Error;
 
 struct Empty
 {};

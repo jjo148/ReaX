@@ -47,6 +47,8 @@ private:
 
         return static_cast<T>(getPrimitive<juce::int64>());
     }
+    
+#warning Implement template<typename T> bool is() const;
 
     template<typename T>
     T _get(std::false_type /* is_enum */) const

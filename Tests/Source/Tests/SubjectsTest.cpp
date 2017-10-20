@@ -38,15 +38,15 @@ TEST_CASE("BehaviorSubject",
     {
         BehaviorSubject<int> subject(17);
         bool onErrorCalled = false;
-        subject.onError(Error());
-        subject.subscribe([](int) {}, [&](Error) { onErrorCalled = true; });
+        subject.onError(std::exception_ptr());
+        subject.subscribe([](int) {}, [&](std::exception_ptr) { onErrorCalled = true; });
         REQUIRE(onErrorCalled);
     }
 
     IT("notifies onCompleted when calling onCompleted")
     {
         bool completed = false;
-        subject.subscribe([](var) {}, [](Error) {}, [&]() { completed = true; });
+        subject.subscribe([](var) {}, [](std::exception_ptr) {}, [&]() { completed = true; });
         subject.onCompleted();
 
         REQUIRE(completed);
@@ -56,7 +56,7 @@ TEST_CASE("BehaviorSubject",
     {
         auto subject = std::make_shared<BehaviorSubject<int>>(3);
         bool completed = false;
-        subject->subscribe([](int) {}, [](Error) {}, [&]() { completed = true; });
+        subject->subscribe([](int) {}, [](std::exception_ptr) {}, [&]() { completed = true; });
         subject.reset();
 
         REQUIRE(!completed);
@@ -137,8 +137,8 @@ TEST_CASE("PublishSubject",
     {
         PublishSubject<int> subject;
         bool onErrorCalled = false;
-        subject.onError(Error());
-        subject.subscribe([](int) {}, [&](Error) { onErrorCalled = true; }).disposedBy(disposeBag);
+        subject.onError(std::exception_ptr());
+        subject.subscribe([](int) {}, [&](std::exception_ptr) { onErrorCalled = true; }).disposedBy(disposeBag);
         REQUIRE(onErrorCalled);
     }
 
@@ -150,14 +150,14 @@ TEST_CASE("PublishSubject",
         IT("notifies onCompleted when calling onCompleted")
         {
             subject->onCompleted();
-            subject->subscribe([](int) {}, [](Error) {}, [&]() { completed = true; }).disposedBy(disposeBag);
+            subject->subscribe([](int) {}, [](std::exception_ptr) {}, [&]() { completed = true; }).disposedBy(disposeBag);
 
             REQUIRE(completed);
         }
 
         IT("does not call onCompleted when destroying the subject")
         {
-            subject->subscribe([](int) {}, [](Error) {}, [&]() { completed = true; }).disposedBy(disposeBag);
+            subject->subscribe([](int) {}, [](std::exception_ptr) {}, [&]() { completed = true; }).disposedBy(disposeBag);
             CHECK(!completed);
             subject.reset();
 
@@ -254,8 +254,8 @@ TEST_CASE("ReplaySubject",
     {
         ReplaySubject<int> subject;
         bool onErrorCalled = false;
-        subject.onError(Error());
-        subject.subscribe([](int) {}, [&](Error) { onErrorCalled = true; }).disposedBy(disposeBag);
+        subject.onError(std::exception_ptr());
+        subject.subscribe([](int) {}, [&](std::exception_ptr) { onErrorCalled = true; }).disposedBy(disposeBag);
         REQUIRE(onErrorCalled);
     }
 
@@ -267,14 +267,14 @@ TEST_CASE("ReplaySubject",
         IT("notifies onCompleted when calling onCompleted")
         {
             subject->onCompleted();
-            subject->subscribe([](String) {}, [](Error) {}, [&]() { completed = true; }).disposedBy(disposeBag);
+            subject->subscribe([](String) {}, [](std::exception_ptr) {}, [&]() { completed = true; }).disposedBy(disposeBag);
 
             REQUIRE(completed);
         }
 
         IT("does not call onCompleted when destroying the subject")
         {
-            subject->subscribe([](String) {}, [](Error) {}, [&]() { completed = true; }).disposedBy(disposeBag);
+            subject->subscribe([](String) {}, [](std::exception_ptr) {}, [&]() { completed = true; }).disposedBy(disposeBag);
             CHECK(!completed);
             subject.reset();
 

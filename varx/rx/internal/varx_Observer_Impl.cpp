@@ -8,7 +8,7 @@ void ObserverImpl::onNext(any&& next) const
     wrapped.get<rxcpp::subscriber<any>>().on_next(std::move(next));
 }
 
-void ObserverImpl::onError(Error error) const
+void ObserverImpl::onError(std::exception_ptr error) const
 {
     wrapped.get<rxcpp::subscriber<any>>().on_error(error);
 }

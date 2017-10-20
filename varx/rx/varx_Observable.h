@@ -128,7 +128,7 @@ public:
      The returned Disposable can be used to unsubscribe from the Observable, to stop receiving values from it. **You will keep receiving values until you call Disposable::dispose, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
      */
     Disposable subscribe(const std::function<void(const T&)>& onNext,
-                         const std::function<void(Error)>& onError = Impl::TerminateOnError,
+                         const std::function<void(std::exception_ptr)>& onError = Impl::TerminateOnError,
                          const std::function<void()>& onCompleted = Impl::EmptyOnCompleted) const
     {
         return impl.subscribe([onNext](const any& next) {
@@ -655,7 +655,7 @@ public:
      
      ​ **If you don't pass an onError handler, an exception inside the Observable will terminate your app.**
      */
-    juce::Array<T> toArray(const std::function<void(Error)>& onError = Impl::TerminateOnError) const
+    juce::Array<T> toArray(const std::function<void(std::exception_ptr)>& onError = Impl::TerminateOnError) const
     {
         juce::Array<T> items;
 

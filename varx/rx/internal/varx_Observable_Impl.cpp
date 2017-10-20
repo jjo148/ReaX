@@ -29,9 +29,9 @@ public:
         subject.get_subscriber().on_next(newValue);
     }
 
-    rxcpp::observable<any> getObservable() const
+    rxcpp::observable<var> getObservable() const
     {
-        return subject.get_observable().map([](const var& item){ return any(item); });
+        return subject.get_observable();
     }
 
 private:
@@ -46,7 +46,7 @@ inline const rxcpp::observable<any> unwrap(const any& wrapped)
         return wrapped.get<rxcpp::observable<any>>();
     }
     catch (std::exception) {
-        return wrapped.get<std::shared_ptr<ValueObservable>>()->getObservable();
+        return wrapped.get<std::shared_ptr<ValueObservable>>()->getObservable().map([](const var& item){ return any(item); });
     }
 }
 
@@ -111,10 +111,10 @@ ObservableImpl::ObservableImpl(const any& wrapped)
 : wrapped(wrapped)
 {}
 
-ObservableImpl ObservableImpl::create(const std::function<void(detail::ObserverImpl&&)>& onSubscribe)
+ObservableImpl ObservableImpl::create(const std::function<void(ObserverImpl&&)>& onSubscribe)
 {
     return wrap(rxcpp::observable<>::create<any>([onSubscribe](const rxcpp::subscriber<any>& s) {
-        onSubscribe(detail::ObserverImpl(any(s)));
+        onSubscribe(ObserverImpl(any(s)));
     }));
 }
 
@@ -190,7 +190,7 @@ ObservableImpl ObservableImpl::repeat(const any& item, unsigned int times)
 #pragma mark - Disposable
 
 Disposable ObservableImpl::subscribe(const std::function<void(const any&)>& onNext,
-                                     const std::function<void(Error)>& onError,
+                                     const std::function<void(std::exception_ptr)>& onError,
                                      const std::function<void()>& onCompleted) const
 {
     auto disposable = unwrap(wrapped).subscribe(onNext, onError, onCompleted);
@@ -198,7 +198,7 @@ Disposable ObservableImpl::subscribe(const std::function<void(const any&)>& onNe
     return Disposable(any(disposable));
 }
 
-Disposable ObservableImpl::subscribe(const detail::ObserverImpl& observer) const
+Disposable ObservableImpl::subscribe(const ObserverImpl& observer) const
 {
     auto subscriber = observer.wrapped.get<rxcpp::subscriber<any>>();
     auto disposable = unwrap(wrapped).subscribe(subscriber);
@@ -450,7 +450,7 @@ ObservableImpl ObservableImpl::zip(const ObservableImpl& o1, const ObservableImp
 
 #pragma mark - Scheduling
 
-ObservableImpl ObservableImpl::observeOn(const detail::SchedulerImpl& scheduler) const
+ObservableImpl ObservableImpl::observeOn(const SchedulerImpl& scheduler) const
 {
     return wrap(scheduler.schedule(unwrap(wrapped)));
 }
@@ -458,7 +458,7 @@ ObservableImpl ObservableImpl::observeOn(const detail::SchedulerImpl& scheduler)
 
 #pragma mark - Misc
 
-juce::Array<any> ObservableImpl::toArray(const std::function<void(Error)>& onError) const
+juce::Array<any> ObservableImpl::toArray(const std::function<void(std::exception_ptr)>& onError) const
 {
     Array<any> items;
 
@@ -470,7 +470,7 @@ juce::Array<any> ObservableImpl::toArray(const std::function<void(Error)>& onErr
     return items;
 }
 
-void ObservableImpl::TerminateOnError(const Error&)
+void ObservableImpl::TerminateOnError(std::exception_ptr)
 {
     // error implicitly ignored, abort
     std::terminate();

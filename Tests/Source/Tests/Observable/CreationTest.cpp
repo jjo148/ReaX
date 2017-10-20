@@ -156,7 +156,7 @@ TEST_CASE("Observable::empty",
     {
         DisposeBag disposeBag;
         bool completed = false;
-        o.subscribe([](var) {}, [](Error) {}, [&]() { completed = true; }).disposedBy(disposeBag);
+        o.subscribe([](var) {}, [](std::exception_ptr) {}, [&]() { completed = true; }).disposedBy(disposeBag);
 
         REQUIRE(completed);
     }
@@ -172,7 +172,7 @@ TEST_CASE("Observable::error",
 
     IT("doesn't emit any items")
     {
-        o.subscribe([&](var item) { items.add(item); }, [](Error e) {}).disposedBy(disposeBag);
+        o.subscribe([&](var item) { items.add(item); }, [](std::exception_ptr) {}).disposedBy(disposeBag);
         varxRunDispatchLoop();
 
         REQUIRE(items.isEmpty());
@@ -181,7 +181,7 @@ TEST_CASE("Observable::error",
     IT("notifies onCompleted immediately")
     {
         bool onErrorCalled = false;
-        o.subscribe([](var) {}, [&](Error e) { onErrorCalled = true; }).disposedBy(disposeBag);
+        o.subscribe([](var) {}, [&](std::exception_ptr) { onErrorCalled = true; }).disposedBy(disposeBag);
 
         REQUIRE(onErrorCalled);
     }
@@ -356,7 +356,7 @@ TEST_CASE("Observable::fromValue lifetime",
     IT("notified onComplete when the Observable is destroyed")
     {
         bool completed = false;
-        source->subscribe([](var) {}, [](Error) {}, [&]() { completed = true; });
+        source->subscribe([](var) {}, [](std::exception_ptr) {}, [&]() { completed = true; });
         CHECK(!completed);
 
         source.reset();
@@ -457,7 +457,7 @@ TEST_CASE("Observable::never",
         bool onErrorCalled = false;
         bool onCompletedCalled = false;
         o.subscribe([&](int64) { onNextCalled = true; },
-                    [&](Error) { onErrorCalled = true; },
+                    [&](std::exception_ptr) { onErrorCalled = true; },
                     [&]() { onCompletedCalled = true; })
             .disposedBy(disposeBag);
 

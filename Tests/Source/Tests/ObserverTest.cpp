@@ -20,11 +20,11 @@ TEST_CASE("Observer",
     IT("emits an error when calling onError")
     {
         auto o = Observable<int>::create([](Observer<int> observer) {
-            observer.onError(Error());
+            observer.onError(std::exception_ptr());
         });
 
         bool onErrorCalled = false;
-        o.subscribe([](int) {}, [&](Error) { onErrorCalled = true; });
+        o.subscribe([](int) {}, [&](std::exception_ptr) { onErrorCalled = true; });
         REQUIRE(onErrorCalled);
     }
 
@@ -35,7 +35,7 @@ TEST_CASE("Observer",
         });
 
         bool completed = false;
-        o.subscribe([](float) {}, [](Error) {}, [&]() { completed = true; });
+        o.subscribe([](float) {}, [](std::exception_ptr) {}, [&]() { completed = true; });
 
         REQUIRE(completed);
     }

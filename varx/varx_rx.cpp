@@ -5,8 +5,6 @@
 
 namespace varx {
 using namespace juce;
-#warning Duplicate declaration, should be somewhere else
-typedef std::exception_ptr Error;
 
 #include "util/internal/varx_any.h"
     

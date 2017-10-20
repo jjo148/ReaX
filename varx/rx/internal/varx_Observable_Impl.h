@@ -20,7 +20,7 @@ struct ObservableImpl
     using Function8 = std::function<any(const any&, const any&, const any&, const any&, const any&, const any&, const any&, const any&)>;
 
     // Creation
-    static ObservableImpl create(const std::function<void(detail::ObserverImpl&&)>& onSubscribe);
+    static ObservableImpl create(const std::function<void(ObserverImpl&&)>& onSubscribe);
     static ObservableImpl defer(const std::function<ObservableImpl()>& factory);
     static ObservableImpl empty();
     static ObservableImpl error(const std::exception& error);
@@ -37,9 +37,9 @@ struct ObservableImpl
 
     // Subscription
     Disposable subscribe(const std::function<void(const any&)>& onNext,
-                         const std::function<void(Error)>& onError,
+                         const std::function<void(std::exception_ptr)>& onError,
                          const std::function<void()>& onCompleted) const;
-    Disposable subscribe(const detail::ObserverImpl& observer) const;
+    Disposable subscribe(const ObserverImpl& observer) const;
 
     // Operators
     ObservableImpl combineLatest(const ObservableImpl& o1, const Function2& transform) const;
@@ -90,12 +90,12 @@ struct ObservableImpl
     ObservableImpl zip(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const ObservableImpl& o7, const Function8& transform) const;
 
     // Scheduling
-    ObservableImpl observeOn(const detail::SchedulerImpl& scheduler) const;
+    ObservableImpl observeOn(const SchedulerImpl& scheduler) const;
 
     // Misc
-    juce::Array<any> toArray(const std::function<void(Error)>& onError) const;
+    juce::Array<any> toArray(const std::function<void(std::exception_ptr)>& onError) const;
 
-    static void TerminateOnError(const Error&);
+    static void TerminateOnError(std::exception_ptr);
     static void EmptyOnCompleted();
 
     any wrapped;

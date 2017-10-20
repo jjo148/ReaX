@@ -18,7 +18,7 @@ public:
     }
 
     /** Notifies the Observer that an error has occurred. */
-    void onError(const Error& error) const
+    void onError(std::exception_ptr error) const
     {
         impl.onError(error);
     }
