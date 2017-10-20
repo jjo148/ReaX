@@ -18,7 +18,7 @@ rxcpp::observable<any> _range(const T& first, const T& last, unsigned int step)
     return o.map([](const T& item) { return any(item); });
 }
 
-inline const rxcpp::observable<any>& unwrap(const any& wrapped)
+inline const rxcpp::observable<any> unwrap(const any& wrapped)
 {
     return wrapped.get<rxcpp::observable<any>>();
 }
