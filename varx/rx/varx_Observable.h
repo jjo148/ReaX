@@ -146,7 +146,7 @@ public:
     template<typename U>
     typename std::enable_if<std::is_convertible<T, U>::value, Disposable>::type subscribe(const Observer<U>& observer) const
     {
-        // Convert items from T to U, using any conversion
+        // Convert items from T to U, using implicit conversion, constructors, whatever works
         auto converted = impl.map([](const any& t) {
             return toAny<U>(t.get<T>());
         });

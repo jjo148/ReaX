@@ -5,7 +5,55 @@ std::chrono::milliseconds durationFromRelativeTime(const juce::RelativeTime& rel
 }
 
 const std::runtime_error InvalidRangeError("Invalid range.");
-typedef detail::any any;
+using detail::any;
+
+// An Observable that holds a Value to keep receiving changes until the Observable is destroyed.
+class ValueObservable : private Value::Listener
+{
+public:
+    ValueObservable(const Value& inputValue)
+    : value(inputValue),
+      subject(inputValue)
+    {
+        value.addListener(this);
+    }
+
+    ~ValueObservable()
+    {
+        value.removeListener(this);
+        subject.get_subscriber().on_completed();
+    }
+
+    void valueChanged(Value& newValue) override
+    {
+        subject.get_subscriber().on_next(newValue);
+    }
+
+    rxcpp::observable<any> getObservable() const
+    {
+        return subject.get_observable().map([](const var& item){ return any(item); });
+    }
+
+private:
+    Value value;
+    const rxcpp::subjects::behavior<var> subject;
+};
+
+inline const rxcpp::observable<any> unwrap(const any& wrapped)
+{
+#warning Don't use try-catch
+    try {
+        return wrapped.get<rxcpp::observable<any>>();
+    }
+    catch (std::exception) {
+        return wrapped.get<std::shared_ptr<ValueObservable>>()->getObservable();
+    }
+}
+
+inline any wrap(const rxcpp::observable<any>& observable)
+{
+    return any(observable);
+}
 
 template<typename T>
 rxcpp::observable<any> _range(const T& first, const T& last, unsigned int step)
@@ -16,16 +64,6 @@ rxcpp::observable<any> _range(const T& first, const T& last, unsigned int step)
     auto o = rxcpp::observable<>::range<T>(first, last, step, rxcpp::identity_immediate());
 
     return o.map([](const T& item) { return any(item); });
-}
-
-inline const rxcpp::observable<any> unwrap(const any& wrapped)
-{
-    return wrapped.get<rxcpp::observable<any>>();
-}
-
-inline any wrap(const rxcpp::observable<any>& observable)
-{
-    return any(observable);
 }
 
 template<typename Transform, typename... Os>
@@ -104,40 +142,7 @@ ObservableImpl ObservableImpl::from(Array<any>&& items)
 
 ObservableImpl ObservableImpl::fromValue(Value value)
 {
-    return ObservableImpl::never();
-
-#warning Implement
-    /*
-    // An Observable::Impl that holds a Value to keep receiving changes until the Observable is destroyed.
-    class ValueObservableImpl : public Impl, private Value::Listener
-    {
-    public:
-        ValueObservableImpl(const Value& inputValue)
-        : value(inputValue),
-        subject(inputValue)
-        {
-            wrapped = subject.get_observable();
-            value.addListener(this);
-        }
-     
-        ~ValueObservableImpl()
-        {
-            value.removeListener(this);
-            subject.get_subscriber().on_completed();
-        }
-     
-        void valueChanged(Value& newValue) override
-        {
-            subject.get_subscriber().on_next(newValue);
-        }
-     
-    private:
-        Value value;
-        const rxcpp::subjects::behavior<var> subject;
-    };
-    
-    return std::make_shared<ValueObservableImpl>(value);
-     */
+    return any(std::make_shared<ValueObservable>(value));
 }
 
 ObservableImpl ObservableImpl::interval(const juce::RelativeTime& period)
