@@ -18,8 +18,7 @@ public:
     void insert(const Disposable& disposable);
 
 private:
-    struct Impl;
-    const std::shared_ptr<Impl> impl;
+    const detail::any wrapped;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DisposeBag)
 };

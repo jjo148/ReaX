@@ -1,9 +1,10 @@
-Disposable::Disposable(const std::shared_ptr<Impl>& impl)
-: impl(impl) {}
+Disposable::Disposable(detail::any&& wrapped)
+: wrapped(std::move(wrapped))
+{}
 
 void Disposable::dispose() const
 {
-    impl->wrapped.unsubscribe();
+    wrapped.get<rxcpp::subscription>().unsubscribe();
 }
 
 void Disposable::disposedBy(DisposeBag& disposeBag)

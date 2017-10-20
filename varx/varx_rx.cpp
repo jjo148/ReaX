@@ -12,8 +12,6 @@ typedef std::exception_ptr Error;
     
 #include "rx/varx_Disposable.h"
 #include "rx/varx_DisposeBag.h"
-#include "rx/internal/varx_Disposable_Impl.h"
-#include "rx/internal/varx_DisposeBag_Impl.h"
 #include "rx/internal/varx_Observable_Impl.h"
 #include "rx/varx_Scheduler.h"
 #include "rx/internal/varx_Observer_Impl.h"
@@ -22,7 +20,6 @@ typedef std::exception_ptr Error;
 #include "rx/varx_Disposable.cpp"
 #include "rx/varx_DisposeBag.cpp"
 #include "rx/varx_Scheduler.cpp"
-#include "rx/internal/varx_Disposable_Impl.cpp"
 #include "rx/internal/varx_Scheduler_Impl.cpp"
 #include "rx/internal/varx_Observable_Impl.cpp"
 #include "rx/internal/varx_Observer_Impl.cpp"

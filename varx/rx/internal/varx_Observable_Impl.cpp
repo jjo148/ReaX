@@ -190,14 +190,14 @@ Disposable ObservableImpl::subscribe(const std::function<void(const any&)>& onNe
 {
     auto disposable = unwrap(wrapped).subscribe(onNext, onError, onCompleted);
 
-    return Disposable(std::make_shared<Disposable::Impl>(disposable));
+    return Disposable(any(disposable));
 }
 
 Disposable ObservableImpl::subscribe(const detail::ObserverImpl& observer) const
 {
     auto disposable = unwrap(wrapped).subscribe(observer.wrapped.get<rxcpp::subscriber<any>>());
 
-    return Disposable(std::make_shared<Disposable::Impl>(disposable));
+    return Disposable(any(disposable));
 }
 
 

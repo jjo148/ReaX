@@ -1,12 +1,12 @@
 DisposeBag::DisposeBag()
-: impl(std::make_shared<Impl>()) {}
+: wrapped(rxcpp::composite_subscription()) {}
 
 DisposeBag::~DisposeBag()
 {
-    impl->wrapped.unsubscribe();
+    wrapped.get<rxcpp::composite_subscription>().unsubscribe();
 }
 
 void DisposeBag::insert(const Disposable& disposable)
 {
-    impl->wrapped.add(disposable.impl->wrapped);
+    wrapped.get<rxcpp::composite_subscription>().add(disposable.wrapped.get<rxcpp::subscription>());
 }
