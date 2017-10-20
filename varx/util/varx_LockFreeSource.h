@@ -1,12 +1,21 @@
 #pragma once
 
+namespace detail {
+template<typename T>
+class LockFreeSourceBase
+{
+protected:
+    PublishSubject<T> subject;
+};
+}
+
 /**
  An Observable that receives items from a realtime thread (like the audio thread) and emits those items on the JUCE message thread.
  
  Call asObservable() to get the Observable, subscribe to it, etc. Then call LockFreeSource::onNext on the realtime thread to emit items.
  */
 template<typename T>
-class LockFreeSource : private juce::AsyncUpdater
+class LockFreeSource : private detail::LockFreeSourceBase<T>, private juce::AsyncUpdater, public Observable<T>
 {
 public:
     /**
@@ -30,7 +39,8 @@ public:
      The queueCapacity must be > 0. If you have to use CongestionPolicy::Allocate, use a large capacity, to make dynamic allocation on the audio thread as unlikely as possible.
      */
     explicit LockFreeSource(size_t queueCapacity)
-    : queue(queueCapacity)
+    : Observable<T>(detail::LockFreeSourceBase<T>::subject),
+      queue(queueCapacity)
     {
         // The queue capacity must be > 0.
         jassert(queueCapacity > 0);
@@ -66,24 +76,16 @@ public:
         // Trigger an update on the message thread
         triggerAsyncUpdate();
     }
-    
-#warning Should probably just inherit from Observable<T>
-    /** Returns an Observable that emits every item added through onNext(). Items are emitted on the JUCE message thread. */
-    inline Observable<T> asObservable() const { return subject; }
-
-    /** Calls asObservable(). */
-    operator Observable<T>() const { return asObservable(); }
 
 private:
     moodycamel::ConcurrentQueue<T> queue;
-    PublishSubject<T> subject;
 
     void handleAsyncUpdate() override
     {
         // Forward all items from the queue to the subject
         T item;
         while (queue.try_dequeue(item))
-            subject.onNext(item);
+            detail::LockFreeSourceBase<T>::subject.onNext(item);
     }
 
     JUCE_LEAK_DETECTOR(LockFreeSource)
