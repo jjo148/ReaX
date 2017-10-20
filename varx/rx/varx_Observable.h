@@ -524,8 +524,7 @@ public:
         return items;
     }
 
-
-#pragma mark - Covariance
+    /** Covariant constructor: If U is convertible to T, an Observable<U> is convertible to an Observable<T>. */
     template<typename U>
     Observable(const Observable<U>& other, typename std::enable_if<std::is_convertible<U, T>::value>::type* = 0)
     : Observable(other.impl.map([](const any& u) { return toAny(static_cast<T>(u.get<U>())); }))

@@ -14,7 +14,7 @@ public:
     /** Notifies the Observer with a new item. */
     void onNext(const T& item) const
     {
-        impl.onNext(detail::any(item));
+        impl.onNext(convert(detail::any(item)));
     }
 
     /** Notifies the Observer that an error has occurred. */
@@ -28,26 +28,37 @@ public:
     {
         impl.onCompleted();
     }
-    
+
+    /** Contravariant constructor: If T is convertible to U, an Observer<U> is convertible to an Observer<T>. */
+    template<typename U>
+    Observer(const Observer<U>& other, typename std::enable_if<std::is_convertible<T, U>::value>::type* = 0)
+    : Observer(other.impl, [](const detail::any& item){ return detail::any(static_cast<U>(item.get<T>())); })
+    {}
+
 protected:
-    Observer(const detail::ObserverImpl& impl)
-    : impl(impl)
+    Observer(const detail::ObserverImpl& impl, const std::function<detail::any(const detail::any&)>& convert = [](const detail::any& item){ return item; })
+    : impl(impl),
+      convert(convert)
     {}
 
 private:
+    template<typename U>
+    friend class Observer;
+    
 #warning Maybe remove these
     friend class ObservableBase;
     template<typename U>
     friend class Observable;
-    
+
     template<typename U>
     friend class BehaviorSubject;
     template<typename U>
     friend class PublishSubject;
     template<typename U>
     friend class ReplaySubject;
-    
+
     const detail::ObserverImpl impl;
+    const std::function<detail::any(const detail::any&)> convert;
 
     JUCE_LEAK_DETECTOR(Observer)
 };
