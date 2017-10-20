@@ -16,8 +16,8 @@ public:
     any& operator=(const any&) = default;
 
     template<typename T>
-    explicit any(T&& value)
-    : any(std::forward<T>(value), std::is_enum<typename std::decay<T>::type>())
+    explicit any(const T& value)
+    : any(value, std::is_enum<typename std::decay<T>::type>())
     {}
 
     template<typename T>
