@@ -73,18 +73,4 @@ namespace varx {
 #include "integration/varx_ReactiveModel.h"
 }
 
-#include "util/varx_VariantConverters.h"
 #include "util/varx_PrintFunctions.h"
-
-VARX_DEFINE_VARIANT_CONVERTER(varx::detail::ObservableImpl)
-VARX_DEFINE_VARIANT_CONVERTER(varx::Empty)
-
-template<typename... Args>
-struct juce::VariantConverter<std::tuple<Args...>> : varx::detail::VariantConverter<std::tuple<Args...>>
-{
-};
-
-template<typename T>
-struct juce::VariantConverter<varx::Observable<T>> : varx::detail::VariantConverter<varx::Observable<T>>
-{
-};
