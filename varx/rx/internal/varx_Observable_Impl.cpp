@@ -46,7 +46,7 @@ inline const rxcpp::observable<any> unwrap(const any& wrapped)
         return wrapped.get<rxcpp::observable<any>>();
     }
     catch (std::exception) {
-        return wrapped.get<std::shared_ptr<ValueObservable>>()->getObservable().map([](const var& item){ return any(item); });
+        return wrapped.get<std::shared_ptr<ValueObservable>>()->getObservable().map([](const var& item) { return any(item); });
     }
 }
 
@@ -209,39 +209,31 @@ Disposable ObservableImpl::subscribe(const ObserverImpl& observer) const
 
 #pragma mark - Operators
 
-ObservableImpl ObservableImpl::combineLatest(const ObservableImpl& o1, const Function2& transform) const
+ObservableImpl ObservableImpl::combineLatest(std::initializer_list<ObservableImpl> others, const any& transform) const
 {
-    return wrap(_combineLatest(wrapped, transform, o1));
-}
-
-ObservableImpl ObservableImpl::combineLatest(const ObservableImpl& o1, const ObservableImpl& o2, const Function3& transform) const
-{
-    return wrap(_combineLatest(wrapped, transform, o1, o2));
-}
-
-ObservableImpl ObservableImpl::combineLatest(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const Function4& transform) const
-{
-    return wrap(_combineLatest(wrapped, transform, o1, o2, o3));
-}
-
-ObservableImpl ObservableImpl::combineLatest(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const Function5& transform) const
-{
-    return wrap(_combineLatest(wrapped, transform, o1, o2, o3, o4));
-}
-
-ObservableImpl ObservableImpl::combineLatest(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const Function6& transform) const
-{
-    return wrap(_combineLatest(wrapped, transform, o1, o2, o3, o4, o5));
-}
-
-ObservableImpl ObservableImpl::combineLatest(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const Function7& transform) const
-{
-    return wrap(_combineLatest(wrapped, transform, o1, o2, o3, o4, o5, o6));
-}
-
-ObservableImpl ObservableImpl::combineLatest(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const ObservableImpl& o7, const Function8& transform) const
-{
-    return wrap(_combineLatest(wrapped, transform, o1, o2, o3, o4, o5, o6, o7));
+#warning Create macro
+    const auto it = others.begin();
+    
+    switch (others.size()) {
+        case 1:
+            return wrap(_combineLatest(wrapped, transform.get<Function2>(), *it));
+        case 2:
+            return wrap(_combineLatest(wrapped, transform.get<Function3>(), *it, *(it+1)));
+        case 3:
+            return wrap(_combineLatest(wrapped, transform.get<Function4>(), *it, *(it+1), *(it+2)));
+        case 4:
+            return wrap(_combineLatest(wrapped, transform.get<Function5>(), *it, *(it+1), *(it+2), *(it+3)));
+        case 5:
+            return wrap(_combineLatest(wrapped, transform.get<Function6>(), *it, *(it+1), *(it+2), *(it+3), *(it+4)));
+        case 6:
+            return wrap(_combineLatest(wrapped, transform.get<Function7>(), *it, *(it+1), *(it+2), *(it+3), *(it+4), *(it+5)));
+        case 7:
+            return wrap(_combineLatest(wrapped, transform.get<Function8>(), *it, *(it+1), *(it+2), *(it+3), *(it+4), *(it+5), *(it+6)));
+        case 8:
+            return wrap(_combineLatest(wrapped, transform.get<Function9>(), *it, *(it+1), *(it+2), *(it+3), *(it+4), *(it+5), *(it+6), *(it+7)));
+        default:
+            jassertfalse;
+    }
 }
 
 ObservableImpl ObservableImpl::concat(const ObservableImpl& o1) const

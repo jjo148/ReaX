@@ -124,10 +124,6 @@ LabelExtension::LabelExtension(Label& parent)
         if (auto editor = parent.getCurrentTextEditor())
             editor->setKeyboardType(keyboardType);
     });
-
-    _editableOnSingleClick.combineLatest(_editableOnDoubleClick, _lossOfFocusDiscardsChanges).skip(1).takeUntil(deallocated).subscribe([&parent](const std::tuple<bool, bool, bool>& tuple) {
-        parent.setEditable(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple));
-    });
     
     // Cannot use combineLatest for these, because changing something on the Slider directly doesn't update the subject
     _editableOnSingleClick.takeUntil(deallocated).subscribe([&parent](bool editableOnSingleClick) {

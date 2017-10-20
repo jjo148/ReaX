@@ -11,6 +11,7 @@ struct ObservableImpl
     ObservableImpl(const any& wrapped);
 
     // Helper typedefs
+#warning Move these to .cpp file
     using Function2 = std::function<any(const any&, const any&)>;
     using Function3 = std::function<any(const any&, const any&, const any&)>;
     using Function4 = std::function<any(const any&, const any&, const any&, const any&)>;
@@ -18,6 +19,7 @@ struct ObservableImpl
     using Function6 = std::function<any(const any&, const any&, const any&, const any&, const any&, const any&)>;
     using Function7 = std::function<any(const any&, const any&, const any&, const any&, const any&, const any&, const any&)>;
     using Function8 = std::function<any(const any&, const any&, const any&, const any&, const any&, const any&, const any&, const any&)>;
+    using Function9 = std::function<any(const any&, const any&, const any&, const any&, const any&, const any&, const any&, const any&, const any&)>;
 
     // Creation
     static ObservableImpl create(const std::function<void(ObserverImpl&&)>& onSubscribe);
@@ -42,13 +44,7 @@ struct ObservableImpl
     Disposable subscribe(const ObserverImpl& observer) const;
 
     // Operators
-    ObservableImpl combineLatest(const ObservableImpl& o1, const Function2& transform) const;
-    ObservableImpl combineLatest(const ObservableImpl& o1, const ObservableImpl& o2, const Function3& transform) const;
-    ObservableImpl combineLatest(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const Function4& transform) const;
-    ObservableImpl combineLatest(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const Function5& transform) const;
-    ObservableImpl combineLatest(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const Function6& transform) const;
-    ObservableImpl combineLatest(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const Function7& transform) const;
-    ObservableImpl combineLatest(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const ObservableImpl& o7, const Function8& transform) const;
+    ObservableImpl combineLatest(std::initializer_list<ObservableImpl> others, const any& transform) const;
     ObservableImpl concat(const ObservableImpl& o1) const;
     ObservableImpl debounce(const juce::RelativeTime& interval) const;
     ObservableImpl distinctUntilChanged(const std::function<bool(const any&, const any&)>& equals) const;
@@ -95,9 +91,14 @@ struct ObservableImpl
     // Misc
     juce::Array<any> toArray(const std::function<void(std::exception_ptr)>& onError) const;
 
+    // Default error/completion handlers
     static void TerminateOnError(std::exception_ptr);
     static void EmptyOnCompleted();
+    
+    // The maximum number of parameters for operators like combineLatest, merge, zip, etc., NOT including the observable it is called on
+    static const int MaximumArity = 7;
 
+    // The wrapped rxcpp::observable<any>
     any wrapped;
 };
 }

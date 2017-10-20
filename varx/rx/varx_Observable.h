@@ -169,67 +169,29 @@ public:
      
      @see Observable::withLatestFrom
      */
-#warning Ugly, should be changed
-    template<typename T1, typename Transform = std::function<std::tuple<T, T1>(const T, const T1)>>
-    Observable<CallResult<Transform, T, T1>> combineLatest(const Observable<T1>& o1, Transform&& transform = std::make_tuple<T, T1>) const
+#warning Move this elsewhere
+    template<typename>
+    struct any_args {
+        typedef any type;
+    };
+    
+    template<typename... Ts>
+    Observable<std::tuple<T, Ts...>> combineLatest(const Observable<Ts>&... others)
     {
-        return impl.combineLatest(o1.impl, [transform](const any& v0, const any& v1) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>()));
-        });
+        return combineLatest(std::make_tuple<T, Ts...>, others...);
     }
-
-    /** \overload */
-    template<typename T1, typename T2, typename Transform = std::function<std::tuple<T, T1, T2>(const T, const T1, const T2)>>
-    Observable<CallResult<Transform, T, T1, T2>> combineLatest(const Observable<T1>& o1, const Observable<T2>& o2, Transform&& transform = std::make_tuple<T, T1, T2>) const
+    
+    template<typename... Ts, typename Transform>
+    Observable<CallResult<Transform, T, Ts...>> combineLatest(Transform&& transform, const Observable<Ts>&... others)
     {
-        return impl.combineLatest(o1.impl, o2.impl, [transform](const any& v0, const any& v1, const any& v2) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>(), v2.get<T2>()));
-        });
-    }
-
-    /** \overload */
-    template<typename T1, typename T2, typename T3, typename Transform = std::function<std::tuple<T, T1, T2, T3>(const T, const T1, const T2, const T3)>>
-    Observable<CallResult<Transform, T, T1, T2, T3>> combineLatest(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, Transform&& transform = std::make_tuple<T, T1, T3>) const
-    {
-        return impl.combineLatest(o1.impl, o2.impl, o3.impl, [transform](const any& v0, const any& v1, const any& v2, const any& v3) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>(), v2.get<T2>(), v3.get<T3>()));
-        });
-    }
-
-    /** \overload */
-    template<typename T1, typename T2, typename T3, typename T4, typename Transform>
-    Observable<CallResult<Transform, T, T1, T2, T3, T4>> combineLatest(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, Transform&& transform) const
-    {
-        return impl.combineLatest(o1.impl, o2.impl, o3.impl, o4.impl, [transform](const any& v0, const any& v1, const any& v2, const any& v3, const any& v4) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>(), v2.get<T2>(), v3.get<T3>(), v4.get<T4>()));
-        });
-    }
-
-    /** \overload */
-    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename Transform>
-    Observable<CallResult<Transform, T, T1, T2, T3, T4, T5>> combineLatest(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, const Observable<T5>& o5, Transform&& transform) const
-    {
-        return impl.combineLatest(o1.impl, o2.impl, o3.impl, o4.impl, o5.impl, [transform](const any& v0, const any& v1, const any& v2, const any& v3, const any& v4, const any& v5) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>(), v2.get<T2>(), v3.get<T3>(), v4.get<T4>(), v5.get<T5>()));
-        });
-    }
-
-    /** \overload */
-    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename Transform>
-    Observable<CallResult<Transform, T, T1, T2, T3, T4, T5, T6>> combineLatest(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, const Observable<T5>& o5, const Observable<T6>& o6, Transform&& transform) const
-    {
-        return impl.combineLatest(o1.impl, o2.impl, o3.impl, o4.impl, o5.impl, o6.impl, [transform](const any& v0, const any& v1, const any& v2, const any& v3, const any& v4, const any& v5, const any& v6) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>(), v2.get<T2>(), v3.get<T3>(), v4.get<T4>(), v5.get<T5>(), v6.get<T6>()));
-        });
-    }
-
-    /** \overload */
-    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename Transform>
-    Observable<CallResult<Transform, T, T1, T2, T3, T4, T5, T6, T7>> combineLatest(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, const Observable<T5>& o5, const Observable<T6>& o6, const Observable<T7>& o7, Transform&& transform) const
-    {
-        return impl.combineLatest(o1.impl, o2.impl, o3.impl, o4.impl, o5.impl, o6.impl, o7.impl, [transform](const any& v0, const any& v1, const any& v2, const any& v3, const any& v4, const any& v5, const any& v6, const any& v7) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>(), v2.get<T2>(), v3.get<T3>(), v4.get<T4>(), v5.get<T5>(), v6.get<T6>(), v7.get<T7>()));
-        });
+        static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable.");
+        static_assert(sizeof...(Ts) <= Impl::MaximumArity, "Too many Observables passed to combineLatest.");
+        
+        const std::function<any(const any&, const typename any_args<Ts>::type&...)> untypedTransform = [transform](const any& v, const typename any_args<Ts>::type&... vs) {
+            return toAny(transform(v.get<T>(), vs.template get<Ts>()...));
+        };
+        
+        return impl.combineLatest({others.impl...}, toAny(untypedTransform));
     }
     ///@}
 

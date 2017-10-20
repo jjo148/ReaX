@@ -24,50 +24,69 @@ TEST_CASE("Observable::combineLatest",
     IT("works with arity 1")
     {
         const auto f = transform<String, String>;
-        varxCollectItems(os[0]->combineLatest(*os[1], f), items);
+        varxCollectItems(os[0]->combineLatest(f, *os[1]), items);
         varxRequireItems(items, "0 1 ");
     }
 
     IT("works with arity 2")
     {
         const auto f = transform<String, String, String>;
-        varxCollectItems(os[0]->combineLatest(*os[1], *os[2], f), items);
+        varxCollectItems(os[0]->combineLatest(f, *os[1], *os[2]), items);
         varxRequireItems(items, "0 1 2 ");
     }
 
     IT("works with arity 3")
     {
         const auto f = transform<String, String, String, String>;
-        varxCollectItems(os[0]->combineLatest(*os[1], *os[2], *os[3], f), items);
+        varxCollectItems(os[0]->combineLatest(f, *os[1], *os[2], *os[3]), items);
         varxRequireItems(items, "0 1 2 3 ");
     }
 
     IT("works with arity 4")
     {
         const auto f = transform<String, String, String, String, String>;
-        varxCollectItems(os[0]->combineLatest(*os[1], *os[2], *os[3], *os[4], f), items);
+        varxCollectItems(os[0]->combineLatest(f, *os[1], *os[2], *os[3], *os[4]), items);
         varxRequireItems(items, "0 1 2 3 4 ");
     }
 
     IT("works with arity 5")
     {
         const auto f = transform<String, String, String, String, String, String>;
-        varxCollectItems(os[0]->combineLatest(*os[1], *os[2], *os[3], *os[4], *os[5], f), items);
+        varxCollectItems(os[0]->combineLatest(f, *os[1], *os[2], *os[3], *os[4], *os[5]), items);
         varxRequireItems(items, "0 1 2 3 4 5 ");
     }
 
     IT("works with arity 6")
     {
         const auto f = transform<String, String, String, String, String, String, String>;
-        varxCollectItems(os[0]->combineLatest(*os[1], *os[2], *os[3], *os[4], *os[5], *os[6], f), items);
+        varxCollectItems(os[0]->combineLatest(f, *os[1], *os[2], *os[3], *os[4], *os[5], *os[6]), items);
         varxRequireItems(items, "0 1 2 3 4 5 6 ");
     }
 
     IT("works with arity 7")
     {
         const auto f = transform<String, String, String, String, String, String, String, String>;
-        varxCollectItems(os[0]->combineLatest(*os[1], *os[2], *os[3], *os[4], *os[5], *os[6], *os[7], f), items);
+        varxCollectItems(os[0]->combineLatest(f, *os[1], *os[2], *os[3], *os[4], *os[5], *os[6], *os[7]), items);
         varxRequireItems(items, "0 1 2 3 4 5 6 7 ");
+    }
+
+    IT("combines elements into a tuple when no transform is given")
+    {
+        auto o1 = Observable<bool>::just(true);
+        auto o2 = Observable<String>::from({ "Hello", "World" });
+        auto o3 = Observable<>::range(4, 6);
+        auto combined = o1.combineLatest(o2, o3);
+        static_assert(std::is_same<decltype(combined), Observable<std::tuple<bool, String, int>>>::value, "Combined Observable has wrong type.");
+
+        Array<std::tuple<bool, String, int>> items;
+        varxCollectItems(combined, items);
+        
+        CHECK(items.size() == 3);
+        
+        varxRequireItems(items,
+                         std::make_tuple(true, "World", 4),
+                         std::make_tuple(true, "World", 5),
+                         std::make_tuple(true, "World", 6));
     }
 }
 
@@ -111,19 +130,19 @@ TEST_CASE("Observable::distinctUntilChanged",
         varxRequireItems(originalItems, var(3), var(3), var("3"), var(3), var(3), var(5), var(3));
         varxRequireItems(filteredItems, var(3), var(5), var(3));
     }
-    
+
     IT("doesn't emit consecutive duplicate Point<int>s")
     {
         Array<Point<int>> items;
         PublishSubject<Point<int>> subject;
-        
+
         // Declare Point<int> as the type parameter, to use Point<int>::operator== for comparison:
         varxCollectItems(subject.distinctUntilChanged(), items);
-        
+
         subject.onNext(Point<int>(27, 12));
         subject.onNext(Point<int>(27, 12));
         subject.onNext(Point<int>(27, 14));
-        
+
         varxRequireItems(items, Point<int>(27, 12), Point<int>(27, 14));
     }
 }
@@ -182,20 +201,21 @@ TEST_CASE("Observable::filter",
 
         varxRequireItems(items, 5.43);
     }
-    
+
     IT("works with std::bind")
     {
         Array<int> items;
         auto source = Observable<>::range(14, 19);
-        
-        struct Test {
+
+        struct Test
+        {
             bool test(int item) { return item < 17; }
         };
-        
+
         Test t;
         auto predicate = std::bind(&Test::test, &t, std::placeholders::_1);
         auto filtered = source.filter(predicate);
-        
+
         varxCollectItems(filtered, items);
         varxRequireItems(items, 14, 15, 16);
     }
@@ -254,7 +274,7 @@ TEST_CASE("Interaction between Observable::map and Observable::switchOnNext",
 
         varxRequireItems(items, "1 Hello");
     }
-    
+
     IT("continues to emit items after the source Observable is gone")
     {
         Array<int> items;
@@ -268,13 +288,13 @@ TEST_CASE("Interaction between Observable::map and Observable::switchOnNext",
         });
         auto unwrapped = mapped.switchOnNext();
         varxCollectItems(unwrapped, items);
-        
+
         // There should be no items before running dispatch loop
         CHECK(items.isEmpty());
-        
+
         source.reset();
         varxRunDispatchLoop();
-        
+
         // The item should be emitted, although there's no reference to the source anymore
         varxRequireItems(items, 17 * 3);
     }
