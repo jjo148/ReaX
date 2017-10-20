@@ -4,6 +4,7 @@ class Scheduler;
 
 namespace detail {
 struct ObserverImpl;
+struct SchedulerImpl;
 
 struct ObservableImpl
 {
@@ -89,7 +90,7 @@ struct ObservableImpl
     ObservableImpl zip(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const ObservableImpl& o7, const Function8& transform) const;
 
     // Scheduling
-    ObservableImpl observeOn(const Scheduler& scheduler) const;
+    ObservableImpl observeOn(const detail::SchedulerImpl& scheduler) const;
 
     // Misc
     juce::Array<any> toArray(const std::function<void(Error)>& onError) const;

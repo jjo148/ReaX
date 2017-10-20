@@ -56,9 +56,9 @@ namespace varx {
 #include "rx/varx_DisposeBag.h"
 #include "rx/internal/varx_Observer_Impl.h"
 #include "rx/varx_Observer.h"
+#include "rx/varx_Scheduler.h"
 #include "rx/internal/varx_Observable_Impl.h"
 #include "rx/varx_Observable.h"
-#include "rx/varx_Scheduler.h"
 #include "rx/internal/varx_Subjects_Impl.h"
 #include "rx/varx_Subjects.h"
 

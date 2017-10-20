@@ -1,10 +1,12 @@
 #pragma once
 
-struct Scheduler::Impl
+namespace detail {
+struct SchedulerImpl
 {
-    typedef std::function<rxcpp::observable<detail::any>(const rxcpp::observable<detail::any>&)> Schedule;
+    typedef std::function<rxcpp::observable<any>(const rxcpp::observable<any>&)> Schedule;
 
-    Impl(const Schedule& schedule);
+    SchedulerImpl(const Schedule& schedule);
 
     const Schedule schedule;
 };
+}

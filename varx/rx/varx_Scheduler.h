@@ -1,5 +1,9 @@
 #pragma once
 
+namespace detail {
+    struct SchedulerImpl;
+}
+
 /**
     A Scheduler is used to process parts of an Observable on a specific thread.
  
@@ -20,10 +24,11 @@ public:
     static Scheduler newThread();
 
 private:
-    struct Impl;
-    std::shared_ptr<Impl> impl;
-    friend class detail::ObservableImpl;
-    Scheduler(const std::shared_ptr<Impl>&);
+    template<typename T>
+    friend class Observable;
+    
+    std::shared_ptr<detail::SchedulerImpl> impl;
+    Scheduler(const std::shared_ptr<detail::SchedulerImpl>&);
 
     JUCE_LEAK_DETECTOR(Scheduler)
 };

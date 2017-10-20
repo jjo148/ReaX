@@ -444,9 +444,9 @@ ObservableImpl ObservableImpl::zip(const ObservableImpl& o1, const ObservableImp
 
 #pragma mark - Scheduling
 
-ObservableImpl ObservableImpl::observeOn(const Scheduler& scheduler) const
+ObservableImpl ObservableImpl::observeOn(const detail::SchedulerImpl& scheduler) const
 {
-    return wrap(scheduler.impl->schedule(unwrap(wrapped)));
+    return wrap(scheduler.schedule(unwrap(wrapped)));
 }
 
 

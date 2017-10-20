@@ -1,7 +1,5 @@
 #pragma once
 
-class Scheduler;
-
 template<typename T>
 class Observer;
 
@@ -640,7 +638,7 @@ public:
      */
     Observable<T> observeOn(const Scheduler& scheduler) const
     {
-        return impl.observeOn(scheduler);
+        return impl.observeOn(*scheduler.impl);
     }
 
 
