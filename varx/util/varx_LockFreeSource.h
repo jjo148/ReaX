@@ -46,6 +46,7 @@ public:
         jassert(queueCapacity > 0);
     }
 
+    ///@{
     /**
      Adds an item that will be emitted from the Observable.
      
@@ -53,20 +54,36 @@ public:
      */
     inline void onNext(const T& item, CongestionPolicy congestionPolicy)
     {
+        _onNext(item, congestionPolicy);
+    }
+    
+    inline void onNext(T&& item, CongestionPolicy congestionPolicy)
+    {
+        _onNext(std::move(item), congestionPolicy);
+    }
+    ///@}
+
+private:
+    moodycamel::ConcurrentQueue<T> queue;
+
+    template<typename U>
+    inline void _onNext(U&& item, CongestionPolicy congestionPolicy)
+    {
         switch (congestionPolicy) {
             // If allocation is allowed, just enqueue the item, allowing the queue to allocate memory if needed.
             case CongestionPolicy::Allocate:
-                queue.enqueue(item);
+                queue.enqueue(std::forward<U>(item));
                 break;
 
             // If the latest item may be dropped, just try to enqueue (without allocating), and do nothing if it fails.
             case CongestionPolicy::DropLatest:
-                queue.try_enqueue(item);
+                queue.try_enqueue(std::forward<U>(item));
                 break;
 
             // If the oldest item may be dropped, try to enqueue (without allocating), and remove the oldest item if needed.
             case CongestionPolicy::DropOldest: {
                 T unused;
+                // Cannot use std::forward here: Item must not be moved because try_enqueue may be called multiple times.
                 while (!queue.try_enqueue(item))
                     queue.try_dequeue(unused);
                 break;
@@ -76,9 +93,6 @@ public:
         // Trigger an update on the message thread
         triggerAsyncUpdate();
     }
-
-private:
-    moodycamel::ConcurrentQueue<T> queue;
 
     void handleAsyncUpdate() override
     {

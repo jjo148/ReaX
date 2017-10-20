@@ -13,7 +13,7 @@ namespace detail {
 /**
  An Observer that stores the latest retrieved item atomically, so it can be read by a different thread.
  
- In most cases, this should be used with BehaviorSubject, or Observables that immediately emit an item when subscribing. This ensures that getValue() isn't called before any items have been retrieved.
+ In most cases, this should be used with BehaviorSubject, or Observables that immediately emit at least one item when subscribing. This ensures that getValue() isn't called before any items have been retrieved.
  
  Uses std::atomic for arithmetic types (i.e. bool and numbers). Otherwise, it uses shared_ptr and a ReleasePool to store the retrieved item.
  */
@@ -48,7 +48,7 @@ private:
 /**
  An Observer that stores the latest retrieved item atomically, so it can be read by a different thread.
  
- In most cases, this should be used with BehaviorSubject, or Observables that immediately emit an item when subscribing. This ensures that getValue() isn't called before any items have been retrieved.
+ In most cases, this should be used with BehaviorSubject, or Observables that immediately emit at least one item when subscribing. This ensures that getValue() isn't called before any items have been retrieved.
  
  Uses std::atomic for arithmetic types (i.e. bool and numbers). Otherwise, it uses shared_ptr and a ReleasePool to store the retrieved item.
  */

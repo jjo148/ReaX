@@ -161,7 +161,7 @@ public:
 
         return converted.subscribe(observer.impl);
     }
-        ///@}
+    ///@}
 
 #pragma mark - Operators
     ///@{
