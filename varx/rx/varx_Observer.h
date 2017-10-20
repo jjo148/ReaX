@@ -36,6 +36,9 @@ public:
     {}
 
 protected:
+    template<typename U>
+    friend class Observable;
+    
     Observer(const detail::ObserverImpl& impl, const std::function<detail::any(const detail::any&)>& convert = [](const detail::any& item){ return item; })
     : impl(impl),
       convert(convert)
@@ -44,18 +47,6 @@ protected:
 private:
     template<typename U>
     friend class Observer;
-    
-#warning Maybe remove these
-    friend class ObservableBase;
-    template<typename U>
-    friend class Observable;
-
-    template<typename U>
-    friend class BehaviorSubject;
-    template<typename U>
-    friend class PublishSubject;
-    template<typename U>
-    friend class ReplaySubject;
 
     const detail::ObserverImpl impl;
     const std::function<detail::any(const detail::any&)> convert;
