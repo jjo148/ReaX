@@ -12,7 +12,7 @@ public:
 
     typedef detail::ObservableImpl Impl;
     typedef detail::any any;
-    
+
     ///@{
     /** Determines whether a given type is an Observable. */
     template<typename U>
@@ -25,7 +25,7 @@ public:
     {
     };
     ///@}
-    
+
     /** The return type of calling a function of type Transform with parameters of types Args. */
     template<typename Transform, typename... Args>
     using CallResult = decltype(std::declval<Transform>()(std::declval<Args>()...));
@@ -158,10 +158,10 @@ public:
         auto converted = impl.map([](const any& t) {
             return toAny<U>(t.get<T>());
         });
-        
+
         return converted.subscribe(observer.impl);
     }
-    ///@}
+        ///@}
 
 #pragma mark - Operators
     ///@{
@@ -177,18 +177,18 @@ public:
     {
         return combineLatest(std::make_tuple<T, Ts...>, others...);
     }
-    
+
     template<typename... Ts, typename Transform>
     Observable<CallResult<Transform, T, Ts...>> combineLatest(Transform&& transform, const Observable<Ts>&... others) const
     {
         static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable.");
         static_assert(sizeof...(Ts) <= Impl::MaximumArity, "Too many Observables passed to combineLatest.");
-        
+
         const std::function<any(const any&, const typename any_args<Ts>::type&...)> untypedTransform = [transform](const any& v, const typename any_args<Ts>::type&... vs) {
             return toAny(transform(v.get<T>(), vs.template get<Ts>()...));
         };
-        
-        return impl.combineLatest({others.impl...}, toAny(untypedTransform));
+
+        return impl.combineLatest({ others.impl... }, toAny(untypedTransform));
     }
     ///@}
 
@@ -201,14 +201,14 @@ public:
     {
         // Must pass at least one other Observable:
         jassert(others.size() > 0);
-        
+
         // Too many Observables passed to concat:
         jassert(others.size() <= Impl::MaximumArity);
-        
+
         juce::Array<Impl> otherImpls;
         for (auto& other : others)
             otherImpls.add(other.impl);
-        
+
         return impl.concat(otherImpls);
     }
 
@@ -301,14 +301,14 @@ public:
     {
         // Must pass at least one other Observable:
         jassert(others.size() > 0);
-        
+
         // Too many Observables:
         jassert(others.size() <= Impl::MaximumArity);
-        
+
         juce::Array<Impl> otherImpls;
         for (auto& other : others)
             otherImpls.add(other.impl);
-        
+
         return impl.merge(otherImpls);
     }
 
@@ -370,14 +370,14 @@ public:
     {
         // Must pass at least one item:
         jassert(items.size() > 0);
-        
+
         // Too many items:
         jassert(items.size() <= Impl::MaximumArity);
-        
+
         juce::Array<any> anyItems;
         for (auto& item : items)
             anyItems.add(toAny(item));
-        
+
         return impl.startWith(std::move(anyItems));
     }
 
@@ -440,18 +440,18 @@ public:
     {
         return withLatestFrom(std::make_tuple<T, Ts...>, others...);
     }
-    
+
     template<typename... Ts, typename Transform>
     Observable<CallResult<Transform, T, Ts...>> withLatestFrom(Transform&& transform, const Observable<Ts>&... others) const
     {
         static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable.");
         static_assert(sizeof...(Ts) <= Impl::MaximumArity, "Too many Observables passed to withLatestFrom.");
-        
+
         const std::function<any(const any&, const typename any_args<Ts>::type&...)> untypedTransform = [transform](const any& v, const typename any_args<Ts>::type&... vs) {
             return toAny(transform(v.get<T>(), vs.template get<Ts>()...));
         };
-        
-        return impl.withLatestFrom({others.impl...}, toAny(untypedTransform));
+
+        return impl.withLatestFrom({ others.impl... }, toAny(untypedTransform));
     }
     ///@}
 
@@ -468,20 +468,20 @@ public:
     {
         return zip(std::make_tuple<T, Ts...>, others...);
     }
-    
+
     template<typename... Ts, typename Transform>
     Observable<CallResult<Transform, T, Ts...>> zip(Transform&& transform, const Observable<Ts>&... others) const
     {
         static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable.");
         static_assert(sizeof...(Ts) <= Impl::MaximumArity, "Too many Observables passed to zip.");
-        
+
         const std::function<any(const any&, const typename any_args<Ts>::type&...)> untypedTransform = [transform](const any& v, const typename any_args<Ts>::type&... vs) {
             return toAny(transform(v.get<T>(), vs.template get<Ts>()...));
         };
-        
-        return impl.zip({others.impl...}, toAny(untypedTransform));
+
+        return impl.zip({ others.impl... }, toAny(untypedTransform));
     }
-    ///@}
+        ///@}
 
 
 #pragma mark - Scheduling
@@ -524,6 +524,13 @@ public:
         return items;
     }
 
+
+#pragma mark - Covariance
+    template<typename U>
+    Observable(const Observable<U>& other, typename std::enable_if<std::is_convertible<U, T>::value>::type* = 0)
+    : Observable(other.impl.map([](const any& u) { return toAny(static_cast<T>(u.get<U>())); }))
+    {}
+
 private:
     template<typename U>
     friend class Observable;
@@ -547,10 +554,11 @@ private:
     {
         return any(std::move(u.impl));
     }
-    
+
     // any_args<Ts...>::type is a parameter pack with the same length as Ts, where all types are any.
     template<typename>
-    struct any_args {
+    struct any_args
+    {
         typedef any type;
     };
 

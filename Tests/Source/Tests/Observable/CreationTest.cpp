@@ -520,6 +520,87 @@ TEST_CASE("Observable::repeat",
     }
 }
 
+TEST_CASE("Observable covariance",
+          "[Observable]")
+{
+    CONTEXT("implicit conversion")
+    {
+        auto floats = Observable<float>::just(17.f);
+        auto doubles = Observable<double>::just(34.0);
+        auto vars = Observable<var>::just(51);
+        auto strings = Observable<String>::just("Hello");
+        
+        IT("can convert from var to float")
+        {
+            Array<float> items;
+            floats = vars;
+            varxCollectItems(floats, items);
+            
+            varxRequireItems(items, 51);
+        }
+        
+        IT("can convert from float to var")
+        {
+            Array<var> items;
+            vars = floats;
+            varxCollectItems(vars, items);
+            
+            varxRequireItems(items, 17);
+        }
+        
+        IT("can convert from String to var")
+        {
+            Array<var> items;
+            vars = strings;
+            varxCollectItems(vars, items);
+            
+            varxRequireItems(items, "Hello");
+        }
+        
+        IT("can convert from float to double")
+        {
+            Array<double> items;
+            doubles = floats;
+            varxCollectItems(doubles, items);
+            
+            varxRequireItems(items, 17);
+        }
+    }
+    
+    CONTEXT("inheritance")
+    {
+        struct Base
+        {
+            Base(int a)
+            : a(a) {}
+            
+            int a;
+            
+            bool operator==(const Base& rhs){ return (a == rhs.a); }
+            bool operator!=(const Base& rhs){ return !(*this == rhs); }
+        };
+        struct Derived : Base
+        {
+            Derived(int a, int b)
+            : Base(a), b(b) {}
+            
+            int b;
+        };
+        
+        auto bases = Observable<Base>::just(Base(100));
+        auto deriveds = Observable<Derived>::just(Derived(200, 1000));
+        
+        IT("can convert from Deriveds to Bases")
+        {
+            Array<Base> items;
+            bases = deriveds;
+            varxCollectItems(bases, items);
+            
+            varxRequireItems(items, Base(200));
+        }
+    }
+}
+
 
 // Dummy struct that just counts copy and move constructions
 struct CopyAndMoveConstructible
@@ -558,19 +639,19 @@ TEST_CASE("VariantConverter<T>")
         // Counters for copy and move constructions
         int numCopyConstructorCalls = 0;
         int numMoveConstructorCalls = 0;
-        
+
         // Create instance of custom type
         CopyAndMoveConstructible original(numCopyConstructorCalls, numMoveConstructorCalls);
         CHECK(numCopyConstructorCalls == 0);
         CHECK(numMoveConstructorCalls == 0);
-        
+
         // Wrap custom type in a var using rvalue
         var v(toVar(std::move(original)));
-        
+
         // Only the move constructor should have been called
         REQUIRE(numCopyConstructorCalls == 0);
         REQUIRE(numMoveConstructorCalls == 1);
-        
+
         IT("uses the copy constructor when unwrapping")
         {
             auto unwrapped = fromVar<CopyAndMoveConstructible>(v);
