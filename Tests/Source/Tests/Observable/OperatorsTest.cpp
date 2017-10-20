@@ -100,7 +100,7 @@ TEST_CASE("Observable::concat",
     {
         auto observable = Observable<var>::from({ "Hello", "World" });
         auto another = Observable<var>::from({ 1.5, 2.32, 5.6 });
-        varxCollectItems(observable.concat(another), items);
+        varxCollectItems(observable.concat({another}), items);
 
         varxRequireItems(items, var("Hello"), var("World"), var(1.5), var(2.32), var(5.6));
     }
@@ -389,7 +389,7 @@ TEST_CASE("Observable::startWith",
 
     IT("prepends items to an existing Observable")
     {
-        varxCollectItems(observable.startWith(6, 4, 7, 2), items);
+        varxCollectItems(observable.startWith({6, 4, 7, 2}), items);
 
         varxRequireItems(items, 6, 4, 7, 2, 17, 3);
     }
@@ -480,7 +480,7 @@ TEST_CASE("Observable::withLatestFrom",
     IT("only emits when the first Observable emits")
     {
         const auto f = transform<String, String>;
-        varxCollectItems(s1.withLatestFrom(s2, f), items);
+        varxCollectItems(s1.withLatestFrom(f, s2), items);
         CHECK(items.isEmpty());
         s2.onNext("World!");
         CHECK(items.isEmpty());
@@ -505,7 +505,7 @@ TEST_CASE("Observable::zip",
             return "s=" + s + "; i=" + String(i) + "; d=" + String(d);
         };
 
-        varxCollectItems(strings.zip(ints, doubles, combine), items);
+        varxCollectItems(strings.zip(combine, ints, doubles), items);
 
         // First item should be emitted when all three Observables have emitted once
         strings.onNext("a");

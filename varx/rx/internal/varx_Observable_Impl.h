@@ -10,17 +10,6 @@ struct ObservableImpl
 {
     ObservableImpl(const any& wrapped);
 
-    // Helper typedefs
-#warning Move these to .cpp file
-    using Function2 = std::function<any(const any&, const any&)>;
-    using Function3 = std::function<any(const any&, const any&, const any&)>;
-    using Function4 = std::function<any(const any&, const any&, const any&, const any&)>;
-    using Function5 = std::function<any(const any&, const any&, const any&, const any&, const any&)>;
-    using Function6 = std::function<any(const any&, const any&, const any&, const any&, const any&, const any&)>;
-    using Function7 = std::function<any(const any&, const any&, const any&, const any&, const any&, const any&, const any&)>;
-    using Function8 = std::function<any(const any&, const any&, const any&, const any&, const any&, const any&, const any&, const any&)>;
-    using Function9 = std::function<any(const any&, const any&, const any&, const any&, const any&, const any&, const any&, const any&, const any&)>;
-
     // Creation
     static ObservableImpl create(const std::function<void(ObserverImpl&&)>& onSubscribe);
     static ObservableImpl defer(const std::function<ObservableImpl()>& factory);
@@ -45,45 +34,27 @@ struct ObservableImpl
 
     // Operators
     ObservableImpl combineLatest(std::initializer_list<ObservableImpl> others, const any& transform) const;
-    ObservableImpl concat(const ObservableImpl& o1) const;
+    ObservableImpl concat(const juce::Array<ObservableImpl>& others) const;
     ObservableImpl debounce(const juce::RelativeTime& interval) const;
     ObservableImpl distinctUntilChanged(const std::function<bool(const any&, const any&)>& equals) const;
     ObservableImpl elementAt(int index) const;
     ObservableImpl filter(const std::function<bool(const any&)>& predicate) const;
     ObservableImpl flatMap(const std::function<ObservableImpl(const any&)>& transform) const;
     ObservableImpl map(const std::function<any(const any&)>& transform) const;
-    ObservableImpl merge(const ObservableImpl& o1) const;
-    ObservableImpl reduce(const any& startValue, const Function2& f) const;
+    ObservableImpl merge(const juce::Array<ObservableImpl>& others) const;
+    ObservableImpl reduce(const any& startValue, const std::function<any(const any&, const any&)>& f) const;
     ObservableImpl sample(const juce::RelativeTime& interval) const;
-    ObservableImpl scan(const any& startValue, const Function2& f) const;
+    ObservableImpl scan(const any& startValue, const std::function<any(const any&, const any&)>& f) const;
     ObservableImpl skip(unsigned int numItems) const;
     ObservableImpl skipUntil(const ObservableImpl& other) const;
-    ObservableImpl startWith(const any& v1) const;
-    ObservableImpl startWith(const any& v1, const any& v2) const;
-    ObservableImpl startWith(const any& v1, const any& v2, const any& v3) const;
-    ObservableImpl startWith(const any& v1, const any& v2, const any& v3, const any& v4) const;
-    ObservableImpl startWith(const any& v1, const any& v2, const any& v3, const any& v4, const any& v5) const;
-    ObservableImpl startWith(const any& v1, const any& v2, const any& v3, const any& v4, const any& v5, const any& v6) const;
-    ObservableImpl startWith(const any& v1, const any& v2, const any& v3, const any& v4, const any& v5, const any& v6, const any& v7) const;
+    ObservableImpl startWith(juce::Array<any>&& items) const;
     ObservableImpl switchOnNext() const;
     ObservableImpl take(unsigned int numItems) const;
     ObservableImpl takeLast(unsigned int numItems) const;
     ObservableImpl takeUntil(const ObservableImpl& other) const;
     ObservableImpl takeWhile(const std::function<bool(const any&)>& predicate) const;
-    ObservableImpl withLatestFrom(const ObservableImpl& o1, const Function2& transform) const;
-    ObservableImpl withLatestFrom(const ObservableImpl& o1, const ObservableImpl& o2, const Function3& transform) const;
-    ObservableImpl withLatestFrom(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const Function4& transform) const;
-    ObservableImpl withLatestFrom(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const Function5& transform) const;
-    ObservableImpl withLatestFrom(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const Function6& transform) const;
-    ObservableImpl withLatestFrom(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const Function7& transform) const;
-    ObservableImpl withLatestFrom(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const ObservableImpl& o7, const Function8& transform) const;
-    ObservableImpl zip(const ObservableImpl& o1, const Function2& transform) const;
-    ObservableImpl zip(const ObservableImpl& o1, const ObservableImpl& o2, const Function3& transform) const;
-    ObservableImpl zip(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const Function4& transform) const;
-    ObservableImpl zip(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const Function5& transform) const;
-    ObservableImpl zip(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const Function6& transform) const;
-    ObservableImpl zip(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const Function7& transform) const;
-    ObservableImpl zip(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const ObservableImpl& o7, const Function8& transform) const;
+    ObservableImpl withLatestFrom(std::initializer_list<ObservableImpl> others, const any& transform) const;
+    ObservableImpl zip(std::initializer_list<ObservableImpl> others, const any& transform) const;
 
     // Scheduling
     ObservableImpl observeOn(const SchedulerImpl& scheduler) const;

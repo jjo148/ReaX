@@ -137,6 +137,7 @@ private:
         }
     };
 
+#warning Use std::shared_ptr instead
     juce::ReferenceCountedObjectPtr<Object> objectValue;
 
     template<typename T>

@@ -7,11 +7,14 @@ template<typename T = void>
 class Observable
 {
 public:
+#pragma mark - Helpers
     typedef T ItemType;
 
     typedef detail::ObservableImpl Impl;
     typedef detail::any any;
-
+    
+    ///@{
+    /** Determines whether a given type is an Observable. */
     template<typename U>
     struct IsObservable : std::false_type
     {
@@ -21,6 +24,11 @@ public:
     struct IsObservable<Observable<U>> : std::true_type
     {
     };
+    ///@}
+    
+    /** The return type of calling a function of type Transform with parameters of types Args. */
+    template<typename Transform, typename... Args>
+    using CallResult = decltype(std::declval<Transform>()(std::declval<Args>()...));
 
 #pragma mark - Creation
     /**
@@ -155,11 +163,6 @@ public:
     }
     ///@}
 
-
-#pragma mark - Helper Functions
-    template<typename Transform, typename... Args>
-    using CallResult = decltype(std::declval<Transform>()(std::declval<Args>()...));
-
 #pragma mark - Operators
     ///@{
     /**
@@ -169,20 +172,14 @@ public:
      
      @see Observable::withLatestFrom
      */
-#warning Move this elsewhere
-    template<typename>
-    struct any_args {
-        typedef any type;
-    };
-    
     template<typename... Ts>
-    Observable<std::tuple<T, Ts...>> combineLatest(const Observable<Ts>&... others)
+    Observable<std::tuple<T, Ts...>> combineLatest(const Observable<Ts>&... others) const
     {
         return combineLatest(std::make_tuple<T, Ts...>, others...);
     }
     
     template<typename... Ts, typename Transform>
-    Observable<CallResult<Transform, T, Ts...>> combineLatest(Transform&& transform, const Observable<Ts>&... others)
+    Observable<CallResult<Transform, T, Ts...>> combineLatest(Transform&& transform, const Observable<Ts>&... others) const
     {
         static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable.");
         static_assert(sizeof...(Ts) <= Impl::MaximumArity, "Too many Observables passed to combineLatest.");
@@ -195,17 +192,25 @@ public:
     }
     ///@}
 
-    ///@{
     /**
-     Returns an Observable that first emits the items from this Observable, then from o1, then from o2, and so on.
+     Returns an Observable that first emits the items from this Observable, then from the first in the "others" list, then from the second, and so on.
      
-     It only subscribes to o1 when this Observable has completed. And only subscribes to o2 when o1 has completed, and so on.
+     It only subscribes to the first in the "others" list when this Observable has completed. And only subscribes to the second when the first has completed, and so on.
      */
-    Observable<T> concat(const Observable<T>& o1) const
+    Observable<T> concat(std::initializer_list<Observable<T>> others) const
     {
-        return impl.concat(o1.impl);
+        // Must pass at least one other Observable:
+        jassert(others.size() > 0);
+        
+        // Too many Observables passed to concat:
+        jassert(others.size() <= Impl::MaximumArity);
+        
+        juce::Array<Impl> otherImpls;
+        for (auto& other : others)
+            otherImpls.add(other.impl);
+        
+        return impl.concat(otherImpls);
     }
-    ///@}
 
     /**
      Returns an Observable which emits if `interval` has passed without this Observable emitting an item. The returned Observable emits the latest item from this Observable.
@@ -259,7 +264,7 @@ public:
      This Observable:
      
      Observable::from({"Hello", "World"}).flatMap([](String s) {
-     return Observable::from({s.toLowerCase(), s.toUpperCase() + "!"});
+         return Observable::from({s.toLowerCase(), s.toUpperCase() + "!"});
      });
      
      Will emit the items: `"hello"`, `"HELLO!"`, `"world"` and `"WORLD!"`.
@@ -287,18 +292,25 @@ public:
         });
     }
 
-    ///@{
     /**
-     Merges the emitted items of this observable and o1, o2, … into one Observable. The items are interleaved, depending on when the source Observables emit items.
+     Merges the emitted items of this observable and the others into one Observable. The items are interleaved, depending on when the source Observables emit items.
      
      An error in one of the source Observables notifies the result Observable's `onError` immediately.
      */
-    Observable<T> merge(const Observable<T>& o1) const
+    Observable<T> merge(std::initializer_list<Observable<T>> others) const
     {
-        return impl.merge(o1.impl);
+        // Must pass at least one other Observable:
+        jassert(others.size() > 0);
+        
+        // Too many Observables:
+        jassert(others.size() <= Impl::MaximumArity);
+        
+        juce::Array<Impl> otherImpls;
+        for (auto& other : others)
+            otherImpls.add(other.impl);
+        
+        return impl.merge(otherImpls);
     }
-
-    ///@}
 
     /**
      Begins with a `startValue`, and then applies `f` to all items emitted by this Observable, and returns the aggregate result as a single-element Observable sequence.
@@ -351,56 +363,28 @@ public:
         return impl.skipUntil(other.impl);
     }
 
-    ///@{
     /**
      Emits the given item(s) before beginning to emit the items in this Observable.
      */
-    Observable<T> startWith(const T& v1) const
+    Observable<T> startWith(std::initializer_list<T> items) const
     {
-        return impl.startWith(toAny(v1));
+        // Must pass at least one item:
+        jassert(items.size() > 0);
+        
+        // Too many items:
+        jassert(items.size() <= Impl::MaximumArity);
+        
+        juce::Array<any> anyItems;
+        for (auto& item : items)
+            anyItems.add(toAny(item));
+        
+        return impl.startWith(std::move(anyItems));
     }
-
-    /** \overload */
-    Observable<T> startWith(const T& v1, const T& v2) const
-    {
-        return impl.startWith(toAny(v1), toAny(v2));
-    }
-
-    /** \overload */
-    Observable<T> startWith(const T& v1, const T& v2, const T& v3) const
-    {
-        return impl.startWith(toAny(v1), toAny(v2), toAny(v3));
-    }
-
-    /** \overload */
-    Observable<T> startWith(const T& v1, const T& v2, const T& v3, const T& v4) const
-    {
-        return impl.startWith(toAny(v1), toAny(v2), toAny(v3), toAny(v4));
-    }
-
-    /** \overload */
-    Observable<T> startWith(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5) const
-    {
-        return impl.startWith(toAny(v1), toAny(v2), toAny(v3), toAny(v4), toAny(v5));
-    }
-
-    /** \overload */
-    Observable<T> startWith(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6) const
-    {
-        return impl.startWith(toAny(v1), toAny(v2), toAny(v3), toAny(v4), toAny(v5), toAny(v6));
-    }
-
-    /** \overload */
-    Observable<T> startWith(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6, const T& v7) const
-    {
-        return impl.startWith(toAny(v1), toAny(v2), toAny(v3), toAny(v4), toAny(v5), toAny(v6), toAny(v7));
-    }
-    ///@}
 
     /**
-     ​ **This must only be called if this Observable emits Observables**.
+     ​Returns an Observable that emits the items emitted by the Observables which this Observable emits.
      
-     Returns an Observable that emits the items emitted by the Observables which this Observable emits.
+     Therefore, it can only be used when this Observable emits Observables.
      */
     template<typename U = T>
     typename std::enable_if<IsObservable<U>::value, U>::type switchOnNext() const
@@ -451,68 +435,24 @@ public:
      
      This is different from Observable::combineLatest because it only emits when this Observable emits an item (not when o1, o2, … emit items).
      */
-    template<typename T1, typename Transform = std::function<std::tuple<T, T1>(const T, const T1)>>
-    Observable<CallResult<Transform, T, T1>> withLatestFrom(const Observable<T1>& o1, Transform&& transform = std::make_tuple<T, T1>) const
+    template<typename... Ts>
+    Observable<std::tuple<T, Ts...>> withLatestFrom(const Observable<Ts>&... others) const
     {
-        return impl.withLatestFrom(o1.impl, [transform](const any& v0, const any& v1) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>()));
-        });
+        return withLatestFrom(std::make_tuple<T, Ts...>, others...);
     }
-
-    /** \overload */
-    template<typename T1, typename T2, typename Transform>
-    Observable<CallResult<Transform, T, T1, T2>> withLatestFrom(const Observable<T1>& o1, const Observable<T2>& o2, Transform&& transform) const
+    
+    template<typename... Ts, typename Transform>
+    Observable<CallResult<Transform, T, Ts...>> withLatestFrom(Transform&& transform, const Observable<Ts>&... others) const
     {
-        return impl.withLatestFrom(o1.impl, o2.impl, [transform](const any& v0, const any& v1, const any& v2) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>(), v2.get<T2>()));
-        });
+        static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable.");
+        static_assert(sizeof...(Ts) <= Impl::MaximumArity, "Too many Observables passed to withLatestFrom.");
+        
+        const std::function<any(const any&, const typename any_args<Ts>::type&...)> untypedTransform = [transform](const any& v, const typename any_args<Ts>::type&... vs) {
+            return toAny(transform(v.get<T>(), vs.template get<Ts>()...));
+        };
+        
+        return impl.withLatestFrom({others.impl...}, toAny(untypedTransform));
     }
-
-    /** \overload */
-    template<typename T1, typename T2, typename T3, typename Transform>
-    Observable<CallResult<Transform, T, T1, T2, T3>> withLatestFrom(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, Transform&& transform) const
-    {
-        return impl.withLatestFrom(o1.impl, o2.impl, o3.impl, [transform](const any& v0, const any& v1, const any& v2, const any& v3) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>(), v2.get<T2>(), v3.get<T3>()));
-        });
-    }
-
-    /** \overload */
-    template<typename T1, typename T2, typename T3, typename T4, typename Transform>
-    Observable<CallResult<Transform, T, T1, T2, T3, T4>> withLatestFrom(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, Transform&& transform) const
-    {
-        return impl.withLatestFrom(o1.impl, o2.impl, o3.impl, o4.impl, [transform](const any& v0, const any& v1, const any& v2, const any& v3, const any& v4) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>(), v2.get<T2>(), v3.get<T3>(), v4.get<T4>()));
-        });
-    }
-
-    /** \overload */
-    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename Transform>
-    Observable<CallResult<Transform, T, T1, T2, T3, T4, T5>> withLatestFrom(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, const Observable<T5>& o5, Transform&& transform) const
-    {
-        return impl.withLatestFrom(o1.impl, o2.impl, o3.impl, o4.impl, o5.impl, [transform](const any& v0, const any& v1, const any& v2, const any& v3, const any& v4, const any& v5) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>(), v2.get<T2>(), v3.get<T3>(), v4.get<T4>(), v5.get<T5>()));
-        });
-    }
-
-    /** \overload */
-    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename Transform>
-    Observable<CallResult<Transform, T, T1, T2, T3, T4, T5, T6>> withLatestFrom(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, const Observable<T5>& o5, const Observable<T6>& o6, Transform&& transform) const
-    {
-        return impl.withLatestFrom(o1.impl, o2.impl, o3.impl, o4.impl, o5.impl, o6.impl, [transform](const any& v0, const any& v1, const any& v2, const any& v3, const any& v4, const any& v5, const any& v6) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>(), v2.get<T2>(), v3.get<T3>(), v4.get<T4>(), v5.get<T5>(), v6.get<T6>()));
-        });
-    }
-
-    /** \overload */
-    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename Transform>
-    Observable<CallResult<Transform, T, T1, T2, T3, T4, T5, T6, T7>> withLatestFrom(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, const Observable<T5>& o5, const Observable<T6>& o6, const Observable<T7>& o7, Transform&& transform) const
-    {
-        return impl.withLatestFrom(o1.impl, o2.impl, o3.impl, o4.impl, o5.impl, o6.impl, o7.impl, [transform](const any& v0, const any& v1, const any& v2, const any& v3, const any& v4, const any& v5, const any& v6, const any& v7) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>(), v2.get<T2>(), v3.get<T3>(), v4.get<T4>(), v5.get<T5>(), v6.get<T6>(), v7.get<T7>()));
-        });
-    }
-
     ///@}
 
     ///@{
@@ -523,68 +463,25 @@ public:
      
      The returned Observable only emits as many items as the number of items emitted by the source Observable that emits the fewest items.
      */
-    template<typename T1, typename Transform>
-    Observable<CallResult<Transform, T, T1>> zip(const Observable<T1>& o1, Transform&& transform) const
+    template<typename... Ts>
+    Observable<std::tuple<T, Ts...>> zip(const Observable<Ts>&... others) const
     {
-        return impl.zip(o1.impl, [transform](const any& v0, const any& v1) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>()));
-        });
+        return zip(std::make_tuple<T, Ts...>, others...);
     }
-
-    /** \overload */
-    template<typename T1, typename T2, typename Transform>
-    Observable<CallResult<Transform, T, T1, T2>> zip(const Observable<T1>& o1, const Observable<T2>& o2, Transform&& transform) const
+    
+    template<typename... Ts, typename Transform>
+    Observable<CallResult<Transform, T, Ts...>> zip(Transform&& transform, const Observable<Ts>&... others) const
     {
-        return impl.zip(o1.impl, o2.impl, [transform](const any& v0, const any& v1, const any& v2) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>(), v2.get<T2>()));
-        });
+        static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable.");
+        static_assert(sizeof...(Ts) <= Impl::MaximumArity, "Too many Observables passed to zip.");
+        
+        const std::function<any(const any&, const typename any_args<Ts>::type&...)> untypedTransform = [transform](const any& v, const typename any_args<Ts>::type&... vs) {
+            return toAny(transform(v.get<T>(), vs.template get<Ts>()...));
+        };
+        
+        return impl.zip({others.impl...}, toAny(untypedTransform));
     }
-
-    /** \overload */
-    template<typename T1, typename T2, typename T3, typename Transform>
-    Observable<CallResult<Transform, T, T1, T2, T3>> zip(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, Transform&& transform) const
-    {
-        return impl.zip(o1.impl, o2.impl, o3.impl, [transform](const any& v0, const any& v1, const any& v2, const any& v3) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>(), v2.get<T2>(), v3.get<T3>()));
-        });
-    }
-
-    /** \overload */
-    template<typename T1, typename T2, typename T3, typename T4, typename Transform>
-    Observable<CallResult<Transform, T, T1, T2, T3, T4>> zip(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, Transform&& transform) const
-    {
-        return impl.zip(o1.impl, o2.impl, o3.impl, o4.impl, [transform](const any& v0, const any& v1, const any& v2, const any& v3, const any& v4) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>(), v2.get<T2>(), v3.get<T3>(), v4.get<T4>()));
-        });
-    }
-
-    /** \overload */
-    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename Transform>
-    Observable<CallResult<Transform, T, T1, T2, T3, T4, T5>> zip(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, const Observable<T5>& o5, Transform&& transform) const
-    {
-        return impl.zip(o1.impl, o2.impl, o3.impl, o4.impl, o5.impl, [transform](const any& v0, const any& v1, const any& v2, const any& v3, const any& v4, const any& v5) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>(), v2.get<T2>(), v3.get<T3>(), v4.get<T4>(), v5.get<T5>()));
-        });
-    }
-
-    /** \overload */
-    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename Transform>
-    Observable<CallResult<Transform, T, T1, T2, T3, T4, T5, T6>> zip(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, const Observable<T5>& o5, const Observable<T6>& o6, Transform&& transform) const
-    {
-        return impl.zip(o1.impl, o2.impl, o3.impl, o4.impl, o5.impl, o6.impl, [transform](const any& v0, const any& v1, const any& v2, const any& v3, const any& v4, const any& v5, const any& v6) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>(), v2.get<T2>(), v3.get<T3>(), v4.get<T4>(), v5.get<T5>(), v6.get<T6>()));
-        });
-    }
-
-    /** \overload */
-    template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename Transform>
-    Observable<CallResult<Transform, T, T1, T2, T3, T4, T5, T6, T7>> zip(const Observable<T1>& o1, const Observable<T2>& o2, const Observable<T3>& o3, const Observable<T4>& o4, const Observable<T5>& o5, const Observable<T6>& o6, const Observable<T7>& o7, Transform&& transform) const
-    {
-        return impl.zip(o1.impl, o2.impl, o3.impl, o4.impl, o5.impl, o6.impl, o7.impl, [transform](const any& v0, const any& v1, const any& v2, const any& v3, const any& v4, const any& v5, const any& v6, const any& v7) {
-            return toAny(transform(v0.get<T>(), v1.get<T1>(), v2.get<T2>(), v3.get<T3>(), v4.get<T4>(), v5.get<T5>(), v6.get<T6>(), v7.get<T7>()));
-        });
-    }
-        ///@}
+    ///@}
 
 
 #pragma mark - Scheduling
@@ -650,6 +547,12 @@ private:
     {
         return any(std::move(u.impl));
     }
+    
+    // any_args<Ts...>::type is a parameter pack with the same length as Ts, where all types are any.
+    template<typename>
+    struct any_args {
+        typedef any type;
+    };
 
     JUCE_LEAK_DETECTOR(Observable)
 };

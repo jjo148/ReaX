@@ -39,7 +39,21 @@ private:
     const rxcpp::subjects::behavior<var> subject;
 };
 
-inline const rxcpp::observable<any> unwrap(const any& wrapped)
+using Function2 = std::function<any(const any&, const any&)>;
+using Function3 = std::function<any(const any&, const any&, const any&)>;
+using Function4 = std::function<any(const any&, const any&, const any&, const any&)>;
+using Function5 = std::function<any(const any&, const any&, const any&, const any&, const any&)>;
+using Function6 = std::function<any(const any&, const any&, const any&, const any&, const any&, const any&)>;
+using Function7 = std::function<any(const any&, const any&, const any&, const any&, const any&, const any&, const any&)>;
+using Function8 = std::function<any(const any&, const any&, const any&, const any&, const any&, const any&, const any&, const any&)>;
+using Function9 = std::function<any(const any&, const any&, const any&, const any&, const any&, const any&, const any&, const any&, const any&)>;
+
+inline any wrap(const rxcpp::observable<any>& observable)
+{
+    return any(observable);
+}
+
+inline rxcpp::observable<any> unwrap(const any& wrapped)
 {
 #warning Don't use try-catch
     try {
@@ -48,11 +62,6 @@ inline const rxcpp::observable<any> unwrap(const any& wrapped)
     catch (std::exception) {
         return wrapped.get<std::shared_ptr<ValueObservable>>()->getObservable().map([](const var& item) { return any(item); });
     }
-}
-
-inline any wrap(const rxcpp::observable<any>& observable)
-{
-    return any(observable);
 }
 
 template<typename T>
@@ -209,36 +218,59 @@ Disposable ObservableImpl::subscribe(const ObserverImpl& observer) const
 
 #pragma mark - Operators
 
-ObservableImpl ObservableImpl::combineLatest(std::initializer_list<ObservableImpl> others, const any& transform) const
-{
-#warning Create macro
-    const auto it = others.begin();
-    
-    switch (others.size()) {
-        case 1:
-            return wrap(_combineLatest(wrapped, transform.get<Function2>(), *it));
-        case 2:
-            return wrap(_combineLatest(wrapped, transform.get<Function3>(), *it, *(it+1)));
-        case 3:
-            return wrap(_combineLatest(wrapped, transform.get<Function4>(), *it, *(it+1), *(it+2)));
-        case 4:
-            return wrap(_combineLatest(wrapped, transform.get<Function5>(), *it, *(it+1), *(it+2), *(it+3)));
-        case 5:
-            return wrap(_combineLatest(wrapped, transform.get<Function6>(), *it, *(it+1), *(it+2), *(it+3), *(it+4)));
-        case 6:
-            return wrap(_combineLatest(wrapped, transform.get<Function7>(), *it, *(it+1), *(it+2), *(it+3), *(it+4), *(it+5)));
-        case 7:
-            return wrap(_combineLatest(wrapped, transform.get<Function8>(), *it, *(it+1), *(it+2), *(it+3), *(it+4), *(it+5), *(it+6)));
-        case 8:
-            return wrap(_combineLatest(wrapped, transform.get<Function9>(), *it, *(it+1), *(it+2), *(it+3), *(it+4), *(it+5), *(it+6), *(it+7)));
-        default:
-            jassertfalse;
+#define VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION(__functionName, __list) \
+    const auto it = __list.begin(); \
+    switch (__list.size()) { \
+        case 1: \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, *it)); \
+        case 2: \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, *it, *(it + 1))); \
+        case 3: \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, *it, *(it + 1), *(it + 2))); \
+        case 4: \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, *it, *(it + 1), *(it + 2), *(it + 3))); \
+        case 5: \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, *it, *(it + 1), *(it + 2), *(it + 3), *(it + 4))); \
+        case 6: \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, *it, *(it + 1), *(it + 2), *(it + 3), *(it + 4), *(it + 5))); \
+        case 7: \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, *it, *(it + 1), *(it + 2), *(it + 3), *(it + 4), *(it + 5), *(it + 6))); \
+        case 8: \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, *it, *(it + 1), *(it + 2), *(it + 3), *(it + 4), *(it + 5), *(it + 6), *(it + 7))); \
+        default: \
+            jassertfalse; \
     }
+
+#define VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_TRANSFORM(__functionName, __list, __transform) \
+    const auto it = __list.begin(); \
+    switch (__list.size()) { \
+        case 1: \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __transform.get<Function2>(), *it)); \
+        case 2: \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __transform.get<Function3>(), *it, *(it + 1))); \
+        case 3: \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __transform.get<Function4>(), *it, *(it + 1), *(it + 2))); \
+        case 4: \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __transform.get<Function5>(), *it, *(it + 1), *(it + 2), *(it + 3))); \
+        case 5: \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __transform.get<Function6>(), *it, *(it + 1), *(it + 2), *(it + 3), *(it + 4))); \
+        case 6: \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __transform.get<Function7>(), *it, *(it + 1), *(it + 2), *(it + 3), *(it + 4), *(it + 5))); \
+        case 7: \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __transform.get<Function8>(), *it, *(it + 1), *(it + 2), *(it + 3), *(it + 4), *(it + 5), *(it + 6))); \
+        case 8: \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __transform.get<Function9>(), *it, *(it + 1), *(it + 2), *(it + 3), *(it + 4), *(it + 5), *(it + 6), *(it + 7))); \
+        default: \
+            jassertfalse; \
+    }
+
+ObservableImpl ObservableImpl::combineLatest(std::initializer_list<ObservableImpl> others, const any& transform) const {
+    VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_TRANSFORM(combineLatest, others, transform)
 }
 
-ObservableImpl ObservableImpl::concat(const ObservableImpl& o1) const
+ObservableImpl ObservableImpl::concat(const Array<ObservableImpl>& others) const
 {
-    return wrap(unwrap(wrapped).concat(unwrap(o1.wrapped)));
+    VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION(concat, others);
 }
 
 ObservableImpl ObservableImpl::debounce(const juce::RelativeTime& period) const
@@ -273,10 +305,9 @@ ObservableImpl ObservableImpl::map(const std::function<any(const any&)>& transfo
     return wrap(unwrap(wrapped).map(transform));
 }
 
-#warning Add merge overloads, and a test for arity 8
-ObservableImpl ObservableImpl::merge(const ObservableImpl& o1) const
-{
-    return wrap(unwrap(wrapped).merge(unwrap(o1.wrapped)));
+#warning Add a test for arity 8
+ObservableImpl ObservableImpl::merge(const juce::Array<ObservableImpl>& others) const {
+    VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION(merge, others)
 }
 
 ObservableImpl ObservableImpl::reduce(const any& startValue, const std::function<any(const any&, const any&)>& f) const
@@ -304,40 +335,9 @@ ObservableImpl ObservableImpl::skipUntil(const ObservableImpl& other) const
     return wrap(unwrap(wrapped).skip_until(unwrap(other.wrapped)));
 }
 
-
-ObservableImpl ObservableImpl::startWith(const any& v1) const
+ObservableImpl ObservableImpl::startWith(juce::Array<any>&& items) const
 {
-    return wrap(_startWith(wrapped, v1));
-}
-
-ObservableImpl ObservableImpl::startWith(const any& v1, const any& v2) const
-{
-    return wrap(_startWith(wrapped, v1, v2));
-}
-
-ObservableImpl ObservableImpl::startWith(const any& v1, const any& v2, const any& v3) const
-{
-    return wrap(_startWith(wrapped, v1, v2, v3));
-}
-
-ObservableImpl ObservableImpl::startWith(const any& v1, const any& v2, const any& v3, const any& v4) const
-{
-    return wrap(_startWith(wrapped, v1, v2, v3, v4));
-}
-
-ObservableImpl ObservableImpl::startWith(const any& v1, const any& v2, const any& v3, const any& v4, const any& v5) const
-{
-    return wrap(_startWith(wrapped, v1, v2, v3, v4, v5));
-}
-
-ObservableImpl ObservableImpl::startWith(const any& v1, const any& v2, const any& v3, const any& v4, const any& v5, const any& v6) const
-{
-    return wrap(_startWith(wrapped, v1, v2, v3, v4, v5, v6));
-}
-
-ObservableImpl ObservableImpl::startWith(const any& v1, const any& v2, const any& v3, const any& v4, const any& v5, const any& v6, const any& v7) const
-{
-    return wrap(_startWith(wrapped, v1, v2, v3, v4, v5, v6, v7));
+    VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION(startWith, items);
 }
 
 ObservableImpl ObservableImpl::switchOnNext() const
@@ -369,74 +369,13 @@ ObservableImpl ObservableImpl::takeWhile(const std::function<bool(const any&)>& 
     return wrap(unwrap(wrapped).take_while(predicate));
 }
 
-ObservableImpl ObservableImpl::withLatestFrom(const ObservableImpl& o1, const Function2& transform) const
-{
-    return wrap(_withLatestFrom(wrapped, transform, o1));
+ObservableImpl ObservableImpl::withLatestFrom(std::initializer_list<ObservableImpl> others, const any& transform) const {
+    VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_TRANSFORM(withLatestFrom, others, transform)
 }
 
-ObservableImpl ObservableImpl::withLatestFrom(const ObservableImpl& o1, const ObservableImpl& o2, const Function3& transform) const
+ObservableImpl ObservableImpl::zip(std::initializer_list<ObservableImpl> others, const any& transform) const
 {
-    return wrap(_withLatestFrom(wrapped, transform, o1, o2));
-}
-
-ObservableImpl ObservableImpl::withLatestFrom(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const Function4& transform) const
-{
-    return wrap(_withLatestFrom(wrapped, transform, o1, o2, o3));
-}
-
-ObservableImpl ObservableImpl::withLatestFrom(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const Function5& transform) const
-{
-    return wrap(_withLatestFrom(wrapped, transform, o1, o2, o3, o4));
-}
-
-ObservableImpl ObservableImpl::withLatestFrom(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const Function6& transform) const
-{
-    return wrap(_withLatestFrom(wrapped, transform, o1, o2, o3, o4, o5));
-}
-
-ObservableImpl ObservableImpl::withLatestFrom(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const Function7& transform) const
-{
-    return wrap(_withLatestFrom(wrapped, transform, o1, o2, o3, o4, o5, o6));
-}
-
-ObservableImpl ObservableImpl::withLatestFrom(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const ObservableImpl& o7, const Function8& transform) const
-{
-    return wrap(_withLatestFrom(wrapped, transform, o1, o2, o3, o4, o5, o6, o7));
-}
-
-ObservableImpl ObservableImpl::zip(const ObservableImpl& o1, const Function2& transform) const
-{
-    return wrap(_zip(wrapped, transform, o1));
-}
-
-ObservableImpl ObservableImpl::zip(const ObservableImpl& o1, const ObservableImpl& o2, const Function3& transform) const
-{
-    return wrap(_zip(wrapped, transform, o1, o2));
-}
-
-ObservableImpl ObservableImpl::zip(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const Function4& transform) const
-{
-    return wrap(_zip(wrapped, transform, o1, o2, o3));
-}
-
-ObservableImpl ObservableImpl::zip(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const Function5& transform) const
-{
-    return wrap(_zip(wrapped, transform, o1, o2, o3, o4));
-}
-
-ObservableImpl ObservableImpl::zip(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const Function6& transform) const
-{
-    return wrap(_zip(wrapped, transform, o1, o2, o3, o4, o5));
-}
-
-ObservableImpl ObservableImpl::zip(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const Function7& transform) const
-{
-    return wrap(_zip(wrapped, transform, o1, o2, o3, o4, o5, o6));
-}
-
-ObservableImpl ObservableImpl::zip(const ObservableImpl& o1, const ObservableImpl& o2, const ObservableImpl& o3, const ObservableImpl& o4, const ObservableImpl& o5, const ObservableImpl& o6, const ObservableImpl& o7, const Function8& transform) const
-{
-    return wrap(_zip(wrapped, transform, o1, o2, o3, o4, o5, o6, o7));
+    VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_TRANSFORM(zip, others, transform)
 }
 
 
