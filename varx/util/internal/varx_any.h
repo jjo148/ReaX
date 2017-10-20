@@ -15,6 +15,7 @@ public:
 
     any& operator=(const any&) = default;
 
+#warning Maybe replace this with static any any::from<T>(const T&), to explicitly specify what should go in
     template<typename T>
     explicit any(const T& value)
     : any(value, std::is_enum<typename std::decay<T>::type>())

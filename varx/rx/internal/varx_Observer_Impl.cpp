@@ -1,6 +1,6 @@
 namespace detail {
-ObserverImpl::ObserverImpl(any&& wrapped)
-: wrapped(std::move(wrapped))
+ObserverImpl::ObserverImpl(const any& wrapped)
+: wrapped(wrapped)
 {}
 
 void ObserverImpl::onNext(any&& next) const

@@ -3,7 +3,7 @@
 namespace detail {
     struct ObserverImpl
     {
-        ObserverImpl(any&& wrapped);
+        ObserverImpl(const any& wrapped);
         void onNext(any&& next) const;
         void onError(Error error) const;
         void onCompleted() const;

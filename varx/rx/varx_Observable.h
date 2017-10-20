@@ -146,9 +146,14 @@ public:
     template<typename U>
     typename std::enable_if<std::is_convertible<T, U>::value, Disposable>::type subscribe(const Observer<U>& observer) const
     {
-        return impl.subscribe(observer.impl);
+        // Convert items from T to U, using any conversion
+        auto converted = impl.map([](const any& t) {
+            return toAny<U>(t.get<T>());
+        });
+        
+        return converted.subscribe(observer.impl);
     }
-        ///@}
+    ///@}
 
 
 #pragma mark - Helper Functions

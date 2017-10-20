@@ -1,41 +1,30 @@
-using std::move;
-
 namespace detail {
 SubjectImpl SubjectImpl::MakeBehaviorSubjectImpl(any&& initial)
 {
-    rxcpp::subjects::behavior<any> subject(initial);
-    auto observer = subject.get_subscriber().as_dynamic();
-    auto observable = subject.get_observable().as_dynamic();
-
-    return SubjectImpl(any(move(subject)), any(move(observer)), any(move(observable)));
+    auto subject = std::make_shared<rxcpp::subjects::behavior<any>>(std::move(initial));
+    return SubjectImpl(any(subject), any(subject->get_subscriber().as_dynamic()), any(subject->get_observable().as_dynamic()));
 }
 
 SubjectImpl SubjectImpl::MakePublishSubjectImpl()
 {
-    rxcpp::subjects::subject<any> subject;
-    auto observer = subject.get_subscriber().as_dynamic();
-    auto observable = subject.get_observable().as_dynamic();
-
-    return SubjectImpl(any(move(subject)), any(move(observer)), any(move(observable)));
+    auto subject = std::make_shared<rxcpp::subjects::subject<any>>();
+    return SubjectImpl(any(subject), any(subject->get_subscriber().as_dynamic()), any(subject->get_observable().as_dynamic()));
 }
 
 SubjectImpl SubjectImpl::MakeReplaySubjectImpl(size_t bufferSize)
 {
-    rxcpp::subjects::replay<any, rxcpp::identity_one_worker> subject(bufferSize, rxcpp::identity_immediate());
-    auto observer = subject.get_subscriber().as_dynamic();
-    auto observable = subject.get_observable().as_dynamic();
-
-    return SubjectImpl(any(move(subject)), any(move(observer)), any(move(observable)));
+    auto subject = std::make_shared<rxcpp::subjects::replay<any, rxcpp::identity_one_worker>>(bufferSize, rxcpp::identity_immediate());
+    return SubjectImpl(any(subject), any(subject->get_subscriber().as_dynamic()), any(subject->get_observable().as_dynamic()));
 }
 
 any SubjectImpl::getLatestItem() const
 {
-    return wrapped.get<rxcpp::subjects::behavior<any>>().get_value();
+    return wrapped.get<std::shared_ptr<rxcpp::subjects::behavior<any>>>()->get_value();
 }
 
-SubjectImpl::SubjectImpl(any&& subject, any&& observer, any&& observable)
-: ObserverImpl(move(observer)),
-  ObservableImpl(move(observable)),
-  wrapped(move(subject))
+SubjectImpl::SubjectImpl(const any& subject, const any& observer, const any& observable)
+: ObserverImpl(observer),
+  ObservableImpl(observable),
+  wrapped(subject)
 {}
 }

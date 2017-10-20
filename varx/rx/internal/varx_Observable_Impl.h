@@ -8,7 +8,7 @@ struct SchedulerImpl;
 
 struct ObservableImpl
 {
-    ObservableImpl(any&& wrapped);
+    ObservableImpl(const any& wrapped);
 
     // Helper typedefs
     using Function2 = std::function<any(const any&, const any&)>;

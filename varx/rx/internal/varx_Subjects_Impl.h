@@ -9,9 +9,8 @@ struct SubjectImpl : public ObserverImpl, public ObservableImpl
 
     any getLatestItem() const;
 
-private:
+    explicit SubjectImpl(const any& subject, const any& observer, const any& observable);
+    
     const any wrapped;
-
-    SubjectImpl(any&& subject, any&& observer, any&& observable);
 };
 }

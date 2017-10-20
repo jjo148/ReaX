@@ -69,8 +69,8 @@ namespace detail {
 
 #pragma mark - Creation
 
-ObservableImpl::ObservableImpl(any&& wrapped)
-: wrapped(std::move(wrapped))
+ObservableImpl::ObservableImpl(const any& wrapped)
+: wrapped(wrapped)
 {}
 
 ObservableImpl ObservableImpl::create(const std::function<void(detail::ObserverImpl&&)>& onSubscribe)
@@ -195,7 +195,8 @@ Disposable ObservableImpl::subscribe(const std::function<void(const any&)>& onNe
 
 Disposable ObservableImpl::subscribe(const detail::ObserverImpl& observer) const
 {
-    auto disposable = unwrap(wrapped).subscribe(observer.wrapped.get<rxcpp::subscriber<any>>());
+    auto subscriber = observer.wrapped.get<rxcpp::subscriber<any>>();
+    auto disposable = unwrap(wrapped).subscribe(subscriber);
 
     return Disposable(any(disposable));
 }
