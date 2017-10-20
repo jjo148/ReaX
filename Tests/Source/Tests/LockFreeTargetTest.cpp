@@ -7,7 +7,7 @@ TEST_CASE("LockFreeTarget",
     {
         LockFreeTarget<float> target;
         BehaviorSubject<float> subject(5.467f);
-        subject.subscribe(target.asObserver());
+        subject.subscribe(target);
         CHECK(target.getValue() == 5.467f);
         
         subject.onNext(100.24f);
@@ -21,7 +21,7 @@ TEST_CASE("LockFreeTarget",
     {
         LockFreeTarget<String> target;
         PublishSubject<String> subject;
-        subject.subscribe(target.asObserver());
+        subject.subscribe(target);
         
         subject.onNext("Hello");
         CHECK(target.getValue() == "Hello");
@@ -34,7 +34,7 @@ TEST_CASE("LockFreeTarget",
     {
         LockFreeTarget<Point<int>> target;
         PublishSubject<Point<int>> subject;
-        subject.subscribe(target.asObserver());
+        subject.subscribe(target);
         
         subject.onNext(Point<int>(43, 29));
         CHECK(target.getValue() == Point<int>(43, 29));
@@ -55,9 +55,9 @@ TEST_CASE("LockFreeTarget",
         LockFreeTarget<double> doubleTarget;
         
         PublishSubject<var> subject;
-        subject.subscribe(intTarget.asObserver());
-        subject.subscribe(boolTarget.asObserver());
-        subject.subscribe(doubleTarget.asObserver());
+        subject.subscribe(intTarget);
+        subject.subscribe(boolTarget);
+        subject.subscribe(doubleTarget);
         
         subject.onNext(3.474);
         
@@ -73,14 +73,14 @@ TEST_CASE("LockFreeTarget",
         // After one onNext, there should be 1 item in the ReleasePool
         PublishSubject<Point<float>> pointSubject;
         LockFreeTarget<Point<float>> pointTarget;
-        pointSubject.subscribe(pointTarget.asObserver());
+        pointSubject.subscribe(pointTarget);
         pointSubject.onNext(Point<float>(4.52f, 1.23f));
         REQUIRE(detail::ReleasePool::get().size() == 1);
         
         // After another onNext, there should be 2 items
         PublishSubject<String> stringSubject;
         LockFreeTarget<String> stringTarget;
-        stringSubject.subscribe(stringTarget.asObserver());
+        stringSubject.subscribe(stringTarget);
         stringSubject.onNext("Hello");
         REQUIRE(detail::ReleasePool::get().size() == 2);
         

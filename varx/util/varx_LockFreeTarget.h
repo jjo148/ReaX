@@ -1,5 +1,15 @@
 #pragma once
 
+namespace detail {
+    template<typename T>
+    class LockFreeTargetBase
+    {
+    protected:
+        PublishSubject<T> subject;
+        DisposeBag disposeBag;
+    };
+}
+
 /**
  An Observer that stores the latest retrieved item atomically, so it can be read by a different thread.
  
@@ -8,15 +18,16 @@
  Uses std::atomic for arithmetic types (i.e. bool and numbers). Otherwise, it uses shared_ptr and a ReleasePool to store the retrieved item.
  */
 template<typename T, bool = std::is_arithmetic<T>::value>
-class LockFreeTarget
+class LockFreeTarget : private detail::LockFreeTargetBase<T>, public Observer<T>
 {
 public:
     /** Creates a new instance. Before retrieving items, getValue() returns an unitialized value. */
     LockFreeTarget()
+    : Observer<T>(detail::LockFreeTargetBase<T>::subject)
     {
-        subject.subscribe([this](const T& newValue) {
+        detail::LockFreeTargetBase<T>::subject.subscribe([this](const T& newValue) {
             latestValue.store(newValue);
-        }).disposedBy(disposeBag);
+        }).disposedBy(detail::LockFreeTargetBase<T>::disposeBag);
     }
     
     /** Reads the latest retrieved item atomically. This can be called from the audio thread (or some other realtime thread). If this is called before any item has been retrieved, the returned value is uninitialized. */
@@ -28,17 +39,8 @@ public:
     /** Returns the latest retrieved item atomically. It just calls getValue(). */
     inline operator T() const { return getValue(); }
     
-#warning Should probably just inherit from Observer<T>
-    /** Returns the Observer for the target. Items pushed to the Observer are stored atomically. */
-    inline Observer<T> asObserver() const { return subject; }
-    
-    /** Returns the Observer for the target. It just calls asObserver(). */
-    operator Observer<T>() const { return asObserver(); }
-    
 private:
     std::atomic<T> latestValue;
-    PublishSubject<T> subject;
-    DisposeBag disposeBag;
     
     JUCE_LEAK_DETECTOR(LockFreeTarget)
 };
@@ -51,17 +53,18 @@ private:
  Uses std::atomic for arithmetic types (i.e. bool and numbers). Otherwise, it uses shared_ptr and a ReleasePool to store the retrieved item.
  */
 template<typename T>
-class LockFreeTarget<T, false>
+class LockFreeTarget<T, false> : private detail::LockFreeTargetBase<T>, public Observer<T>
 {
 public:
     /** Creates a new instance. You must not call getValue() before retrieving items. */
     LockFreeTarget()
+    : Observer<T>(detail::LockFreeTargetBase<T>::subject)
     {
-        subject.subscribe([this](const T& newValue) {
+        detail::LockFreeTargetBase<T>::subject.subscribe([this](const T& newValue) {
             const auto latest = std::make_shared<T>(newValue);
             detail::ReleasePool::get().add(latest);
             std::atomic_store(&latestValue, latest);
-        }).disposedBy(disposeBag);
+        }).disposedBy(detail::LockFreeTargetBase<T>::disposeBag);
     }
     
     /** Reads the latest retrieved item atomically. This can be called from the audio thread (or some other realtime thread). **Must not be called before any item has been retrieved.** */
@@ -78,16 +81,8 @@ public:
     /** Returns the latest retrieved item atomically. It just calls getValue(). This can be called from the audio thread (or some other realtime thread). */
     inline operator T() const { return getValue(); }
     
-    /** Returns the Observer for the target. Items pushed to the Observer are stored atomically. You should push items to the Observer from a non-realtime thread. */
-    inline Observer<T> asObserver() const { return subject; }
-    
-    /** Returns the Observer for the target. It just calls asObserver(). */
-    operator Observer<T>() const { return asObserver(); }
-    
 private:
     std::shared_ptr<T> latestValue;
-    PublishSubject<T> subject;
-    DisposeBag disposeBag;
     
     JUCE_LEAK_DETECTOR(LockFreeTarget)
 };
