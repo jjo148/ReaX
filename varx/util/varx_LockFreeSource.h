@@ -12,6 +12,8 @@ protected:
 /**
  An Observable that receives items from a realtime thread (like the audio thread) and emits those items on the JUCE message thread.
  
+ The item type must be copy-constructible or (preferably) move-constructible.
+ 
  Call asObservable() to get the Observable, subscribe to it, etc. Then call LockFreeSource::onNext on the realtime thread to emit items.
  */
 template<typename T>
