@@ -9,24 +9,32 @@ public:
     explicit any(bool value);
     explicit any(float value);
     explicit any(double value);
-    explicit any(const char* value);
-    any(const any&) = default;
-    any(any&&) = default;
-
+    
+    /** Checks if T is not any. Used to prevent nested any(any(...)) instances. */
     template<typename T>
     using DisableIfAny = typename std::enable_if<!std::is_base_of<any, typename std::decay<T>::type>::value>::type;
-
+    
+    /** Checks if T is a scalar type (e.g. numeric, bool, enum). */
     template<typename T>
     using IsScalar = std::is_scalar<typename std::decay<T>::type>;
-
+    
     /**
-     If you use this constructor, make sure that the value you're passing in actually has the type that you try to get() later on. For example, if you have a type T that is implicitly convertible to U, but not a subclass. If you pass in a T here, and then call get<U>(), it won't work. One way to ensure this is to write any(static_cast<U>(myT)).
+     Creates a new instance, wrapping an arbitrary copy- or move-constructible type.
+     
+     If you use this constructor, make sure that the value you're passing in actually has the type that you try to `get()` later on. Example: You have a type `T` that is implicitly convertible to `U`, but not a subclass. If you pass in a `T` here, and then call `get<U>()`, it will throw an exception. One way to ensure this is to use `any(static_cast<U>(myT))`.
      */
     template<typename T, typename Enable = DisableIfAny<T>>
     explicit any(T&& value)
     : any(std::forward<T>(value), IsScalar<T>())
     {}
-
+    
+    /** Default move constructor */
+    any(any&&) = default;
+    
+    /** Default copy constructor. If the wrapped value is scalar, it is copied. Otherwise, it is shared by reference. */
+    any(const any&) = default;
+    
+    /** Default copy assignment operator. If the wrapped value is scalar, it is copied. Otherwise, it is shared by reference. */
     any& operator=(const any&) = default;
 
     /**

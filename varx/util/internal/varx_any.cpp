@@ -24,10 +24,6 @@ any::any(double value)
   value({ .doubleValue = value })
 {}
 
-any::any(const char* value)
-: any(String(value))
-{}
-
 bool any::equals(const any& other) const
 {
     switch (type) {
