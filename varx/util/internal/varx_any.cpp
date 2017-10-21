@@ -28,12 +28,6 @@ any::any(const char* value)
 : any(String(value))
 {}
 
-any::any(ReferenceCountedObjectPtr<Object>&& object)
-: type(Type::Object),
-  value({}),
-  objectValue(object)
-{}
-
 bool any::equals(const any& other) const
 {
     switch (type) {
@@ -50,15 +44,6 @@ bool any::equals(const any& other) const
         case Type::Object:
             return (other.type == Type::Object && objectValue->equals(*other.objectValue));
     }
-}
-
-inline bool operator==(const any& lhs, const any& rhs)
-{
-    return lhs.equals(rhs);
-}
-inline bool operator!=(const any& lhs, const any& rhs)
-{
-    return !(lhs == rhs);
 }
 
 bool any::isNumeric() const

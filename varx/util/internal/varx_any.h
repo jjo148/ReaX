@@ -13,60 +13,98 @@ public:
     any(const any&) = default;
     any(any&&) = default;
 
-    any& operator=(const any&) = default;
-
-#warning Maybe replace this with static any any::from<T>(const T&), to explicitly specify what should go in
     template<typename T>
-    explicit any(const T& value)
-    : any(value, std::is_enum<typename std::decay<T>::type>())
+    using DisableIfAny = typename std::enable_if<!std::is_base_of<any, typename std::decay<T>::type>::value>::type;
+
+    template<typename T>
+    using IsScalar = std::is_scalar<typename std::decay<T>::type>;
+
+    /**
+     If you use this constructor, make sure that the value you're passing in actually has the type that you try to get() later on. For example, if you have a type T that is implicitly convertible to U, but not a subclass. If you pass in a T here, and then call get<U>(), it won't work. One way to ensure this is to write any(static_cast<U>(myT)).
+     */
+    template<typename T, typename Enable = DisableIfAny<T>>
+    explicit any(T&& value)
+    : any(std::forward<T>(value), IsScalar<T>())
     {}
 
+    any& operator=(const any&) = default;
+
+    /**
+     Extracts the stored value as a T. Throws an exception if the stored value is not a T.
+     */
     template<typename T>
-    T get() const
+    inline T get() const
     {
-        return _get<T>(std::is_enum<typename std::decay<T>::type>());
+        return _get<T>(IsScalar<T>());
     }
 
+    /**
+     Compares the stored value to that of another instance.
+     
+     If the wrapped type is equality-comparable (i.e. has operator==), the values are compared using ==. Otherwise, it returns true if the wrapped values are the same instance.
+     
+     Scalar types are converted as needed (i.e. float to int).
+     */
     bool equals(const any& other) const;
 
 private:
-    template<typename T>
-    any(T&& value, std::true_type /* is_enum */)
-    : any(static_cast<juce::int64>(value))
-    {}
-
-    template<typename T>
-    any(T&& value, std::false_type /* is_enum */)
-    : any(juce::ReferenceCountedObjectPtr<Object>(new EquatableTypedObject<typename std::decay<T>::type>(std::forward<T>(value))))
-    {}
-
-    template<typename T>
-    T _get(std::true_type /* is_enum */) const
+    // Type-erased wrapper
+    struct Object
     {
-        jassert(type == Type::Int64);
+        Object(const std::type_info& typeInfo);
+        virtual ~Object();
+        virtual bool equals(const Object& other) const = 0;
 
-        return static_cast<T>(getPrimitive<juce::int64>());
-    }
-    
-#warning Implement template<typename T> bool is() const;
+        const std::type_info& typeInfo;
+    };
 
+    // Object subclass that is also a T. It inherits from T to make this work: any(Derived()).get<Base>();
     template<typename T>
-    T _get(std::false_type /* is_enum */) const
+    struct TypedObject : T, Object
     {
-#warning Replace assert by exception
-        jassert(type == Type::Object);
+        template<typename U>
+        TypedObject(U&& value)
+        : T(std::forward<U>(value)),
+          Object(typeid(U))
+        {}
+    };
 
-        if (auto ptr = dynamic_cast<const T*>(objectValue.get()))
-            return *ptr;
+    // Checks if T has operator==
+    template<typename T>
+    using HasEqualityOperator = typename std::enable_if<true, decltype(std::declval<const T&>() == std::declval<const T&>(), (void)0)>::type;
 
-        // Type mismatch. Determine expected and actual type:
-        static const std::string RequestedType = typeid(T).name();
-        const std::string actualType = objectValue->typeInfo.name();
+    // Implements the equals() function using pointer comparison
+    template<typename T, typename Enable = void>
+    struct EquatableTypedObject : TypedObject<T>
+    {
+        using TypedObject<T>::TypedObject;
 
-        // Throw error
-        throw std::runtime_error("Error getting type from any. Requested: " + RequestedType + ". Actual: " + actualType + ".");
-    }
+        bool equals(const Object& other) const override
+        {
+            // Compare by address. dynamic_cast<void*> downcasts to the most derived class, so if this and other are the same instance, the expression is true.
+            return (dynamic_cast<const void*>(this) == dynamic_cast<const void*>(&other));
+        }
+    };
 
+    // Implements the equals() function using operator==
+    template<typename T>
+    struct EquatableTypedObject<T, HasEqualityOperator<T>> : TypedObject<T>
+    {
+        using TypedObject<T>::TypedObject;
+
+        bool equals(const Object& other) const override
+        {
+            // If other is a T, compare the T portion of this and other:
+            if (auto ptr = dynamic_cast<const T*>(&other))
+                return (static_cast<const T>(*this) == *ptr);
+
+            // other is not a T, so the objects can't be equal
+            else
+                return false;
+        }
+    };
+
+    // The type of the stored value. Needed to use the correct member of the enum.
     enum class Type {
         Int,
         Int64,
@@ -78,6 +116,7 @@ private:
 
     Type type;
 
+    // The stored value, if it's scalar (including enums).
     union
     {
         int intValue;
@@ -87,117 +126,77 @@ private:
         double doubleValue;
     } value;
 
-    struct Object : juce::ReferenceCountedObject
-    {
-        Object(const std::type_info& typeInfo);
+    // The stored value, if it's non-scalar.
+    std::shared_ptr<Object> objectValue;
 
-        virtual ~Object();
-
-        virtual bool equals(const Object& other) const = 0;
-
-        const std::type_info& typeInfo;
-    };
-
+    // Constructor for scalar values that aren't handled by any of the specialized public constructors. For example: enums.
     template<typename T>
-    struct TypedObject : T, Object
-    {
-        template<typename U>
-        TypedObject(U&& value)
-        : T(std::forward<U>(value)),
-          Object(typeid(U))
-        {}
-    };
+    any(T&& value, std::true_type)
+    : any(static_cast<juce::int64>(value))
+    {}
 
-    template<typename T, typename Enable = void>
-    struct EquatableTypedObject : TypedObject<T>
-    {
-        using TypedObject<T>::TypedObject;
-
-        bool equals(const Object& other) const override
-        {
-            // Compare by address. dynamic_cast<void*> downcasts to the most derived class, so if this and other are the same object, the expression is true.
-            return (dynamic_cast<const void*>(this) == dynamic_cast<const void*>(&other));
-        }
-    };
-
+    // Constructor for non-scalar values
     template<typename T>
-    struct EquatableTypedObject<T, typename std::enable_if<true, decltype(std::declval<const T&>() == std::declval<const T&>(), (void)0)>::type> : TypedObject<T>
-    {
-        using TypedObject<T>::TypedObject;
+    any(T&& value, std::false_type)
+    : type(Type::Object),
+      value({}),
+      objectValue(std::make_shared<EquatableTypedObject<typename std::decay<T>::type>>(std::forward<T>(value)))
+    {}
 
-        bool equals(const Object& other) const override
-        {
-            // If other has type T, compare the T portion of this and other:
-            if (auto ptr = dynamic_cast<const T*>(&other))
-                return (*static_cast<const T*>(this) == *ptr);
-
-            // The types differ, so the objects can't be equal
-            else
-                return false;
-        }
-    };
-
-#warning Use std::shared_ptr instead
-    juce::ReferenceCountedObjectPtr<Object> objectValue;
-
+    // Getter for scalar values (including enums)
     template<typename T>
-    T getPrimitive() const
+    inline T _get(std::true_type) const
     {
+#warning Add better assert
+        jassert(type != Type::Object);
+
         switch (type) {
             case Type::Int:
-                return value.intValue;
+                return static_cast<T>(value.intValue);
             case Type::Int64:
+                // int64 can be converted to int
                 return static_cast<T>(value.int64Value);
             case Type::Bool:
-                return value.boolValue;
+                return static_cast<T>(value.boolValue);
             case Type::Float:
-                return value.floatValue;
+                return static_cast<T>(value.floatValue);
             case Type::Double:
-                return value.doubleValue;
+                return static_cast<T>(value.doubleValue);
 
             default:
                 jassertfalse;
-                return 0;
+                return T();
         }
     }
 
-    bool isNumeric() const;
+    // Getter for non-scalar values
+    template<typename T>
+    inline T _get(std::false_type) const
+    {
+#warning Replace assert by exception / null check further down
+        jassert(type == Type::Object);
 
-    any(juce::ReferenceCountedObjectPtr<Object>&& object);
+        // Try to cast object value to T
+        if (auto ptr = std::dynamic_pointer_cast<const T>(objectValue))
+            return *ptr;
+
+        // Type mismatch. Determine expected and actual type:
+        static const std::string RequestedType = typeid(T).name();
+        const std::string actualType = objectValue->typeInfo.name();
+
+        // Throw error
+        throw std::runtime_error("Error getting type from any. Requested: " + RequestedType + ". Actual: " + actualType + ".");
+    }
+
+    bool isNumeric() const;
 };
 
-template<>
-inline int any::get<int>() const
+inline bool operator==(const any& lhs, const any& rhs)
 {
-    jassert(isNumeric());
-    return getPrimitive<int>();
+    return lhs.equals(rhs);
 }
-
-template<>
-inline juce::int64 any::get<juce::int64>() const
+inline bool operator!=(const any& lhs, const any& rhs)
 {
-    jassert(isNumeric());
-    return getPrimitive<juce::int64>();
-}
-
-template<>
-inline bool any::get<bool>() const
-{
-    jassert(type == Type::Bool);
-    return getPrimitive<bool>();
-}
-
-template<>
-inline float any::get<float>() const
-{
-    jassert(isNumeric());
-    return getPrimitive<float>();
-}
-
-template<>
-inline double any::get<double>() const
-{
-    jassert(isNumeric());
-    return getPrimitive<double>();
+    return !(lhs == rhs);
 }
 }
