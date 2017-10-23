@@ -55,19 +55,10 @@ inline any wrap(const rxcpp::observable<any>& observable)
 
 inline rxcpp::observable<any> unwrap(const any& wrapped)
 {
-    try {
+    if (wrapped.is<rxcpp::observable<any>>())
         return wrapped.get<rxcpp::observable<any>>();
-    }
-    catch (std::exception) {
+    else
         return wrapped.get<std::shared_ptr<ValueObservable>>()->getObservable().map([](const var& item) { return any(item); });
-    }
-
-
-#warning Don't use try-catch
-//    if (wrapped.is<rxcpp::observable<any>>())
-//        return wrapped.get<rxcpp::observable<any>>();
-//    else
-//        wrapped.get<std::shared_ptr<ValueObservable>>()->getObservable().map([](const var& item) { return any(item); });
 }
 
 template<typename T>
