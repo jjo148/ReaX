@@ -235,7 +235,7 @@ Disposable ObservableImpl::subscribe(const ObserverImpl& observer) const
         case 8: \
             return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, *it, *(it + 1), *(it + 2), *(it + 3), *(it + 4), *(it + 5), *(it + 6), *(it + 7))); \
         default: \
-            jassertfalse; \
+            jassertfalse; return any(0); \
     }
 
 #define VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_TRANSFORM(__functionName, __list, __transform) \
@@ -258,7 +258,7 @@ Disposable ObservableImpl::subscribe(const ObserverImpl& observer) const
         case 8: \
             return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __transform.get<Function9>(), *it, *(it + 1), *(it + 2), *(it + 3), *(it + 4), *(it + 5), *(it + 6), *(it + 7))); \
         default: \
-            jassertfalse; \
+            jassertfalse; return any(0); \
     }
 
 ObservableImpl ObservableImpl::combineLatest(std::initializer_list<ObservableImpl> others, const any& transform) const {

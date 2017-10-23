@@ -206,7 +206,7 @@ SliderExtension::SliderExtension(juce::Slider& parent, const Observer<std::funct
     });
 
     _doubleClickReturnValue.takeUntil(deallocated).subscribe([&parent](double value) {
-        parent.setDoubleClickReturnValue(value != std::numeric_limits<double>::max(), value);
+        parent.setDoubleClickReturnValue(value != DBL_MAX, value);
     });
 
     _skewFactorMidPoint.takeUntil(deallocated).subscribe(std::bind(&Slider::setSkewFactorFromMidPoint, &parent, _1));

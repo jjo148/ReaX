@@ -179,8 +179,7 @@ public:
     /** Control the highest value in a Slider with multiple thumbs.​ **Do not push items if the Slider has just one thumb.**​ */
     const BehaviorSubject<double> maxValue;
 
-#warning This should be Maybe<double>
-    /** Controls the default value of the slider.​ Push std::numeric_limits<double>::max() to prevent double-clicking from resetting the slider. */
+    /** Controls the default value of the slider.​ Call onNext(DBL_MAX) to prevent double-clicking from resetting the slider. */
     const Observer<double> doubleClickReturnValue;
 
     /** Controls the step size for values.​ */
@@ -192,8 +191,7 @@ public:
     /** Whether the Slider is currently being dragged.​ */
     const Observable<bool> dragging;
 
-#warning This should be Maybe<int>
-    /** The thumb that is currently being dragged.​ 0 is the main thumb, 1 is the minValue thumb, 2 is the maxValue thumb. */
+    /** The thumb that is currently being dragged.​ 0 is the main thumb, 1 is the minValue thumb, 2 is the maxValue thumb. Returns -1 if no thumb is being dragged. */
     const Observable<int> thumbBeingDragged;
 
     /** Controls whether the text-box is visible.​ */
