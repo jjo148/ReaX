@@ -1,23 +1,37 @@
 #pragma once
 
 namespace detail {
+/**
+ A dynamic wrapper that can hold a value of any copy-constructible type.
+ 
+ The type of the held value is erased. So to extract the held value (using `any::get()`), you have to provide the type of the held value.
+ 
+ Two `any` instances are equality-comparable. If an instance `a` is compared to an instance `b`, and both hold a scalar value (e.g. int, float, bool), the scalar values are converted and compared. So `var(1.f) == var(1)`. If both hold an object, it casts `b` to the type of `a`. If that succeeds, it compares them using `a`'s `operator==`. If `a` is not equality-comparable, it checks if the addresses of `a` and `b` are equal. Otherwise, `a` and `b` are considered to be non-equal.
+ 
+ This class is used to create a dynamic layer between the type-safe varx::Observable and the type-safe rxcpp::observable.
+*/
 class any
 {
 public:
+    ///@{
+    /**
+     Creates an instance from a primitive value.
+     */
     explicit any(int value);
     explicit any(juce::int64 value);
     explicit any(bool value);
     explicit any(float value);
     explicit any(double value);
-    
+    ///@}
+
     /** Checks if T is not any. Used to prevent nested any(any(...)) instances. */
     template<typename T>
     using DisableIfAny = typename std::enable_if<!std::is_base_of<any, typename std::decay<T>::type>::value>::type;
-    
+
     /** Checks if T is a scalar type (e.g. numeric, bool, enum). */
     template<typename T>
     using IsScalar = std::is_scalar<typename std::decay<T>::type>;
-    
+
     /**
      Creates a new instance, wrapping an arbitrary copy- or move-constructible type.
      
@@ -27,18 +41,18 @@ public:
     explicit any(T&& value)
     : any(std::forward<T>(value), IsScalar<T>())
     {}
-    
+
     /** Default move constructor */
     any(any&&) = default;
-    
+
     /** Default copy constructor. If the wrapped value is scalar, it is copied. Otherwise, it is shared by reference. */
     any(const any&) = default;
-    
+
     /** Default copy assignment operator. If the wrapped value is scalar, it is copied. Otherwise, it is shared by reference. */
     any& operator=(const any&) = default;
 
     /**
-     Extracts the stored value as a T. Throws an exception if the stored value is not a T.
+     Extracts the held value as a T. Throws an exception if the held value is not a T.
      */
     template<typename T>
     inline T get() const
@@ -47,7 +61,16 @@ public:
     }
 
     /**
-     Compares the stored value to that of another instance.
+     Checks whether the held value is a T. For class types, it returns true if the wrapped type is a T or an instance of a subclass of T. **It returns false if the wrapped type is just implicitly convertible to T.**
+     */
+    template<typename T>
+    inline bool is() const
+    {
+        return _is<T>(IsScalar<T>());
+    }
+
+    /**
+     Compares the held value to that of another instance.
      
      If the wrapped type is equality-comparable (i.e. has operator==), the values are compared using ==. Otherwise, it returns true if the wrapped values are the same instance.
      
@@ -60,7 +83,7 @@ private:
     struct Object
     {
         Object(const std::type_info& typeInfo);
-        virtual ~Object();
+        virtual ~Object() {}
         virtual bool equals(const Object& other) const = 0;
 
         const std::type_info& typeInfo;
@@ -112,7 +135,7 @@ private:
         }
     };
 
-    // The type of the stored value. Needed to use the correct member of the enum.
+    // The type of the held value. Needed to use the correct member of the enum.
     enum class Type {
         Int,
         Int64,
@@ -124,7 +147,7 @@ private:
 
     Type type;
 
-    // The stored value, if it's scalar (including enums).
+    // The held value, if it's scalar (including enums).
     union
     {
         int intValue;
@@ -134,18 +157,18 @@ private:
         double doubleValue;
     } value;
 
-    // The stored value, if it's non-scalar.
+    // The held value, if it's non-scalar.
     std::shared_ptr<Object> objectValue;
 
     // Constructor for scalar values that aren't handled by any of the specialized public constructors. For example: enums.
     template<typename T>
-    any(T&& value, std::true_type)
+    any(T&& value, /* is_scalar: */ std::true_type)
     : any(static_cast<juce::int64>(value))
     {}
 
     // Constructor for non-scalar values
     template<typename T>
-    any(T&& value, std::false_type)
+    any(T&& value, /* is_scalar: */ std::false_type)
     : type(Type::Object),
       value({}),
       objectValue(std::make_shared<EquatableTypedObject<typename std::decay<T>::type>>(std::forward<T>(value)))
@@ -153,11 +176,8 @@ private:
 
     // Getter for scalar values (including enums)
     template<typename T>
-    inline T _get(std::true_type) const
+    inline T _get(/* is_scalar: */ std::true_type) const
     {
-#warning Add better assert
-        jassert(type != Type::Object);
-
         switch (type) {
             case Type::Int:
                 return static_cast<T>(value.intValue);
@@ -171,32 +191,42 @@ private:
             case Type::Double:
                 return static_cast<T>(value.doubleValue);
 
-            default:
-                jassertfalse;
-                return T();
+            default: {
+                // Type mismatch. Throw error:
+                static const std::string RequestedType = typeid(T).name();
+                throw std::runtime_error("Error getting type from any. Requested: " + RequestedType + ". Actual: " + getTypeName() + ".");
+            }
         }
     }
 
     // Getter for non-scalar values
     template<typename T>
-    inline T _get(std::false_type) const
+    inline T _get(/* is_scalar: */ std::false_type) const
     {
-#warning Replace assert by exception / null check further down
-        jassert(type == Type::Object);
-
         // Try to cast object value to T
         if (auto ptr = std::dynamic_pointer_cast<const T>(objectValue))
             return *ptr;
 
-        // Type mismatch. Determine expected and actual type:
+        // Type mismatch. Throw error:
         static const std::string RequestedType = typeid(T).name();
-        const std::string actualType = objectValue->typeInfo.name();
-
-        // Throw error
-        throw std::runtime_error("Error getting type from any. Requested: " + RequestedType + ". Actual: " + actualType + ".");
+        throw std::runtime_error("Error getting type from any. Requested: " + RequestedType + ". Actual: " + getTypeName() + ".");
     }
 
-    bool isNumeric() const;
+    template<typename T>
+    inline bool _is(/* is_scalar: */ std::true_type) const
+    {
+        return isScalar();
+    }
+
+    template<typename T>
+    inline bool _is(/* is_scalar: */ std::false_type) const
+    {
+        return (!isScalar() && std::dynamic_pointer_cast<const T>(objectValue) != nullptr);
+    }
+
+    bool isScalar() const;
+
+    std::string getTypeName() const;
 };
 
 inline bool operator==(const any& lhs, const any& rhs)
