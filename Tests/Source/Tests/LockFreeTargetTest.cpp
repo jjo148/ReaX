@@ -3,10 +3,10 @@
 TEST_CASE("LockFreeTarget",
           "[LockFreeTarget][ReleasePool]")
 {
-    IT("retrieves values for primitive types")
+    IT("retrieves primitive values")
     {
-        LockFreeTarget<float> target;
         BehaviorSubject<float> subject(5.467f);
+        LockFreeTarget<float> target;
         subject.subscribe(target);
         CHECK(target.getValue() == 5.467f);
         
@@ -19,8 +19,8 @@ TEST_CASE("LockFreeTarget",
     
     IT("retrieves String values")
     {
-        LockFreeTarget<String> target;
         PublishSubject<String> subject;
+        LockFreeTarget<String> target;
         subject.subscribe(target);
         
         subject.onNext("Hello");
@@ -30,10 +30,10 @@ TEST_CASE("LockFreeTarget",
         REQUIRE(target.getValue() == "World!");
     }
     
-    IT("retrieves values for other non-primitive types")
+    IT("retrieves other non-primitive values")
     {
-        LockFreeTarget<Point<int>> target;
         PublishSubject<Point<int>> subject;
+        LockFreeTarget<Point<int>> target;
         subject.subscribe(target);
         
         subject.onNext(Point<int>(43, 29));
@@ -50,11 +50,11 @@ TEST_CASE("LockFreeTarget",
         detail::ReleasePool::get().cleanup();
         CHECK(detail::ReleasePool::get().size() == 0);
         
+        PublishSubject<var> subject;
         LockFreeTarget<int> intTarget;
         LockFreeTarget<bool> boolTarget;
         LockFreeTarget<double> doubleTarget;
         
-        PublishSubject<var> subject;
         subject.subscribe(intTarget);
         subject.subscribe(boolTarget);
         subject.subscribe(doubleTarget);
@@ -71,10 +71,10 @@ TEST_CASE("LockFreeTarget",
         CHECK(detail::ReleasePool::get().size() == 0);
         
         // After one onNext, there should be 1 item in the ReleasePool
-        PublishSubject<Point<float>> pointSubject;
-        LockFreeTarget<Point<float>> pointTarget;
-        pointSubject.subscribe(pointTarget);
-        pointSubject.onNext(Point<float>(4.52f, 1.23f));
+        PublishSubject<Point<float>> subject;
+        LockFreeTarget<Point<float>> target;
+        subject.subscribe(target);
+        subject.onNext(Point<float>(4.52f, 1.23f));
         REQUIRE(detail::ReleasePool::get().size() == 1);
         
         // After another onNext, there should be 2 items

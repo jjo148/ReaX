@@ -5,9 +5,9 @@
  */
 class ComponentExtension : public ExtensionBase, private juce::ComponentListener
 {
+    const std::unique_ptr<std::map<int, PublishSubject<juce::Colour>>> colourSubjects;
     juce::Component& parent;
-    std::function<void(const PublishSubject<juce::Colour>&)> storeSubject;
-
+    
 public:
     /** Creates a new instance for a given juce::Component */
     ComponentExtension(juce::Component& parent);

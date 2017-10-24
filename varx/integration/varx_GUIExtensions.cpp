@@ -1,26 +1,25 @@
 using std::placeholders::_1;
 
 ComponentExtension::ComponentExtension(Component& parent)
-: parent(parent),
+: colourSubjects(new std::map<int, PublishSubject<juce::Colour>>()),
+  parent(parent),
   visible(parent.isVisible())
 {
-    Array<PublishSubject<Colour>> colourSubjects;
-    storeSubject = [colourSubjects](const PublishSubject<Colour>& subject) mutable { colourSubjects.add(subject); };
-
     parent.addComponentListener(this);
     visible.takeUntil(deallocated).subscribe(std::bind(&Component::setVisible, &parent, _1));
 }
 
 Observer<Colour> ComponentExtension::colour(int colourId) const
 {
-    PublishSubject<Colour> subject;
+    // Create subject, if not already done
+    if (colourSubjects->find(colourId) == colourSubjects->end())
+        colourSubjects->insert(std::make_pair(colourId, PublishSubject<Colour>()));
 
-    subject.takeUntil(deallocated).subscribe([colourId, this](const Colour& colour) {
-        this->parent.setColour(colourId, colour);
-    });
+    // Subscribe
+    colourSubjects->at(colourId).takeUntil(deallocated).subscribe(std::bind(&Component::setColour, &parent, colourId, _1));
 
-    storeSubject(subject);
-    return subject;
+    // Return as Observer
+    return colourSubjects->at(colourId);
 }
 
 void ComponentExtension::componentVisibilityChanged(Component& component)
@@ -107,11 +106,11 @@ LabelExtension::LabelExtension(Label& parent)
     _font.takeUntil(deallocated).subscribe(std::bind(&Label::setFont, &parent, _1));
     _justificationType.takeUntil(deallocated).subscribe(std::bind(&Label::setJustificationType, &parent, _1));
     _borderSize.takeUntil(deallocated).subscribe(std::bind(&Label::setBorderSize, &parent, _1));
-    
+
     _attachedComponent.takeUntil(deallocated).subscribe([&parent](const WeakReference<Component>& component) {
         parent.attachToComponent(component, parent.isAttachedOnLeft());
     });
-    
+
     _attachedOnLeft.takeUntil(deallocated).subscribe([&parent](bool attachedOnLeft) {
         parent.attachToComponent(parent.getAttachedComponent(), attachedOnLeft);
     });
@@ -124,7 +123,7 @@ LabelExtension::LabelExtension(Label& parent)
         if (auto editor = parent.getCurrentTextEditor())
             editor->setKeyboardType(keyboardType);
     });
-    
+
     // Cannot use combineLatest for these, because changing something on the Slider directly doesn't update the subject
     _editableOnSingleClick.takeUntil(deallocated).subscribe([&parent](bool editableOnSingleClick) {
         parent.setEditable(editableOnSingleClick, parent.isEditableOnDoubleClick(), parent.doesLossOfFocusDiscardChanges());
@@ -185,7 +184,7 @@ SliderExtension::SliderExtension(juce::Slider& parent, const Observer<std::funct
     value.takeUntil(deallocated).subscribe([&parent](double value) {
         parent.setValue(value, sendNotificationSync);
     });
-    
+
     // Cannot use combineLatest for these, because changing something on the Slider directly doesn't update the subject
     _minimum.takeUntil(deallocated).subscribe([&parent](double minimum) {
         parent.setRange(minimum, parent.getMaximum(), parent.getInterval());
@@ -200,7 +199,7 @@ SliderExtension::SliderExtension(juce::Slider& parent, const Observer<std::funct
     minValue.skip(1).takeUntil(deallocated).subscribe([&parent](double minValue) {
         parent.setMinValue(minValue, sendNotificationSync, true);
     });
-    
+
     maxValue.skip(1).takeUntil(deallocated).subscribe([&parent](double maxValue) {
         parent.setMaxValue(maxValue, sendNotificationSync, true);
     });

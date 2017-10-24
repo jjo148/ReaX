@@ -40,6 +40,7 @@ inline void varxRunDispatchLoop(int millisecondsToRunFor = 0)
 /** Runs the JUCE dispatch loop until a given condition is fulfilled. */
 #define varxRunDispatchLoopUntil(__condition) { const auto startTime = juce::Time::getMillisecondCounter(); while (!(__condition) && Time::getMillisecondCounter() < startTime + 5 * 1000) { varxRunDispatchLoop(5); } } REQUIRE(__condition);
 
+/** The app window for running the tests. */
 class TestWindow : public DocumentWindow, private DeletedAtShutdown
 {
 public:
