@@ -114,11 +114,11 @@ public:
     : SliderType(std::forward<Args>(args)...),
       rx(*this, getValueFromText_Subject, getTextFromValue_Subject)
     {
-        getValueFromText_Subject.takeUntil(rx.deallocated).subscribe([this](const GetValueFromText_Function& function) {
+        getValueFromText_Subject.subscribe([this](const GetValueFromText_Function& function) {
             this->getValueFromText_Function = function;
         });
 
-        getTextFromValue_Subject.takeUntil(rx.deallocated).subscribe([this](const GetTextFromValue_Function& function) {
+        getTextFromValue_Subject.subscribe([this](const GetTextFromValue_Function& function) {
             this->getTextFromValue_Function = function;
             this->updateText();
         });

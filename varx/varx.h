@@ -65,7 +65,6 @@ namespace varx {
 #include "util/varx_LockFreeSource.h"
 #include "util/varx_LockFreeTarget.h"
 
-#include "integration/varx_ExtensionBase.h"
 #include "integration/varx_GUIExtensions.h"
 #include "integration/varx_ModelExtensions.h"
 #include "integration/varx_Reactive.h"

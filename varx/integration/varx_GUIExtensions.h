@@ -3,7 +3,7 @@
 /**
     Adds reactive extensions to a juce::Component.
  */
-class ComponentExtension : public ExtensionBase, private juce::ComponentListener
+class ComponentExtension : private juce::ComponentListener
 {
     const std::unique_ptr<std::map<int, PublishSubject<juce::Colour>>> colourSubjects;
     juce::Component& parent;
@@ -19,6 +19,8 @@ public:
     Observer<juce::Colour> colour(int colourId) const;
 
 private:
+    const std::unique_ptr<DisposeBag> disposeBag;
+    
     void componentVisibilityChanged(juce::Component& component) override;
 };
 
@@ -51,6 +53,8 @@ public:
     const Observer<juce::String> tooltip;
 
 private:
+    DisposeBag disposeBag;
+    
     void buttonClicked(juce::Button*) override;
     void buttonStateChanged(juce::Button*) override;
 };
@@ -72,6 +76,9 @@ public:
 
     /** Controls the placement of the image.​ */
     const Observer<juce::RectanglePlacement> imagePlacement;
+    
+private:
+    DisposeBag disposeBag;
 };
 
 /**
@@ -139,6 +146,8 @@ public:
     const Observable<juce::WeakReference<juce::Component>> textEditor;
 
 private:
+    DisposeBag disposeBag;
+    
     void labelTextChanged(juce::Label*) override;
     void editorShown(juce::Label*, juce::TextEditor&) override;
     void editorHidden(juce::Label*, juce::TextEditor&) override;
@@ -210,6 +219,8 @@ public:
     const Observer<std::function<juce::String(double)>> getTextFromValue;
 
 private:
+    DisposeBag disposeBag;
+    
     void sliderValueChanged(juce::Slider*) override;
     void sliderDragStarted(juce::Slider*) override;
     void sliderDragEnded(juce::Slider*) override;

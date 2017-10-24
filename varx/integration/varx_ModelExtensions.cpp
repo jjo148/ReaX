@@ -3,11 +3,11 @@ ValueExtension::ValueExtension(const Value& inputValue)
   value(inputValue)
 {
     value.addListener(this);
-    subject.takeUntil(deallocated).subscribe([this](const var& newValue) {
+    subject.subscribe([this](const var& newValue) {
         // Only assign a new value if it has actually changed (to avoid problems with AudioProcessorValueTreeState)
         if (newValue != value)
             value = newValue;
-    });
+    }).disposedBy(disposeBag);
 }
 
 void ValueExtension::valueChanged(Value&)

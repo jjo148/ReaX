@@ -5,7 +5,7 @@
  
  Whenever the Value changes, the BehaviorSubject is changed, and vice versa.
  */
-class ValueExtension : public ExtensionBase, private juce::Value::Listener
+class ValueExtension : private juce::Value::Listener
 {
 public:
     /** Creates a new instance with a given Value. The connection refers to the **`ValueSource`** of `inputValue`. */
@@ -16,6 +16,7 @@ public:
     
 private:
     juce::Value value;
+    DisposeBag disposeBag;
     
     void valueChanged(juce::Value&) override;
 };
@@ -23,7 +24,7 @@ private:
 /**
     Adds reactive extensions to a juce::AudioProcessor.
  */
-class AudioProcessorExtension : public ExtensionBase, private juce::AudioProcessorListener
+class AudioProcessorExtension : private juce::AudioProcessorListener
 {
     PublishSubject<Empty> _processorChanged;
 public:
@@ -34,6 +35,8 @@ public:
     const Observable<Empty> processorChanged;
 
 private:
+    DisposeBag disposeBag;
+    
     void audioProcessorParameterChanged(juce::AudioProcessor*, int, float) override {}
     void audioProcessorChanged(juce::AudioProcessor*) override;
 };
@@ -41,7 +44,7 @@ private:
 /**
  Adds reactive extensions to a juce::AudioProcessorValueTreeState.
  */
-class AudioProcessorValueTreeStateExtension : public ExtensionBase {
+class AudioProcessorValueTreeStateExtension {
 public:
     /** Creates a new instance for a given AudioProcessorValueTreeState. */
     AudioProcessorValueTreeStateExtension(juce::AudioProcessorValueTreeState& parent);
@@ -60,4 +63,5 @@ private:
     struct Impl;
     const juce::ScopedPointer<Impl> impl;
     juce::AudioProcessorValueTreeState& parent;
+    DisposeBag disposeBag;
 };
