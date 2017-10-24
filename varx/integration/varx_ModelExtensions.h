@@ -56,7 +56,6 @@ public:
      
      If this is called early in the app lifecycle, the subject contains var(), and not the parameter's default value. This is because JUCE updates the ValueTree asynchronously. Parameter values can be changed from the audio thread; in this case the subject's Observable emits asynchronously.
      */
-#warning Can this be changed to BehaviorSubject<float>?
     BehaviorSubject<juce::var> parameterValue(const juce::String& parameterID) const;
     
 private:

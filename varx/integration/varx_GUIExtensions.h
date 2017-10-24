@@ -142,7 +142,7 @@ public:
     /** Controls whether unfocussing the TextEditor discards changes.​ */
     const Observer<bool> lossOfFocusDiscardsChanges;
 
-    /** The currently visible TextEditor.​ */
+    /** The currently visible TextEditor, or nullptr if no editor is showing.​ */
     const Observable<juce::WeakReference<juce::Component>> textEditor;
 
 private:
