@@ -51,4 +51,35 @@ TEST_CASE("LockFreeSource",
             REQUIRE(items.getLast() != 382);
         }
     }
+    
+    CONTEXT("move semantics")
+    {
+        // Create source
+        CopyAndMoveConstructible::Counters unused;
+        LockFreeSource<CopyAndMoveConstructible> source(10, CopyAndMoveConstructible(&unused));
+        
+        // Create counting object
+        CopyAndMoveConstructible::Counters counters;
+        CopyAndMoveConstructible item(&counters);
+        
+        IT("uses the copy overload for an lvalue")
+        {
+            source.onNext(item, CongestionPolicy::Allocate);
+            
+            REQUIRE(counters.numCopyConstructions == 1);
+            REQUIRE(counters.numCopyAssignments == 0);
+            REQUIRE(counters.numMoveConstructions == 0);
+            REQUIRE(counters.numMoveAssignments == 0);
+        }
+        
+        IT("uses the move overload for an rvalue")
+        {
+            source.onNext(std::move(item), CongestionPolicy::Allocate);
+            
+            REQUIRE(counters.numCopyConstructions == 0);
+            REQUIRE(counters.numCopyAssignments == 0);
+            REQUIRE(counters.numMoveConstructions == 1);
+            REQUIRE(counters.numMoveAssignments == 0);
+        }
+    }
 }

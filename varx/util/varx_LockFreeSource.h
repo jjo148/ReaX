@@ -105,7 +105,7 @@ private:
 
     void handleAsyncUpdate() override
     {
-        // Forward all items from the queue to the subject
+        // Emits all items from the queue
         T item(dummy);
         while (queue.try_dequeue(item))
             detail::LockFreeSourceBase<T>::subject.onNext(item);
