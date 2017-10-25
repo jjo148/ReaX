@@ -301,6 +301,27 @@ TEST_CASE("Interaction between Observable::map and Observable::switchOnNext",
 }
 
 
+TEST_CASE("Observable::merge",
+          "[Observable][Observable::merge]")
+{
+    Array<int> items;
+    
+    IT("works with arity 8")
+    {
+        Array<Observable<int>> os;
+        
+        for (int i = 0; i < 8; ++i)
+            os.add(Observable<>::range(-i, 1));
+        
+        auto merged = os[0].merge({os[1], os[2], os[3], os[4], os[5], os[6], os[7]});
+        varxCollectItems(merged, items);
+        
+        CHECK(items.size() == 44);
+        varxRequireItems(items, 0, 1, -1, 0, 1, -2, -1, 0, 1, -3, -2, -1, 0, 1, -4, -3, -2, -1, 0, 1, -5, -4, -3, -2, -1, 0, 1, -6, -5, -4, -3, -2, -1, 0, 1, -7, -6, -5, -4, -3, -2, -1, 0, 1);
+    }
+}
+
+
 TEST_CASE("Observable::reduce",
           "[Observable][Observable::reduce]")
 {

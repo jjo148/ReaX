@@ -9,5 +9,4 @@ using namespace juce;
 
 #include "util/internal/varx_any.cpp"
 #include "util/internal/varx_ReleasePool.cpp"
-#include "util/varx_PrintFunctions.cpp"
 }

@@ -12,6 +12,7 @@
 
 #include "JuceHeader.h"
 #include "catch.hpp"
+#include "PrintFunctions.h"
 
 using namespace juce;
 using namespace varx;

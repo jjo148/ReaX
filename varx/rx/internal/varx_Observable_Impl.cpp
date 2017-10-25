@@ -302,7 +302,6 @@ ObservableImpl ObservableImpl::map(const std::function<any(const any&)>& transfo
     return wrap(unwrap(wrapped).map(transform));
 }
 
-#warning Add a test for arity 8
 ObservableImpl ObservableImpl::merge(const juce::Array<ObservableImpl>& others) const {
     VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION(merge, others)
 }

@@ -9,5 +9,5 @@ void Disposable::dispose() const
 
 void Disposable::disposedBy(DisposeBag& disposeBag)
 {
-    disposeBag.insert(*this);
+    disposeBag.insert(std::move(*this));
 }

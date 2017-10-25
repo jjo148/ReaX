@@ -15,7 +15,7 @@ public:
     ~DisposeBag();
 
     /** Inserts a Disposable into the DisposeBag. The Disposable is disposed when the DisposeBag is destroyed. */
-    void insert(const Disposable& disposable);
+    void insert(Disposable&& disposable);
 
 private:
     const detail::any wrapped;

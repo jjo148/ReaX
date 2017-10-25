@@ -32,6 +32,15 @@ public:
 
 #pragma mark - Creation
     /**
+     Creates an Observable that doesn't emit any items and notifies onComplete immediately.
+     
+     This is the same as Observable<T>::empty().
+     */
+    Observable<T>()
+    : impl(Impl::empty())
+    {}
+    
+    /**
      Creates an Observable which emits values from an Observer on each subscription.
      
      In the onSubscribe function, you get an Observer. You can call Observer::onNext on it to emit values from the Observable.

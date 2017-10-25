@@ -71,5 +71,3 @@ namespace varx {
 #include "integration/varx_ReactiveGUI.h"
 #include "integration/varx_ReactiveModel.h"
 }
-
-#include "util/varx_PrintFunctions.h"

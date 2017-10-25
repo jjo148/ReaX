@@ -28,11 +28,17 @@ public:
     void dispose() const;
 
     /**
-        Inserts the Disposable into a given DisposeBag.
+        Moves the Disposable into a given DisposeBag. The Disposable is disposed automatically when the DisposeBag is destroyed.
+     
+        **This moves the Disposable, so it must be used only when the Disposable is an rvalue. For example:**
+     
+             myObservable.subscribe([](int i){ ... }).disposedBy(myDisposeBag); // Okay
+     
+             Disposable myDisposable = myObservable.subscribe([](int i){ ... });
+             myDisposable.disposedBy(myDisposeBag);
+             myDisposable.dispose(); // NOT okay
         
-        The Disposable is disposed when the DisposeBag is destroyed.
-        
-        @see DisposeBag::insert
+        @see DisposeBag::insert()
      */
     void disposedBy(DisposeBag& disposeBag);
 

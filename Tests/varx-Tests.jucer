@@ -10,6 +10,8 @@
       <GROUP id="{BBCE1761-6AF0-DAE7-65CD-AE0365C41BE7}" name="Other">
         <FILE id="Ct7vkg" name="catch.hpp" compile="0" resource="0" file="Source/Other/catch.hpp"/>
         <FILE id="PO03Yc" name="main.cpp" compile="1" resource="0" file="Source/Other/main.cpp"/>
+        <FILE id="aHCsN6" name="PrintFunctions.h" compile="0" resource="0"
+              file="Source/Other/PrintFunctions.h"/>
         <FILE id="yUj2m2" name="TestPrefix.h" compile="0" resource="0" file="Source/Other/TestPrefix.h"/>
       </GROUP>
       <GROUP id="{10CA88C8-F94B-695D-F44B-6A2C94F559D1}" name="Tests">
