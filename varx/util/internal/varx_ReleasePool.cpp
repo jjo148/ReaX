@@ -23,7 +23,10 @@ void ReleasePool::add(const std::shared_ptr<void>& item)
     if (std::find(pool.begin(), pool.end(), item) != pool.end())
         return;
 
+    // Add item to pool
     pool.emplace_back(item);
+    
+    // Do a cleanup, to prevent memory spikes if a lot of items are created, inserted, and deleted in a short time period
     cleanup();
 }
 
@@ -45,7 +48,7 @@ void ReleasePool::timerCallback()
     cleanup();
 }
 
-bool ReleasePool::isUnused(const shared_ptr<void>& item)
+bool ReleasePool::isUnused(const std::shared_ptr<void>& item)
 {
     // An item is unused if it's not referenced by anything except for this pool
     return (item.use_count() <= 1);

@@ -3,11 +3,11 @@ ValueExtension::ValueExtension(const Value& inputValue)
   value(inputValue)
 {
     value.addListener(this);
-    subject.takeUntil(deallocated).subscribe([this](const var& newValue) {
+    subject.subscribe([this](const var& newValue) {
         // Only assign a new value if it has actually changed (to avoid problems with AudioProcessorValueTreeState)
         if (newValue != value)
             value = newValue;
-    });
+    }).disposedBy(disposeBag);
 }
 
 void ValueExtension::valueChanged(Value&)
@@ -25,7 +25,7 @@ AudioProcessorExtension::AudioProcessorExtension(AudioProcessor& parent)
 
 void AudioProcessorExtension::audioProcessorChanged(AudioProcessor* processor)
 {
-    _processorChanged.onNext(var::undefined());
+    _processorChanged.onNext(Empty());
 }
 
 struct AudioProcessorValueTreeStateExtension::Impl
@@ -40,7 +40,7 @@ AudioProcessorValueTreeStateExtension::AudioProcessorValueTreeStateExtension(Aud
 
 AudioProcessorValueTreeStateExtension::~AudioProcessorValueTreeStateExtension() {}
 
-BehaviorSubject AudioProcessorValueTreeStateExtension::parameterValue(const String& parameterID) const
+BehaviorSubject<var> AudioProcessorValueTreeStateExtension::parameterValue(const String& parameterID) const
 {
     // Create a Reactive<Value> for the parameter, if not already done
     if (impl->parameterValues.find(parameterID) == impl->parameterValues.end())

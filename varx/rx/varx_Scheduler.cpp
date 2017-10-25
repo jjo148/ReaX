@@ -1,6 +1,7 @@
 namespace {
     using namespace juce;
 
+    // A Rx dispatcher for the JUCE message thread. It processes Observables that are observed on it.
     class JUCEDispatcher : private Timer
     {
     public:
@@ -49,28 +50,28 @@ namespace {
     };
 }
 
-Scheduler::Scheduler(const std::shared_ptr<Impl>& impl)
+Scheduler::Scheduler(const std::shared_ptr<detail::SchedulerImpl>& impl)
 : impl(impl) {}
 
 Scheduler Scheduler::messageThread()
 {
     static const JUCEDispatcher dispatcher;
     const auto worker = dispatcher.createWorker();
-    return std::make_shared<Scheduler::Impl>([worker](const rxcpp::observable<juce::var>& observable) {
+    return std::make_shared<detail::SchedulerImpl>([worker](const rxcpp::observable<detail::any>& observable) {
         return observable.observe_on(worker);
     });
 }
 
 Scheduler Scheduler::backgroundThread()
 {
-    return std::make_shared<Scheduler::Impl>([](const rxcpp::observable<juce::var>& observable) {
+    return std::make_shared<detail::SchedulerImpl>([](const rxcpp::observable<detail::any>& observable) {
         return observable.observe_on(rxcpp::serialize_event_loop());
     });
 }
 
 Scheduler Scheduler::newThread()
 {
-    return std::make_shared<Scheduler::Impl>([](const rxcpp::observable<juce::var>& observable) {
+    return std::make_shared<detail::SchedulerImpl>([](const rxcpp::observable<detail::any>& observable) {
         return observable.observe_on(rxcpp::serialize_new_thread());
     });
 }

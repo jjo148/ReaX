@@ -3,20 +3,19 @@
 TEST_CASE("Reactive<Component>",
           "[Reactive<Component>][ComponentExtension]")
 {
-    Array<var> items;
+    Array<bool> items;
     Reactive<Component> component;
     varxCollectItems(component.rx.visible, items);
 
     IT("initially has the same value as the getter")
     {
-        REQUIRE(component.isVisible() == fromVar<bool>(component.rx.visible.getLatestItem()));
+        REQUIRE(component.isVisible() == component.rx.visible.getLatestItem());
     }
 
     IT("emits when visibility is changed through setter")
     {
-        for (bool visible : { false, false, true, true, false }) {
+        for (bool visible : { false, false, true, true, false })
             component.setVisible(visible);
-        }
 
         varxRequireItems(items, false, true, false);
     }
@@ -42,16 +41,16 @@ TEST_CASE("Reactive<ImageComponent>",
 
     IT("allows setting a new image and placement")
     {
-        imageComponent.rx.image.onNext(toVar(image1));
+        imageComponent.rx.image.onNext(image1);
 
         CHECK(imageComponent.getImage().getWidth() == 17);
         CHECK(imageComponent.getImage().getHeight() == 47);
 
-        imageComponent.rx.imagePlacement.onNext(toVar(placement));
+        imageComponent.rx.imagePlacement.onNext(placement);
 
         CHECK(imageComponent.getImagePlacement() == placement);
 
-        imageComponent.rx.image.onNext(toVar(image2));
+        imageComponent.rx.image.onNext(image2);
 
         REQUIRE(imageComponent.getImage().getWidth() == 32);
         REQUIRE(imageComponent.getImage().getHeight() == 12);
@@ -65,10 +64,10 @@ TEST_CASE("Reactive<Button>",
           "[Reactive<Button>][ButtonExtension]")
 {
     Reactive<TextButton> button("Click Here");
-    Array<var> items;
 
     CONTEXT("clicked")
     {
+        Array<Empty> items;
         varxCollectItems(button.rx.clicked, items);
 
         IT("doesn't emit an item on subscribe")
@@ -81,18 +80,19 @@ TEST_CASE("Reactive<Button>",
             button.triggerClick();
             varxRunDispatchLoop();
 
-            varxCheckItems(items, var::undefined());
+            varxCheckItems(items, Empty());
 
             button.triggerClick();
             button.triggerClick();
             varxRunDispatchLoop();
 
-            varxRequireItems(items, var::undefined(), var::undefined(), var::undefined());
+            varxRequireItems(items, Empty(), Empty(), Empty());
         }
     }
 
     CONTEXT("buttonState")
     {
+        Array<Button::ButtonState> items;
         varxCollectItems(button.rx.buttonState, items);
 
         IT("emits the normal state on subscribe")
@@ -121,6 +121,7 @@ TEST_CASE("Reactive<Button>",
 
     CONTEXT("toggleState")
     {
+        Array<bool> items;
         varxCollectItems(button.rx.toggleState, items);
 
         IT("emits false on subscribe")
@@ -152,16 +153,16 @@ TEST_CASE("Reactive<Button>",
 
             button.triggerClick();
             varxRunDispatchLoop();
-            CHECK(button.rx.toggleState.getLatestItem() == var(true));
+            CHECK(button.rx.toggleState.getLatestItem() == true);
 
             button.triggerClick();
             button.triggerClick();
             varxRunDispatchLoop();
-            CHECK(button.rx.toggleState.getLatestItem() == var(true));
+            CHECK(button.rx.toggleState.getLatestItem() == true);
 
             button.triggerClick();
             varxRunDispatchLoop();
-            CHECK(button.rx.toggleState.getLatestItem() == var(false));
+            CHECK(button.rx.toggleState.getLatestItem() == false);
 
             varxRequireItems(items, false, true, false, true, false);
         }
@@ -197,7 +198,7 @@ TEST_CASE("Reactive<Button>",
                 auto observer = button.rx.colour(colourId);
 
                 for (auto colour : { Colours::red, Colour::fromFloatRGBA(0.3, 0.47, 0.11, 0.575), Colours::white }) {
-                    observer.onNext(toVar(colour));
+                    observer.onNext(colour);
                     REQUIRE(button.isColourSpecified(colourId));
                     REQUIRE(button.findColour(colourId) == colour);
                 }
@@ -223,7 +224,7 @@ TEST_CASE("Reactive<Button> with custom TextButton subclass",
     };
 
     Reactive<MyButton> button;
-    Array<var> items;
+    Array<Button::ButtonState> items;
     varxCollectItems(button.rx.buttonState, items);
 
     IT("initially has the normal state")
@@ -251,10 +252,10 @@ TEST_CASE("Reactive<Label>",
           "[Reactive<Label>][LabelExtension]")
 {
     Reactive<Label> label;
-    Array<var> items;
 
     CONTEXT("text")
     {
+        Array<String> items;
         varxCollectItems(label.rx.text, items);
 
         IT("initially emits the empty String")
@@ -285,14 +286,12 @@ TEST_CASE("Reactive<Label>",
 
     CONTEXT("showEditor, discardChangesWhenHidingEditor and textEditor")
     {
+        Array<bool> items;
         DisposeBag disposeBag;
         varxCollectItems(label.rx.showEditor, items);
 
         Array<Component *> editors;
-        label.rx.textEditor.subscribe([&](var editor) {
-                               editors.add(fromVar<WeakReference<Component>>(editor));
-                           })
-            .disposedBy(disposeBag);
+        label.rx.textEditor.subscribe([&](WeakReference<Component> editor) { editors.add(editor); }).disposedBy(disposeBag);
 
         // The label must be on the screen to show an editor (asserts otherwise)
         TestWindow::getInstance().addAndMakeVisible(label);
@@ -378,9 +377,9 @@ TEST_CASE("Reactive<Label>",
 
         IT("changes the Label font when pushing items")
         {
-            label.rx.font.onNext(toVar(font1));
+            label.rx.font.onNext(font1);
             CHECK(label.getFont() == font1);
-            label.rx.font.onNext(toVar(font2));
+            label.rx.font.onNext(font2);
 
             REQUIRE(label.getFont() == font2);
         }
@@ -393,9 +392,9 @@ TEST_CASE("Reactive<Label>",
 
         IT("changes the justification type when pushing items")
         {
-            label.rx.justificationType.onNext(toVar(justification1));
+            label.rx.justificationType.onNext(justification1);
             CHECK(label.getJustificationType() == justification1);
-            label.rx.justificationType.onNext(toVar(justification2));
+            label.rx.justificationType.onNext(justification2);
 
             REQUIRE(label.getJustificationType() == justification2);
         }
@@ -408,9 +407,9 @@ TEST_CASE("Reactive<Label>",
 
         IT("changes the border size when pushing items")
         {
-            label.rx.borderSize.onNext(toVar(borderSize1));
+            label.rx.borderSize.onNext(borderSize1);
             CHECK(label.getBorderSize() == borderSize1);
-            label.rx.borderSize.onNext(toVar(borderSize2));
+            label.rx.borderSize.onNext(borderSize2);
 
             REQUIRE(label.getBorderSize() == borderSize2);
         }
@@ -425,7 +424,7 @@ TEST_CASE("Reactive<Label>",
         IT("attaches to another Component")
         {
             Component other;
-            label.rx.attachedComponent.onNext(toVar(WeakReference<Component>(&other)));
+            label.rx.attachedComponent.onNext(WeakReference<Component>(&other));
 
             CHECK(label.isAttachedOnLeft() == false);
             REQUIRE(label.getAttachedComponent() == &other);
@@ -440,23 +439,16 @@ TEST_CASE("Reactive<Label>",
                 REQUIRE(label.getAttachedComponent() == &other);
             }
 
-            IT("can remove the attachment again via var::undefined()")
+            IT("can remove the attachment again via nullptr")
             {
-                label.rx.attachedComponent.onNext(var::undefined());
-
-                REQUIRE(label.getAttachedComponent() == nullptr);
-            }
-
-            IT("can remove the attachment again via var()")
-            {
-                label.rx.attachedComponent.onNext(var());
+                label.rx.attachedComponent.onNext(nullptr);
 
                 REQUIRE(label.getAttachedComponent() == nullptr);
             }
 
             IT("can remove the attachment again via an empty weak reference")
             {
-                label.rx.attachedComponent.onNext(toVar(WeakReference<Component>()));
+                label.rx.attachedComponent.onNext(WeakReference<Component>());
 
                 REQUIRE(label.getAttachedComponent() == nullptr);
             }
@@ -465,7 +457,7 @@ TEST_CASE("Reactive<Label>",
         IT("loses the attachment when the other component is destroyed")
         {
             auto other = std::make_shared<Component>();
-            label.rx.attachedComponent.onNext(toVar(WeakReference<Component>(other.get())));
+            label.rx.attachedComponent.onNext(other.get());
             CHECK(label.getAttachedComponent() == other.get());
 
             other.reset();
@@ -494,7 +486,7 @@ TEST_CASE("Reactive<Label>",
 
         IT("changes the keyboard type when pushing items")
         {
-            label.rx.keyboardType.onNext(toVar(TextInputTarget::emailAddressKeyboard));
+            label.rx.keyboardType.onNext(TextInputTarget::emailAddressKeyboard);
             label.showEditor();
             CHECK(label.getCurrentTextEditor() != nullptr);
 
@@ -502,7 +494,7 @@ TEST_CASE("Reactive<Label>",
 
             IT("can change the type while an editor is showing")
             {
-                label.rx.keyboardType.onNext(toVar(TextInputTarget::decimalKeyboard));
+                label.rx.keyboardType.onNext(TextInputTarget::decimalKeyboard);
 
                 REQUIRE(label.getCurrentTextEditor()->getKeyboardType() == TextInputTarget::decimalKeyboard);
             }
@@ -568,10 +560,10 @@ TEST_CASE("Reactive<Slider>",
 {
     Reactive<Slider> slider;
     slider.setValue(10, sendNotificationSync);
-    Array<var> items;
 
     CONTEXT("value")
     {
+        Array<double> items;
         varxCollectItems(slider.rx.value, items);
 
         IT("initially has the Slider value")
@@ -590,6 +582,7 @@ TEST_CASE("Reactive<Slider>",
 
     CONTEXT("dragging")
     {
+        Array<bool> items;
         varxCollectItems(slider.rx.dragging, items);
 
         IT("is initially false")
@@ -647,15 +640,15 @@ TEST_CASE("Reactive<Slider>",
         slider.setMinValue(1, sendNotificationSync);
         slider.setMaxValue(8.45, sendNotificationSync);
 
-        Array<var> minValues;
+        Array<double> minValues;
         varxCollectItems(slider.rx.minValue, minValues);
-        Array<var> maxValues;
+        Array<double> maxValues;
         varxCollectItems(slider.rx.maxValue, maxValues);
 
         IT("initially has the values set on the slider")
         {
-            REQUIRE(slider.rx.minValue.getLatestItem() == var(1));
-            REQUIRE(slider.rx.maxValue.getLatestItem() == var(8.45));
+            REQUIRE(slider.rx.minValue.getLatestItem() == 1);
+            REQUIRE(slider.rx.maxValue.getLatestItem() == 8.45);
         }
 
         IT("emits items when calling the JUCE setters")
@@ -703,12 +696,12 @@ TEST_CASE("Reactive<Slider>",
             REQUIRE(slider.getDoubleClickReturnValue() == 1.323);
         }
 
-        IT("disables the double click return value when pushing undefined")
+        IT("disables the double click return value when pushing numeric_limits<double>::max()")
         {
             slider.setDoubleClickReturnValue(true, 4.2);
             CHECK(slider.isDoubleClickReturnEnabled());
 
-            slider.rx.doubleClickReturnValue.onNext(var::undefined());
+            slider.rx.doubleClickReturnValue.onNext(std::numeric_limits<double>::max());
 
             REQUIRE_FALSE(slider.isDoubleClickReturnEnabled());
         }
@@ -724,18 +717,15 @@ TEST_CASE("Reactive<Slider>",
         IT("parses a value using the pushed function")
         {
             std::function<double(String)> function = [](String s) {
-                if (s == "4.464") {
+                if (s == "4.464")
                     return 4.464;
-                }
-                else if (s == "3") {
+                else if (s == "3")
                     return 3.0;
-                }
-                else {
+                else
                     return 0.1;
-                }
             };
 
-            slider.rx.getValueFromText.onNext(toVar(function));
+            slider.rx.getValueFromText.onNext(function);
         }
     }
 
@@ -749,9 +739,9 @@ TEST_CASE("Reactive<Slider>",
         IT("stringifies its value using the pushed function")
         {
             std::function<String(double)> function = [](double value) {
-                return value > 5 ? "BIG!" : "small";
+                return (value > 5 ? "BIG!" : "small");
             };
-            slider.rx.getTextFromValue.onNext(toVar(function));
+            slider.rx.getTextFromValue.onNext(function);
 
             REQUIRE(slider.getTextFromValue(2) == "small");
             REQUIRE(slider.getTextFromValue(8.4) == "BIG!");
@@ -765,8 +755,6 @@ using isSame = typename std::is_same<typename std::decay<T1>::type, T2>;
 
 TEST_CASE("Template ambiguities")
 {
-    Array<var> items;
-
     IT("chooses the correct template for a juce::Component")
     {
         Reactive<Component> myComponent;

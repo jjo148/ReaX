@@ -1,5 +1,9 @@
 #pragma once
 
+namespace detail {
+    class ObservableImpl;
+}
+
 class DisposeBag;
 
 /**
@@ -24,21 +28,21 @@ public:
     void dispose() const;
 
     /**
-        Inserts the Disposable into a given DisposeBag.
-        
-        The Disposable is disposed when the DisposeBag is destroyed.
-        
-        @see DisposeBag::insert
+        Moves the Disposable into a given DisposeBag. The Disposable is disposed automatically when the DisposeBag is destroyed.
+     
+        Can only be used when the Disposable is an rvalue.
+     
+        @see DisposeBag::insert()
      */
-    void disposedBy(DisposeBag& disposeBag);
+    void disposedBy(DisposeBag& disposeBag) &&;
 
 private:
-    struct Impl;
-    const std::shared_ptr<Impl> impl;
-
-    friend class Observable;
+    friend class detail::ObservableImpl;
     friend class DisposeBag;
-    explicit Disposable(const std::shared_ptr<Impl>&);
+    
+    const detail::any wrapped;
+
+    explicit Disposable(detail::any&& wrapped);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Disposable)
 };

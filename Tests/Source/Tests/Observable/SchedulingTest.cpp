@@ -4,8 +4,8 @@
 TEST_CASE("Observable::observeOn",
           "[Observable][Observable::observeOn]")
 {
-    auto observable = Observable::from({ 1, 2, 3 });
-    Array<var> items;
+    auto observable = Observable<>::from<int>({ 1, 2, 3 });
+    Array<int> items;
 
     IT("can schedule to a background thread and two new threads")
     {
@@ -59,8 +59,8 @@ TEST_CASE("Observable::observeOn",
         // There shouldn't be any items yet, because observeOn is asynchronous
         CHECK(items.isEmpty());
 
-        // The message thread scheduler only runs with 60 Hz, so we have to wait about 16 ms
-        varxRunDispatchLoop(20);
+        // Wait for items to be emitted asynchronously
+        varxRunDispatchLoopUntil(items.size() == 3);
 
         varxRequireItems(items, 2, 4, 6);
     }

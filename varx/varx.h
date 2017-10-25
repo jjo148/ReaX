@@ -33,28 +33,38 @@ END_JUCE_MODULE_DECLARATION
 #include <typeinfo>
 #include <utility>
 #include <vector>
-
-
-#include "util/varx_PrintFunctions.h"
+#include "util/internal/concurrentqueue.h"
 
 namespace varx {
 
-    typedef std::exception_ptr Error;
-
-#include "rx/varx_Disposable.h"
-#include "rx/varx_DisposeBag.h"
-#include "rx/varx_Observable.h"
-#include "rx/varx_Observer.h"
-#include "rx/varx_Scheduler.h"
-#include "rx/varx_Subjects.h"
+struct Empty
+{};
+inline bool operator==(const Empty& lhs, const Empty& rhs)
+{
+    return true;
+}
+inline bool operator!=(const Empty& lhs, const Empty& rhs)
+{
+    return !(lhs == rhs);
+}
 }
 
-#include "util/varx_VariantConverters.h"
-
 namespace varx {
+#include "util/internal/varx_any.h"
+#include "rx/varx_Disposable.h"
+#include "rx/varx_DisposeBag.h"
+#include "rx/internal/varx_Observer_Impl.h"
+#include "rx/varx_Observer.h"
+#include "rx/varx_Scheduler.h"
+#include "rx/internal/varx_Observable_Impl.h"
+#include "rx/varx_Observable.h"
+#include "rx/internal/varx_Subjects_Impl.h"
+#include "rx/varx_Subjects.h"
+
 #include "util/internal/varx_ReleasePool.h"
+#include "util/varx_LockFreeSource.h"
 #include "util/varx_LockFreeTarget.h"
-#include "integration/varx_ExtensionBase.h"
+
 #include "integration/varx_GUIExtensions.h"
 #include "integration/varx_ModelExtensions.h"
 #include "integration/varx_Reactive.h"

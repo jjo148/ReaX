@@ -1,50 +1,30 @@
-#include "varx_Subjects_Impl.h"
-
-var Subject::Impl::getLatestItem() const
+namespace detail {
+SubjectImpl SubjectImpl::MakeBehaviorSubjectImpl(any&& initial)
 {
-    jassertfalse;
-    return var::undefined();
+    auto subject = std::make_shared<rxcpp::subjects::behavior<any>>(std::move(initial));
+    return SubjectImpl(any(subject), any(subject->get_subscriber().as_dynamic()), any(subject->get_observable().as_dynamic()));
 }
 
-BehaviorSubjectImpl::BehaviorSubjectImpl(const juce::var& initial)
-: wrapped(initial) {}
-
-rxcpp::subscriber<var> BehaviorSubjectImpl::getSubscriber() const
+SubjectImpl SubjectImpl::MakePublishSubjectImpl()
 {
-    return wrapped.get_subscriber();
+    auto subject = std::make_shared<rxcpp::subjects::subject<any>>();
+    return SubjectImpl(any(subject), any(subject->get_subscriber().as_dynamic()), any(subject->get_observable().as_dynamic()));
 }
 
-rxcpp::observable<var> BehaviorSubjectImpl::asObservable() const
+SubjectImpl SubjectImpl::MakeReplaySubjectImpl(size_t bufferSize)
 {
-    return wrapped.get_observable();
+    auto subject = std::make_shared<rxcpp::subjects::replay<any, rxcpp::identity_one_worker>>(bufferSize, rxcpp::identity_immediate());
+    return SubjectImpl(any(subject), any(subject->get_subscriber().as_dynamic()), any(subject->get_observable().as_dynamic()));
 }
 
-var BehaviorSubjectImpl::getLatestItem() const
+any SubjectImpl::getLatestItem() const
 {
-    return wrapped.get_value();
+    return wrapped.get<std::shared_ptr<rxcpp::subjects::behavior<any>>>()->get_value();
 }
 
-PublishSubjectImpl::PublishSubjectImpl() {}
-
-rxcpp::subscriber<var> PublishSubjectImpl::getSubscriber() const
-{
-    return wrapped.get_subscriber();
-}
-
-rxcpp::observable<var> PublishSubjectImpl::asObservable() const
-{
-    return wrapped.get_observable();
-}
-
-ReplaySubjectImpl::ReplaySubjectImpl(size_t bufferSize)
-: wrapped(bufferSize, rxcpp::identity_immediate()) {}
-
-rxcpp::subscriber<var> ReplaySubjectImpl::getSubscriber() const
-{
-    return wrapped.get_subscriber();
-}
-
-rxcpp::observable<var> ReplaySubjectImpl::asObservable() const
-{
-    return wrapped.get_observable();
+SubjectImpl::SubjectImpl(const any& subject, const any& observer, const any& observable)
+: ObserverImpl(observer),
+  ObservableImpl(observable),
+  wrapped(subject)
+{}
 }

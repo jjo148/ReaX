@@ -1,33 +1,32 @@
 using std::placeholders::_1;
 
 ComponentExtension::ComponentExtension(Component& parent)
-: parent(parent),
-  visible(parent.isVisible())
+: colourSubjects(new std::map<int, PublishSubject<juce::Colour>>()),
+  parent(parent),
+  visible(parent.isVisible()),
+  disposeBag(new DisposeBag())
 {
-    Array<Subject> colourSubjects;
-    storeSubject = [colourSubjects](const Subject& subject) mutable { colourSubjects.add(subject); };
-
     parent.addComponentListener(this);
-    visible.takeUntil(deallocated).subscribe(std::bind(&Component::setVisible, &parent, _1));
+    visible.subscribe(std::bind(&Component::setVisible, &parent, _1)).disposedBy(*disposeBag);
 }
 
-Observer ComponentExtension::colour(int colourId) const
+Observer<Colour> ComponentExtension::colour(int colourId) const
 {
-    PublishSubject subject;
+    // Create subject, if not already done
+    if (colourSubjects->find(colourId) == colourSubjects->end())
+        colourSubjects->insert(std::make_pair(colourId, PublishSubject<Colour>()));
 
-    subject.takeUntil(deallocated).subscribe([colourId, this](const var& colour) {
-        this->parent.setColour(colourId, fromVar<Colour>(colour));
-    });
+    // Subscribe
+    colourSubjects->at(colourId).subscribe(std::bind(&Component::setColour, &parent, colourId, _1)).disposedBy(*disposeBag);
 
-    storeSubject(subject);
-    return subject;
+    // Return as Observer
+    return colourSubjects->at(colourId);
 }
 
 void ComponentExtension::componentVisibilityChanged(Component& component)
 {
-    if (component.isVisible() != visible.getLatestItem().operator bool()) {
+    if (component.isVisible() != visible.getLatestItem())
         visible.onNext(component.isVisible());
-    }
 }
 
 
@@ -41,31 +40,26 @@ ButtonExtension::ButtonExtension(Button& parent)
 {
     parent.addListener(this);
 
-    _text.takeUntil(deallocated).subscribe(std::bind(&Button::setButtonText, &parent, _1));
-    _tooltip.takeUntil(deallocated).subscribe(std::bind(&Button::setTooltip, &parent, _1));
-
-    buttonState.takeUntil(deallocated).subscribe([&parent](const var& v) {
-        parent.setState(fromVar<Button::ButtonState>(v));
-    });
-
-    toggleState.takeUntil(deallocated).subscribe([&parent](bool toggled) {
+    _text.subscribe(std::bind(&Button::setButtonText, &parent, _1)).disposedBy(disposeBag);
+    _tooltip.subscribe(std::bind(&Button::setTooltip, &parent, _1)).disposedBy(disposeBag);
+    buttonState.subscribe(std::bind(&Button::setState, &parent, _1)).disposedBy(disposeBag);
+    toggleState.subscribe([&parent](bool toggled) {
         parent.setToggleState(toggled, sendNotificationSync);
-    });
+    }).disposedBy(disposeBag);
 }
 
 void ButtonExtension::buttonClicked(Button*)
 {
-    _clicked.onNext(var::undefined());
+    _clicked.onNext(Empty());
 }
 
 void ButtonExtension::buttonStateChanged(Button* button)
 {
-    if (var(button->getState()) != buttonState.getLatestItem()) {
+    if (button->getState() != buttonState.getLatestItem())
         buttonState.onNext(button->getState());
-    }
-    if (var(button->getToggleState()) != toggleState.getLatestItem()) {
+
+    if (button->getToggleState() != toggleState.getLatestItem())
         toggleState.onNext(button->getToggleState());
-    }
 }
 
 ImageComponentExtension::ImageComponentExtension(ImageComponent& parent)
@@ -73,19 +67,17 @@ ImageComponentExtension::ImageComponentExtension(ImageComponent& parent)
   image(_image),
   imagePlacement(_imagePlacement)
 {
-    _image.takeUntil(deallocated).subscribe([&parent](const var& image) {
-        parent.setImage(fromVar<Image>(image));
-    });
+    _image.subscribe([&parent](const Image& image) {
+        parent.setImage(image);
+    }).disposedBy(disposeBag);
 
-    _imagePlacement.takeUntil(deallocated).subscribe([&parent](const var& imagePlacement) {
-        parent.setImagePlacement(fromVar<RectanglePlacement>(imagePlacement));
-    });
+    _imagePlacement.subscribe(std::bind(&ImageComponent::setImagePlacement, &parent, _1)).disposedBy(disposeBag);
 }
 
 LabelExtension::LabelExtension(Label& parent)
 : ComponentExtension(parent),
   _discardChangesWhenHidingEditor(false),
-  _textEditor(getTextEditor(parent)),
+  _textEditor(parent.getCurrentTextEditor()),
   text(parent.getText()),
   showEditor(parent.getCurrentTextEditor() != nullptr),
   discardChangesWhenHidingEditor(_discardChangesWhenHidingEditor),
@@ -103,94 +95,72 @@ LabelExtension::LabelExtension(Label& parent)
 {
     parent.addListener(this);
 
-    text.takeUntil(deallocated).subscribe(std::bind(&Label::setText, &parent, _1, sendNotificationSync));
+    text.subscribe(std::bind(&Label::setText, &parent, _1, sendNotificationSync)).disposedBy(disposeBag);
 
-    showEditor.withLatestFrom(_discardChangesWhenHidingEditor).takeUntil(deallocated).subscribe([&parent](var items) {
-        if (items[0])
+    showEditor.withLatestFrom(_discardChangesWhenHidingEditor).subscribe([&parent](const std::pair<bool, bool>& pair) {
+        if (pair.first)
             parent.showEditor();
         else
-            parent.hideEditor(items[1]);
-    });
+            parent.hideEditor(pair.second);
+    }).disposedBy(disposeBag);
 
-    _font.takeUntil(deallocated).subscribe([&parent](var font) {
-        parent.setFont(fromVar<Font>(font));
-    });
+    _font.subscribe(std::bind(&Label::setFont, &parent, _1)).disposedBy(disposeBag);
+    _justificationType.subscribe(std::bind(&Label::setJustificationType, &parent, _1)).disposedBy(disposeBag);
+    _borderSize.subscribe(std::bind(&Label::setBorderSize, &parent, _1)).disposedBy(disposeBag);
 
-    _justificationType.takeUntil(deallocated).subscribe([&parent](var justificationType) {
-        parent.setJustificationType(fromVar<Justification>(justificationType));
-    });
+    _attachedComponent.subscribe([&parent](const WeakReference<Component>& component) {
+        parent.attachToComponent(component, parent.isAttachedOnLeft());
+    }).disposedBy(disposeBag);
 
-    _borderSize.takeUntil(deallocated).subscribe([&parent](var borderSize) {
-        parent.setBorderSize(fromVar<BorderSize<int>>(borderSize));
-    });
-
-    _attachedComponent.takeUntil(deallocated).subscribe([&parent](var component) {
-        parent.attachToComponent(fromVar<WeakReference<Component>>(component), parent.isAttachedOnLeft());
-    });
-
-    _attachedOnLeft.takeUntil(deallocated).subscribe([&parent](bool attachedOnLeft) {
+    _attachedOnLeft.subscribe([&parent](bool attachedOnLeft) {
         parent.attachToComponent(parent.getAttachedComponent(), attachedOnLeft);
-    });
+    }).disposedBy(disposeBag);
 
-    _minimumHorizontalScale.takeUntil(deallocated).subscribe(std::bind(&Label::setMinimumHorizontalScale, &parent, _1));
+    _minimumHorizontalScale.subscribe(std::bind(&Label::setMinimumHorizontalScale, &parent, _1)).disposedBy(disposeBag);
 
-    _keyboardType.takeUntil(deallocated).subscribe([&parent](var v) {
-        const auto keyboardType = fromVar<TextInputTarget::VirtualKeyboardType>(v);
+    _keyboardType.subscribe([&parent](TextInputTarget::VirtualKeyboardType keyboardType) {
         parent.setKeyboardType(keyboardType);
 
-        if (auto editor = parent.getCurrentTextEditor()) {
+        if (auto editor = parent.getCurrentTextEditor())
             editor->setKeyboardType(keyboardType);
-        }
-    });
+    }).disposedBy(disposeBag);
 
-    _editableOnSingleClick.takeUntil(deallocated).subscribe([&parent](bool editable) {
-        parent.setEditable(editable, parent.isEditableOnDoubleClick(), parent.doesLossOfFocusDiscardChanges());
-    });
-
-    _editableOnDoubleClick.takeUntil(deallocated).subscribe([&parent](bool editable) {
-        parent.setEditable(parent.isEditableOnSingleClick(), editable, parent.doesLossOfFocusDiscardChanges());
-    });
-
-    _lossOfFocusDiscardsChanges.takeUntil(deallocated).subscribe([&parent](bool lossOfFocusDiscardsChanges) {
+    // Cannot use combineLatest for these, because changing something on the Slider directly doesn't update the subject
+    _editableOnSingleClick.subscribe([&parent](bool editableOnSingleClick) {
+        parent.setEditable(editableOnSingleClick, parent.isEditableOnDoubleClick(), parent.doesLossOfFocusDiscardChanges());
+    }).disposedBy(disposeBag);
+    _editableOnDoubleClick.subscribe([&parent](bool editableOnDoubleClick) {
+        parent.setEditable(parent.isEditableOnSingleClick(), editableOnDoubleClick, parent.doesLossOfFocusDiscardChanges());
+    }).disposedBy(disposeBag);
+    _lossOfFocusDiscardsChanges.subscribe([&parent](bool lossOfFocusDiscardsChanges) {
         parent.setEditable(parent.isEditableOnSingleClick(), parent.isEditableOnDoubleClick(), lossOfFocusDiscardsChanges);
-    });
+    }).disposedBy(disposeBag);
 }
 
 void LabelExtension::labelTextChanged(Label* parent)
 {
-    if (parent->getText() != text.getLatestItem().operator String()) {
+    if (parent->getText() != text.getLatestItem())
         text.onNext(parent->getText());
-    }
 }
 
 void LabelExtension::editorShown(Label* parent, TextEditor&)
 {
-    if (!showEditor.getLatestItem()) {
+    if (!showEditor.getLatestItem())
         showEditor.onNext(true);
-    }
 
-    _textEditor.onNext(getTextEditor(*parent));
+    _textEditor.onNext(parent->getCurrentTextEditor());
 }
 
 void LabelExtension::editorHidden(Label* parent, TextEditor&)
 {
-    if (showEditor.getLatestItem()) {
+    if (showEditor.getLatestItem())
         showEditor.onNext(false);
-    }
 
-    _textEditor.onNext(getTextEditor(*parent));
-}
-
-var LabelExtension::getTextEditor(Label& label)
-{
-    if (auto editor = label.getCurrentTextEditor())
-        return toVar(WeakReference<Component>(editor));
-    else
-        return var::undefined();
+    _textEditor.onNext(nullptr);
 }
 
 
-SliderExtension::SliderExtension(Slider& parent, Observer getValueFromText, Observer getTextFromValue)
+SliderExtension::SliderExtension(juce::Slider& parent, const Observer<std::function<double(const juce::String&)>>& getValueFromText, const Observer<std::function<juce::String(double)>>& getTextFromValue)
 : ComponentExtension(parent),
   _dragging(false),
   _discardChangesWhenHidingTextBox(false),
@@ -203,7 +173,7 @@ SliderExtension::SliderExtension(Slider& parent, Observer getValueFromText, Obse
   interval(_interval),
   skewFactorMidPoint(_skewFactorMidPoint),
   dragging(_dragging.distinctUntilChanged()),
-  thumbBeingDragged(dragging.map([&parent](bool dragging) { return (dragging ? var(parent.getThumbBeingDragged()) : var::undefined()); })),
+  thumbBeingDragged(dragging.map([&parent](bool) { return parent.getThumbBeingDragged(); })),
   showTextBox(_showTextBox),
   textBoxIsEditable(_textBoxIsEditable),
   discardChangesWhenHidingTextBox(_discardChangesWhenHidingTextBox),
@@ -212,58 +182,55 @@ SliderExtension::SliderExtension(Slider& parent, Observer getValueFromText, Obse
 {
     parent.addListener(this);
 
-    value.takeUntil(deallocated).subscribe([&parent](double value) {
+    value.subscribe([&parent](double value) {
         parent.setValue(value, sendNotificationSync);
-    });
+    }).disposedBy(disposeBag);
 
-    _minimum.takeUntil(deallocated).subscribe([&parent](double minimum) {
+    // Cannot use combineLatest for these, because changing something on the Slider directly doesn't update the subject
+    _minimum.subscribe([&parent](double minimum) {
         parent.setRange(minimum, parent.getMaximum(), parent.getInterval());
-    });
-
-    _maximum.takeUntil(deallocated).subscribe([&parent](double maximum) {
+    }).disposedBy(disposeBag);
+    _maximum.subscribe([&parent](double maximum) {
         parent.setRange(parent.getMinimum(), maximum, parent.getInterval());
-    });
-
-    minValue.skip(1).takeUntil(deallocated).subscribe([&parent](double minValue) {
-        parent.setMinValue(minValue, sendNotificationSync, true);
-    });
-
-    maxValue.skip(1).takeUntil(deallocated).subscribe([&parent](double maxValue) {
-        parent.setMaxValue(maxValue, sendNotificationSync, true);
-    });
-
-    _doubleClickReturnValue.takeUntil(deallocated).subscribe([&parent](var value) {
-        parent.setDoubleClickReturnValue(!value.isUndefined(), value);
-    });
-
-    _interval.takeUntil(deallocated).subscribe([&parent](double interval) {
+    }).disposedBy(disposeBag);
+    _interval.subscribe([&parent](double interval) {
         parent.setRange(parent.getMinimum(), parent.getMaximum(), interval);
-    });
+    }).disposedBy(disposeBag);
 
-    _skewFactorMidPoint.takeUntil(deallocated).subscribe(std::bind(&Slider::setSkewFactorFromMidPoint, &parent, _1));
+    minValue.skip(1).subscribe([&parent](double minValue) {
+        parent.setMinValue(minValue, sendNotificationSync, true);
+    }).disposedBy(disposeBag);
 
-    _showTextBox.withLatestFrom(_discardChangesWhenHidingTextBox).takeUntil(deallocated).subscribe([&parent](var items) {
-        if (items[0])
+    maxValue.skip(1).subscribe([&parent](double maxValue) {
+        parent.setMaxValue(maxValue, sendNotificationSync, true);
+    }).disposedBy(disposeBag);
+
+    _doubleClickReturnValue.subscribe([&parent](double value) {
+        parent.setDoubleClickReturnValue(value != DBL_MAX, value);
+    }).disposedBy(disposeBag);
+
+    _skewFactorMidPoint.subscribe(std::bind(&Slider::setSkewFactorFromMidPoint, &parent, _1)).disposedBy(disposeBag);
+
+    _showTextBox.withLatestFrom(_discardChangesWhenHidingTextBox).subscribe([&parent](const std::pair<bool, bool>& pair) {
+        if (pair.first)
             parent.showTextBox();
         else
-            parent.hideTextBox(items[1]);
-    });
+            parent.hideTextBox(pair.second);
+    }).disposedBy(disposeBag);
 
-    _textBoxIsEditable.takeUntil(deallocated).subscribe(std::bind(&Slider::setTextBoxIsEditable, &parent, _1));
+    _textBoxIsEditable.subscribe(std::bind(&Slider::setTextBoxIsEditable, &parent, _1)).disposedBy(disposeBag);
 }
 
 void SliderExtension::sliderValueChanged(Slider* slider)
 {
-    if (slider->getValue() != value.getLatestItem().operator double()) {
+    if (slider->getValue() != value.getLatestItem())
         value.onNext(slider->getValue());
-    }
 
-    if (hasMultipleThumbs(*slider) && slider->getMinValue() != minValue.getLatestItem().operator double()) {
+    if (hasMultipleThumbs(*slider) && slider->getMinValue() != minValue.getLatestItem())
         minValue.onNext(slider->getMinValue());
-    }
-    if (hasMultipleThumbs(*slider) && slider->getMaxValue() != maxValue.getLatestItem().operator double()) {
+
+    if (hasMultipleThumbs(*slider) && slider->getMaxValue() != maxValue.getLatestItem())
         maxValue.onNext(slider->getMaxValue());
-    }
 }
 
 void SliderExtension::sliderDragStarted(Slider*)

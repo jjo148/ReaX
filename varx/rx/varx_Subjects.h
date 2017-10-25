@@ -1,50 +1,47 @@
 #pragma once
 
 /**
-    A Subject is an Observer and an Observable at the same time. When Observer::onNext is called, the Observable emits an item.
+ A Subject is an Observer and an Observable in one. Pushing an item to its Observer side causes the Observable side to emit that item.
  
-    It does **not** automatically call onCompleted when it's destroyed.
+ ​ **If you copy the Observer and Observable side, and destroy the Subject, the Observer and Observable remain connected!** So pushing items to the Observer will still cause the Observable to emit.
+ 
+ For an introduction to Subjects, please refer to http://reactivex.io/documentation/subject.html.
  */
-class Subject : public Observer, public Observable
+template<typename T>
+class Subject : public Observer<T>, public Observable<T>
 {
-public:
-    /**
-        Returns an Observable that emits an item whenever onNext is called on this subject.
-     */
-    Observable asObservable() const;
+protected:
+    ///@cond INTERNAL
+    const detail::SubjectImpl impl;
 
-    /**
-        Returns the Observer side. If you call onNext on this Observer, this subject's Observable side will emit an item.
-     */
-    Observer asObserver() const;
-
-private:
-    friend class BehaviorSubject;
-    friend class BehaviorSubjectImpl;
-    friend class PublishSubject;
-    friend class PublishSubjectImpl;
-    friend class ReplaySubject;
-    friend class ReplaySubjectImpl;
-    friend class Observable;
-    struct Impl;
-    explicit Subject(const std::shared_ptr<Impl>& impl);
-    std::shared_ptr<Impl> impl;
-
-    JUCE_LEAK_DETECTOR(Subject)
+    explicit Subject(detail::SubjectImpl&& impl)
+    : Observer<T>(impl),
+      Observable<T>(impl),
+      impl(impl)
+    {}
+    ///@endcond
 };
 
 
 /**
-    A subject that starts with an initial item. On subscribe, it emits the most recently emitted item. It then continues to emit any items that are passed to onNext.
+ A subject that starts with an initial item. On subscribe, it emits the most recently emitted item. It then continues to emit any items that are passed to onNext.
+ 
+ For an introduction to Subjects, please refer to http://reactivex.io/documentation/subject.html.
  */
-class BehaviorSubject : public Subject
+template<typename T>
+class BehaviorSubject : public Subject<T>
 {
 public:
-    /** Creates a new instance with a given initial item */
-    explicit BehaviorSubject(const juce::var& initial);
+    /// Creates a new instance with a given initial item 
+    explicit BehaviorSubject(const T& initial)
+    : Subject<T>(detail::SubjectImpl::MakeBehaviorSubjectImpl(detail::any(initial)))
+    {}
 
-    /** Returns the most recently emitted item. If no items have been emitted, it returns the initial item. */
-    juce::var getLatestItem() const;
+    /// Returns the most recently emitted item. If no items have been emitted, it returns the initial item. 
+    T getLatestItem() const
+    {
+        return Subject<T>::impl.getLatestItem().template get<T>();
+    }
 
 private:
     JUCE_LEAK_DETECTOR(BehaviorSubject)
@@ -52,37 +49,40 @@ private:
 
 
 /**
-    A subject that initially doesn't have a value. It does not emit an item on subscribe, and emits only those items that are passed to onNext *after the time of the disposable*.
+ A subject that initially doesn't have a value. It does not emit an item on subscribe, and emits only those items that are passed to onNext *after the time of the subscription*.
+ 
+ For an introduction to Subjects, please refer to http://reactivex.io/documentation/subject.html.
  */
-class PublishSubject : public Subject
+template<typename T>
+class PublishSubject : public Subject<T>
 {
 public:
-    /** Creates a new instance. */
-    PublishSubject();
+    /// Creates a new instance. 
+    PublishSubject()
+    : Subject<T>(detail::SubjectImpl::MakePublishSubjectImpl())
+    {}
 
 private:
     JUCE_LEAK_DETECTOR(PublishSubject)
 };
 
 /**
-    A Subject that, on every new disposable, notifies the Observer with all of the items that were emitted since the ReplaySubject was created. It then continues to emit any items that are passed to onNext.
+ A Subject that, on every new disposable, notifies the Observer with all of the items that were emitted since the ReplaySubject was created. It then continues to emit any items that are passed to onNext.
+ 
+ For an introduction to Subjects, please refer to http://reactivex.io/documentation/subject.html.
  */
-class ReplaySubject : public Subject
+template<typename T>
+class ReplaySubject : public Subject<T>
 {
 public:
     /**
-        Creates a new instance.
+     Creates a new instance.
      
-        The `bufferSize` is the maximum number of items to remember and replay. Pass ReplaySubject::MaxBufferSize if you want all items to be remembered. The buffer size is increased as items are emitted (not allocated upfront).
+     The `bufferSize` is the maximum number of items to remember and replay. Defaults to remembering "all" items (within memory boundaries). The buffer size is increased as items are emitted (not allocated upfront).
      */
-    explicit ReplaySubject(size_t bufferSize = MaxBufferSize);
-
-    /**
-        The maximum number of items that can be remembered by this class. You can pass this to ReplaySubject::ReplaySubject to remember "all" items (within memory boundaries).
-     
-        The buffer size is increased as items are emitted (not allocated upfront).
-     */
-    static const size_t MaxBufferSize;
+    explicit ReplaySubject(size_t bufferSize = std::numeric_limits<size_t>::max())
+    : Subject<T>(detail::SubjectImpl::MakeReplaySubjectImpl(bufferSize))
+    {}
 
 private:
     JUCE_LEAK_DETECTOR(ReplaySubject)
