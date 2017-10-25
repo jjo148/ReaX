@@ -5,7 +5,7 @@ TEST_CASE("Disposable",
           "[Disposable]")
 {
     // Create Observable which emits a single item asynchronously
-    auto observable = std::make_shared<Observable<String>>(Observable<String>::create([](Observer<String> observer) {
+    auto observable = std::make_shared<Observable<String>>(Observable<>::create<String>([](Observer<String> observer) {
         MessageManager::getInstance()->callAsync([observer]() {
             observer.onNext("Item");
         });
@@ -69,7 +69,7 @@ TEST_CASE("DisposeBag",
     auto disposeBag = std::make_shared<DisposeBag>();
 
     // Create Observable which emits a single item asynchronously
-    auto observable = Observable<String>::create([](Observer<String> observer) {
+    auto observable = Observable<>::create<String>([](Observer<String> observer) {
         MessageManager::getInstance()->callAsync([observer]() {
             observer.onNext("Item");
         });

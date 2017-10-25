@@ -10,7 +10,7 @@ TEST_CASE("Observable::create",
 
     IT("emits items when pushing items synchronously")
     {
-        auto observable = Observable<String>::create([](Observer<String> observer) {
+        auto observable = Observable<>::create<String>([](Observer<String> observer) {
             observer.onNext("First");
             observer.onNext("Second");
         });
@@ -21,7 +21,7 @@ TEST_CASE("Observable::create",
 
     IT("emits items when pushing items asynchronously")
     {
-        auto observable = Observable<String>::create([](Observer<String> observer) {
+        auto observable = Observable<>::create<String>([](Observer<String> observer) {
             MessageManager::getInstance()->callAsync([observer]() {
                 observer.onNext("First");
                 observer.onNext("Second");
@@ -39,7 +39,7 @@ TEST_CASE("Observable::create",
 
     IT("emits can emit items asynchronously after being destroyed")
     {
-        auto observable = std::make_shared<Observable<String>>(Observable<String>::create([](Observer<String> observer) {
+        auto observable = std::make_shared<Observable<String>>(Observable<>::create<String>([](Observer<String> observer) {
             MessageManager::getInstance()->callAsync([observer]() {
                 observer.onNext("First");
                 observer.onNext("Second");
@@ -68,7 +68,7 @@ TEST_CASE("Observable::create",
 
     IT("calls onSubscribe again for each new disposable")
     {
-        auto observable = Observable<String>::create([](Observer<String> observer) {
+        auto observable = Observable<>::create<String>([](Observer<String> observer) {
             observer.onNext("onSubscribe called");
         });
         varxCollectItems(observable, items);
@@ -90,7 +90,7 @@ TEST_CASE("Observable::create",
         ReferenceCountedObjectPtr<ReferenceCountedObject> pointer(new Dummy());
 
         // Capture it in the Observable
-        auto observable = std::make_shared<Observable<String>>(Observable<String>::create([pointer](Observer<String>) {}));
+        auto observable = std::make_shared<Observable<String>>(Observable<>::create<String>([pointer](Observer<String>) {}));
 
         // There should be 2 references: From pointer and from the Observable
         CHECK(pointer->getReferenceCount() == 2);
@@ -123,9 +123,9 @@ TEST_CASE("Observable::defer",
     IT("calls the factory function on every new subscription")
     {
         int numCalls = 0;
-        auto observable = Observable<int>::defer([&]() {
+        auto observable = Observable<>::defer<int>([&]() {
             numCalls++;
-            return Observable<int>::from({ 3, 4 });
+            return Observable<>::from<int>({ 3, 4 });
         });
 
         varxCollectItems(observable, items);
@@ -142,7 +142,7 @@ TEST_CASE("Observable::empty",
           "[Observable][Observable::empty]")
 {
     Array<int> items;
-    auto o = Observable<int>::empty();
+    auto o = Observable<>::empty<int>();
 
     IT("doesn't emit any items")
     {
@@ -167,7 +167,7 @@ TEST_CASE("Observable::error",
           "[Observable][Observable::error]")
 {
     Array<int> items;
-    auto o = Observable<int>::error(std::runtime_error("Error!!111!"));
+    auto o = Observable<>::error<int>(std::runtime_error("Error!!111!"));
     DisposeBag disposeBag;
 
     IT("doesn't emit any items")
@@ -194,7 +194,7 @@ TEST_CASE("Observable::from",
     IT("can be created from an Array<int>")
     {
         Array<long> items;
-        varxCollectItems(Observable<int>::from(Array<int>({ 3, 6, 8 })), items);
+        varxCollectItems(Observable<>::from<int>(Array<int>({ 3, 6, 8 })), items);
 
         varxRequireItems(items, 3, 6, 8);
     }
@@ -202,7 +202,7 @@ TEST_CASE("Observable::from",
     IT("can be created from a std::initializer_list<var>")
     {
         Array<var> items;
-        varxCollectItems(Observable<var>::from({ var("Hello"), var(15.5) }), items);
+        varxCollectItems(Observable<>::from<var>({ var("Hello"), var(15.5) }), items);
 
         varxRequireItems(items, var("Hello"), var(15.5));
     }
@@ -210,7 +210,7 @@ TEST_CASE("Observable::from",
     IT("can be created from a std::initializer_list<int>")
     {
         Array<double> items;
-        varxCollectItems(Observable<int>::from({ 1, 4 }), items);
+        varxCollectItems(Observable<>::from<int>({ 1, 4 }), items);
 
         varxRequireItems(items, 1, 4);
     }
@@ -218,7 +218,7 @@ TEST_CASE("Observable::from",
     IT("can be created from a std::initializer_list<String>")
     {
         Array<String> items;
-        varxCollectItems(Observable<String>::from({ "Hello", "Test" }), items);
+        varxCollectItems(Observable<>::from<String>({ "Hello", "Test" }), items);
 
         varxRequireItems(items, "Hello", "Test");
     }
@@ -428,7 +428,7 @@ TEST_CASE("Observable::just",
     IT("emits a single value on subscribe")
     {
         Array<float> items;
-        varxCollectItems(Observable<double>::just(18.3), items);
+        varxCollectItems(Observable<>::just(18.3), items);
 
         varxRequireItems(items, 18.3);
     }
@@ -436,7 +436,7 @@ TEST_CASE("Observable::just",
     IT("notifies multiple disposables")
     {
         Array<String> items;
-        auto o = Observable<String>::just("Hello");
+        auto o = Observable<>::just<String>("Hello");
         varxCollectItems(o, items);
         varxCollectItems(o, items);
 
@@ -448,7 +448,7 @@ TEST_CASE("Observable::just",
 TEST_CASE("Observable::never",
           "[Observable][Observable::never]")
 {
-    auto o = Observable<int64>::never();
+    auto o = Observable<>::never<int64>();
     DisposeBag disposeBag;
 
     IT("doesn't terminate and doesn't emit")
@@ -507,14 +507,14 @@ TEST_CASE("Observable::repeat",
 
     IT("repeats an item indefinitely")
     {
-        varxCollectItems(Observable<int>::repeat(8).take(9), items);
+        varxCollectItems(Observable<>::repeat(8).take(9), items);
 
         varxRequireItems(items, 8, 8, 8, 8, 8, 8, 8, 8, 8);
     }
 
     IT("repeats an items a limited number of times")
     {
-        varxCollectItems(Observable<String>::repeat("4", 7), items);
+        varxCollectItems(Observable<>::repeat<String>("4", 7), items);
 
         varxRequireItems(items, "4", "4", "4", "4", "4", "4", "4");
     }
@@ -525,10 +525,10 @@ TEST_CASE("Observable covariance",
 {
     CONTEXT("implicit conversion")
     {
-        auto floats = Observable<float>::just(17.f);
-        auto doubles = Observable<double>::just(34.0);
-        auto vars = Observable<var>::just(51);
-        auto strings = Observable<String>::just("Hello");
+        auto floats = Observable<>::just(17.f);
+        auto doubles = Observable<>::just(34.0);
+        auto vars = Observable<>::just<var>(51);
+        auto strings = Observable<>::just<String>("Hello");
         
         IT("can convert from var to float")
         {
@@ -587,8 +587,8 @@ TEST_CASE("Observable covariance",
             int b;
         };
         
-        auto bases = Observable<Base>::just(Base(100));
-        auto deriveds = Observable<Derived>::just(Derived(200, 1000));
+        auto bases = Observable<>::just(Base(100));
+        auto deriveds = Observable<>::just(Derived(200, 1000));
         
         IT("can convert from Deriveds to Bases")
         {

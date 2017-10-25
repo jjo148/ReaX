@@ -23,7 +23,10 @@ void ReleasePool::add(const std::shared_ptr<void>& item)
     if (std::find(pool.begin(), pool.end(), item) != pool.end())
         return;
 
+    // Add item to pool
     pool.emplace_back(item);
+    
+    // Do a cleanup, to prevent memory spikes if a lot of items are created, inserted, and deleted in a short time period
     cleanup();
 }
 

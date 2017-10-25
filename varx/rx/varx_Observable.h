@@ -30,6 +30,7 @@ public:
     template<typename Transform, typename... Args>
     using CallResult = decltype(std::declval<Transform>()(std::declval<Args>()...));
 
+    
 #pragma mark - Creation
     /**
      Creates an Observable that doesn't emit any items and notifies onComplete immediately.
@@ -39,98 +40,8 @@ public:
     Observable<T>()
     : impl(Impl::empty())
     {}
+
     
-    /**
-     Creates an Observable which emits values from an Observer on each subscription.
-     
-     In the onSubscribe function, you get an Observer. You can call Observer::onNext on it to emit values from the Observable.
-     */
-    static Observable<T> create(const std::function<void(const Observer<T>&)>& onSubscribe)
-    {
-        return Impl::create([onSubscribe](detail::ObserverImpl&& impl) {
-            onSubscribe(Observer<T>(std::move(impl)));
-        });
-    }
-
-    /**
-     Creates a new Observable for each subscriber, by calling the `factory` function on each new subscription.
-     */
-    static Observable<T> defer(const std::function<Observable<T>()>& factory)
-    {
-        return Impl::defer([factory]() {
-            return factory().impl;
-        });
-    }
-
-    /**
-     Creates an Observable that doesn't emit any items and notifies onComplete immediately.
-     */
-    static Observable<T> empty()
-    {
-        return Impl::empty();
-    }
-
-    /**
-     Creates an Observable which doesn't emit any items, and immediately notifies onError.
-     */
-    static Observable<T> error(const std::exception& error)
-    {
-        return Impl::error(error);
-    }
-
-    /**
-     Creates an Observable that immediately emits the items from the given Array.
-     
-     Note that you can also pass an initializer list, like this:
-     
-     Observable::from({"Hello", "Test"})
-     
-     Observable::from({var(3), var("four")})
-     */
-    static Observable<T> from(const juce::Array<T>& array)
-    {
-        juce::Array<any> items;
-
-        for (auto& item : array)
-            items.add(toAny(item));
-
-        return Impl::from(std::move(items));
-    }
-
-    /**
-     Creates an Observable which emits a single item.
-     
-     The value is emitted immediately on each new subscription.
-     */
-    static Observable<T> just(const T& value)
-    {
-        return Impl::just(toAny(value));
-    }
-
-    /**
-     Creates an Observable that never emits any events and never terminates.
-     */
-    static Observable<T> never()
-    {
-        return Impl::never();
-    }
-
-    /**
-     Creates an Observable which emits a given item repeatedly.
-     
-     An optional `times` parameter specifies how often the item should be repeated. If omitted, the item will is repeated indefinitely.
-     */
-    static Observable<T> repeat(const T& item)
-    {
-        return Impl::repeat(toAny(item));
-    }
-    /** \overload */
-    static Observable<T> repeat(const T& item, unsigned int times)
-    {
-        return Impl::repeat(toAny(item), times);
-    }
-
-
 #pragma mark - Subscription
     ///@{
     /**
@@ -172,6 +83,7 @@ public:
     }
     ///@}
 
+    
 #pragma mark - Operators
     ///@{
     /**
@@ -578,7 +490,73 @@ class Observable<void>
 {
 public:
     typedef detail::ObservableImpl Impl;
-
+    typedef detail::any any;
+    
+    
+#pragma mark - Creation
+    
+    /**
+     Creates an Observable which emits values from an Observer on each subscription.
+     
+     In the onSubscribe function, you get an Observer. You can call Observer::onNext on it to emit values from the Observable.
+     */
+    template<typename T>
+    static Observable<T> create(const std::function<void(const Observer<T>&)>& onSubscribe)
+    {
+        return Impl::create([onSubscribe](detail::ObserverImpl&& impl) {
+            onSubscribe(Observer<T>(std::move(impl)));
+        });
+    }
+    
+    /**
+     Creates a new Observable for each subscriber, by calling the `factory` function on each new subscription.
+     */
+    template<typename T>
+    static Observable<T> defer(const std::function<Observable<T>()>& factory)
+    {
+        return Impl::defer([factory]() {
+            return factory().impl;
+        });
+    }
+    
+    /**
+     Creates an Observable that doesn't emit any items and notifies onComplete immediately.
+     */
+    template<typename T>
+    static Observable<T> empty()
+    {
+        return Impl::empty();
+    }
+    
+    /**
+     Creates an Observable which doesn't emit any items, and immediately notifies onError.
+     */
+    template<typename T>
+    static Observable<T> error(const std::exception& error)
+    {
+        return Impl::error(error);
+    }
+    
+    /**
+     Creates an Observable that immediately emits the items from the given Array.
+     
+     Note that you can also pass an initializer list, like this:
+     
+     Observable::from({"Hello", "Test"})
+     
+     Observable::from({var(3), var("four")})
+     */
+    template<typename T>
+    static Observable<T> from(const juce::Array<T>& array)
+    {
+        juce::Array<any> items;
+        
+        for (auto& item : array)
+            items.add(Observable<T>::toAny(item));
+        
+        return Impl::from(std::move(items));
+    }
+    
     /**
      Creates an Observable from a given JUCE Value. The returned Observable **only emits items until it is destroyed**, so you are responsible for managing its lifetime. Or use Reactive<Value>, which will handle this.
      
@@ -590,7 +568,7 @@ public:
     {
         return Impl::fromValue(value);
     }
-
+    
     /**
      Returns an Observable that emits one item every `interval`, starting at the time of subscription (where the first item is emitted). The emitted items are `1`, `2`, `3`, and so on.
      
@@ -602,7 +580,27 @@ public:
     {
         return Impl::interval(interval);
     }
-
+    
+    /**
+     Creates an Observable which emits a single item.
+     
+     The value is emitted immediately on each new subscription.
+     */
+    template<typename T>
+    static Observable<T> just(const T& value)
+    {
+        return Impl::just(Observable<T>::toAny(value));
+    }
+    
+    /**
+     Creates an Observable that never emits any events and never terminates.
+     */
+    template<typename T>
+    static Observable<T> never()
+    {
+        return Impl::never();
+    }
+    
     /**
      Creates an Observable which emits a range of items, starting at `first` to (and including) `last`. It completes after emitting the `last` item.
      
@@ -618,6 +616,23 @@ public:
     {
         static_assert(std::is_integral<T>::value, "first and last must be integral.");
         return Impl::integralRange(first, last, step);
+    }
+    
+    /**
+     Creates an Observable which emits a given item repeatedly.
+     
+     An optional `times` parameter specifies how often the item should be repeated. If omitted, the item will is repeated indefinitely.
+     */
+    template<typename T>
+    static Observable<T> repeat(const T& item)
+    {
+        return Impl::repeat(Observable<T>::toAny(item));
+    }
+    /** \overload */
+    template<typename T>
+    static Observable<T> repeat(const T& item, unsigned int times)
+    {
+        return Impl::repeat(Observable<T>::toAny(item), times);
     }
 };
 

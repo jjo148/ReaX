@@ -1,6 +1,7 @@
 namespace {
     using namespace juce;
 
+    // A Rx dispatcher for the JUCE message thread. It processes Observables that are observed on it.
     class JUCEDispatcher : private Timer
     {
     public:

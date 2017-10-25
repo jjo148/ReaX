@@ -19,7 +19,7 @@ TEST_CASE("Observable::combineLatest",
     Array<String> items;
     OwnedArray<Observable<String>> os;
     for (int i = 0; i < 8; i++)
-        os.add(new Observable<String>(Observable<String>::just(String(i) + " ")));
+        os.add(new Observable<String>(Observable<>::just(String(i) + " ")));
 
     IT("works with arity 1")
     {
@@ -72,8 +72,8 @@ TEST_CASE("Observable::combineLatest",
 
     IT("combines elements into a tuple when no transform is given")
     {
-        auto o1 = Observable<bool>::just(true);
-        auto o2 = Observable<String>::from({ "Hello", "World" });
+        auto o1 = Observable<>::just(true);
+        auto o2 = Observable<>::from<String>({ "Hello", "World" });
         auto o3 = Observable<>::range(4, 6);
         auto combined = o1.combineLatest(o2, o3);
         static_assert(std::is_same<decltype(combined), Observable<std::tuple<bool, String, int>>>::value, "Combined Observable has wrong type.");
@@ -98,8 +98,8 @@ TEST_CASE("Observable::concat",
 
     IT("concatenates the values emitted by the source Observables")
     {
-        auto observable = Observable<var>::from({ "Hello", "World" });
-        auto another = Observable<var>::from({ 1.5, 2.32, 5.6 });
+        auto observable = Observable<>::from<var>({ "Hello", "World" });
+        auto another = Observable<>::from<var>({ 1.5, 2.32, 5.6 });
         varxCollectItems(observable.concat({another}), items);
 
         varxRequireItems(items, var("Hello"), var("World"), var(1.5), var(2.32), var(5.6));
@@ -151,7 +151,7 @@ TEST_CASE("Observable::distinctUntilChanged",
 TEST_CASE("Observable::elementAt",
           "[Observable][Observable::elementAt]")
 {
-    auto observable = Observable<float>::from({ 17.4, 3.0, 1.5, 6.77 });
+    auto observable = Observable<>::from<float>({ 17.4, 3.0, 1.5, 6.77 });
     Array<double> items;
 
     IT("emits only the item at the given index")
@@ -181,7 +181,7 @@ TEST_CASE("Observable::filter",
     IT("filters Strings")
     {
         Array<String> items;
-        auto source = Observable<String>::from({ "Hello", "Great", "World", "Hey" });
+        auto source = Observable<>::from<String>({ "Hello", "Great", "World", "Hey" });
         auto filtered = source.filter([](String s) {
             return s[0] == 'H';
         });
@@ -193,7 +193,7 @@ TEST_CASE("Observable::filter",
     IT("filters an Observable which emits different types")
     {
         Array<var> items;
-        auto source = Observable<var>::from({ var(3), var("Hello"), var(5.43) });
+        auto source = Observable<>::from<var>({ var(3), var("Hello"), var(5.43) });
         auto filtered = source.filter([](var v) {
             return v.isDouble();
         });
@@ -229,8 +229,8 @@ TEST_CASE("Observable::flatMap",
 
     IT("merges the values emitted by the returned Observables")
     {
-        auto o = Observable<String>::from({ "Hello", "World" }).flatMap([](String s) {
-            return Observable<String>::from({ s.toLowerCase(), s.toUpperCase() + "!" });
+        auto o = Observable<>::from<String>({ "Hello", "World" }).flatMap([](String s) {
+            return Observable<>::from<String>({ s.toLowerCase(), s.toUpperCase() + "!" });
         });
         varxCollectItems(o, items);
 
@@ -261,10 +261,10 @@ TEST_CASE("Interaction between Observable::map and Observable::switchOnNext",
     IT("supports returning Observables in map, even nested twice")
     {
         Array<String> items;
-        auto source = Observable<int>::just(1);
+        auto source = Observable<>::just(1);
         auto nested = source.map([](int i) {
-            return Observable<String>::just("Hello").map([i](String s) {
-                return Observable<var>::just(String(i) + " " + s);
+            return Observable<>::just<String>("Hello").map([i](String s) {
+                return Observable<>::just<var>(String(i) + " " + s);
             });
         });
 
@@ -278,9 +278,9 @@ TEST_CASE("Interaction between Observable::map and Observable::switchOnNext",
     IT("continues to emit items after the source Observable is gone")
     {
         Array<int> items;
-        auto source = std::make_shared<Observable<int>>(Observable<int>::just(17));
+        auto source = std::make_shared<Observable<int>>(Observable<>::just(17));
         auto mapped = source->map([](int next) {
-            return Observable<int>::create([next](Observer<int> observer) {
+            return Observable<>::create<int>([next](Observer<int> observer) {
                 MessageManager::getInstance()->callAsync([observer, next]() {
                     observer.onNext(next * 3);
                 });
@@ -329,7 +329,7 @@ TEST_CASE("Observable::reduce",
 
     IT("reduces emitted items")
     {
-        auto observable = Observable<int>::from({ 10, 100, 1000 }).reduce(2, [](int accum, int next) {
+        auto observable = Observable<>::from<int>({ 10, 100, 1000 }).reduce(2, [](int accum, int next) {
             return accum + next;
         });
 
@@ -364,7 +364,7 @@ TEST_CASE("Observable::skip",
 
     IT("skips the first 4 items")
     {
-        auto o = Observable<int>::from({ 4, 7, 2, 1, 19, 1, 33, 4 }).skip(4);
+        auto o = Observable<>::from<int>({ 4, 7, 2, 1, 19, 1, 33, 4 }).skip(4);
         varxCollectItems(o, items);
 
         varxRequireItems(items, 19, 1, 33, 4);
@@ -406,7 +406,7 @@ TEST_CASE("Observable::startWith",
           "[Observable][Observable::startWith]")
 {
     Array<int> items;
-    auto observable = Observable<int>::from({ 17, 3 });
+    auto observable = Observable<>::from<int>({ 17, 3 });
 
     IT("prepends items to an existing Observable")
     {
@@ -421,7 +421,7 @@ TEST_CASE("Observable::takeLast",
           "[Observable][Observable::takeLast]")
 {
     Array<String> items;
-    auto observable = Observable<String>::from({ "First", "Another", "And one more", "Last item" });
+    auto observable = Observable<>::from<String>({ "First", "Another", "And one more", "Last item" });
 
     IT("takes the last 2 emitted items")
     {
