@@ -24,14 +24,14 @@ template<typename ComponentType>
 class Reactive<ComponentType, detail::IsSimpleComponent<ComponentType>> : public ComponentType
 {
 public:
-    /** Creates a new instance. @see juce::Component::Component. */
+    /// Creates a new instance. @see juce::Component::Component. 
     template<typename... Args>
     Reactive(Args&&... args)
     : ComponentType(std::forward<Args>(args)...),
       rx(*this)
     {}
 
-    /** The reactive extension object. */
+    /// The reactive extension object. 
     const ComponentExtension rx;
 };
 
@@ -42,14 +42,14 @@ template<typename ImageComponentType>
 class Reactive<ImageComponentType, detail::IsImageComponent<ImageComponentType>> : public ImageComponentType
 {
 public:
-    /** Creates a new instance. @see juce::ImageComponent::ImageComponent. */
+    /// Creates a new instance. @see juce::ImageComponent::ImageComponent. 
     template<typename... Args>
     Reactive(Args&&... args)
     : ImageComponentType(std::forward<Args>(args)...),
       rx(*this)
     {}
 
-    /** The reactive extension object. */
+    /// The reactive extension object. 
     const ImageComponentExtension rx;
 };
 
@@ -60,14 +60,14 @@ template<typename ButtonType>
 class Reactive<ButtonType, detail::IsButton<ButtonType>> : public ButtonType
 {
 public:
-    /** Creates a new instance. @see juce::Button::Button. */
+    /// Creates a new instance. @see juce::Button::Button. 
     template<typename... Args>
     Reactive(Args&&... args)
     : ButtonType(std::forward<Args>(args)...),
       rx(*this)
     {}
 
-    /** The reactive extension object. */
+    /// The reactive extension object. 
     const ButtonExtension rx;
 };
 
@@ -78,14 +78,14 @@ template<typename LabelType>
 class Reactive<LabelType, detail::IsLabel<LabelType>> : public LabelType
 {
 public:
-    /** Creates a new instance. @see juce::Label::Label. */
+    /// Creates a new instance. @see juce::Label::Label. 
     template<typename... Args>
     Reactive(Args&&... args)
     : LabelType(std::forward<Args>(args)...),
       rx(*this)
     {}
 
-    /** The reactive extension object. */
+    /// The reactive extension object. 
     const LabelExtension rx;
 };
 
@@ -105,7 +105,7 @@ class Reactive<SliderType, detail::IsSlider<SliderType>> : public SliderType
     PublishSubject<GetTextFromValue_Function> getTextFromValue_Subject;
 
 public:
-    /** Creates a new instance. @see juce::Slider::Slider. */
+    /// Creates a new instance. @see juce::Slider::Slider. 
     template<typename... Args>
     Reactive(Args&&... args)
     : SliderType(std::forward<Args>(args)...),
@@ -121,7 +121,7 @@ public:
         });
     }
 
-    /** The reactive extension object. */
+    /// The reactive extension object. 
     const SliderExtension rx;
 
     ///@cond INTERNAL

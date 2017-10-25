@@ -14,7 +14,7 @@ public:
     typedef detail::any any;
 
     ///@{
-    /** Determines whether a given type is an Observable. */
+    /// Determines whether a given type is an Observable. 
     template<typename U>
     struct IsObservable : std::false_type
     {
@@ -26,7 +26,7 @@ public:
     };
     ///@}
 
-    /** The return type of calling a function of type Transform with parameters of types Args. */
+    /// The return type of calling a function of type Transform with parameters of types Args. 
     template<typename Transform, typename... Args>
     using CallResult = decltype(std::declval<Transform>()(std::declval<Args>()...));
 
@@ -445,7 +445,7 @@ public:
         return items;
     }
 
-    /** Covariant constructor: If U is convertible to T, an Observable<U> is convertible to an Observable<T>. */
+    /// Covariant constructor: If U is convertible to T, an Observable<U> is convertible to an Observable<T>. 
     template<typename U>
     Observable(const Observable<U>& other, typename std::enable_if<std::is_convertible<U, T>::value>::type* = 0)
     : Observable(other.impl.map([](const any& u) { return toAny(static_cast<T>(u.get<U>())); }))
@@ -628,7 +628,7 @@ public:
     {
         return Impl::repeat(Observable<T>::toAny(item));
     }
-    /** \overload */
+    /// \overload 
     template<typename T>
     static Observable<T> repeat(const T& item, unsigned int times)
     {

@@ -21,12 +21,12 @@ template<typename T>
 class BehaviorSubject : public Subject<T>
 {
 public:
-    /** Creates a new instance with a given initial item */
+    /// Creates a new instance with a given initial item 
     explicit BehaviorSubject(const T& initial)
     : Subject<T>(detail::SubjectImpl::MakeBehaviorSubjectImpl(detail::any(initial)))
     {}
 
-    /** Returns the most recently emitted item. If no items have been emitted, it returns the initial item. */
+    /// Returns the most recently emitted item. If no items have been emitted, it returns the initial item. 
     T getLatestItem() const
     {
         return Subject<T>::impl.getLatestItem().template get<T>();
@@ -44,7 +44,7 @@ template<typename T>
 class PublishSubject : public Subject<T>
 {
 public:
-    /** Creates a new instance. */
+    /// Creates a new instance. 
     PublishSubject()
     : Subject<T>(detail::SubjectImpl::MakePublishSubjectImpl())
     {}

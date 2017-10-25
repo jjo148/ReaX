@@ -24,11 +24,11 @@ public:
     explicit any(double value);
     ///@}
 
-    /** Checks if T is not any. Used to prevent nested any(any(...)) instances. */
+    /// Checks if T is not any. Used to prevent nested any(any(...)) instances. 
     template<typename T>
     using DisableIfAny = typename std::enable_if<!std::is_base_of<any, typename std::decay<T>::type>::value>::type;
 
-    /** Checks if T is a scalar type (e.g. numeric, bool, enum). */
+    /// Checks if T is a scalar type (e.g. numeric, bool, enum). 
     template<typename T>
     using IsScalar = std::is_scalar<typename std::decay<T>::type>;
 
@@ -42,18 +42,16 @@ public:
     : any(std::forward<T>(value), IsScalar<T>())
     {}
 
-    /** Default move constructor */
+    /// Default move constructor 
     any(any&&) = default;
 
-    /** Default copy constructor. If the wrapped value is scalar, it is copied. Otherwise, it is shared by reference. */
+    /// Default copy constructor. If the wrapped value is scalar, it is copied. Otherwise, it is shared by reference. 
     any(const any&) = default;
 
-    /** Default copy assignment operator. If the wrapped value is scalar, it is copied. Otherwise, it is shared by reference. */
+    /// Default copy assignment operator. If the wrapped value is scalar, it is copied. Otherwise, it is shared by reference. 
     any& operator=(const any&) = default;
 
-    /**
-     Extracts the held value as a T. Throws an exception if the held value is not a T.
-     */
+    /// Extracts the held value as a T. Throws an exception if the held value is not a T.
     template<typename T>
     inline T get() const
     {
@@ -61,7 +59,9 @@ public:
     }
 
     /**
-     Checks whether the held value is a T. For class types, it returns true if the wrapped type is a T or an instance of a subclass of T. **It returns false if the wrapped type is just implicitly convertible to T.**
+     Checks whether the held value is a T. For class types, it returns true if the wrapped type is a T or an instance of a subclass of T.
+     
+     **It returns false if the wrapped type is just implicitly convertible to T.**
      */
     template<typename T>
     inline bool is() const

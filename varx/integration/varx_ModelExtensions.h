@@ -8,10 +8,10 @@
 class ValueExtension : private juce::Value::Listener
 {
 public:
-    /** Creates a new instance with a given Value. The connection refers to the **`ValueSource`** of `inputValue`. */
+    /// Creates a new instance with a given Value. The connection refers to the **`ValueSource`** of `inputValue`. 
     ValueExtension(const juce::Value& inputValue);
     
-    /** The subject that's connected to the Value. This changes whenever the Value changes, and vice versa. */
+    /// The subject that's connected to the Value. This changes whenever the Value changes, and vice versa. 
     const BehaviorSubject<juce::var> subject;
     
 private:
@@ -28,10 +28,10 @@ class AudioProcessorExtension : private juce::AudioProcessorListener
 {
     PublishSubject<Empty> _processorChanged;
 public:
-    /** Creates a new instance for a given AudioProcessor. */
+    /// Creates a new instance for a given AudioProcessor. 
     AudioProcessorExtension(juce::AudioProcessor& parent);
 
-    /** Emits when something (apart from a parameter value) has changed, for example the latency.​ **Type: undefined**. */
+    /// Emits when something (apart from a parameter value) has changed, for example the latency.​ **Type: undefined**. 
     const Observable<Empty> processorChanged;
 
 private:
@@ -46,7 +46,7 @@ private:
  */
 class AudioProcessorValueTreeStateExtension {
 public:
-    /** Creates a new instance for a given AudioProcessorValueTreeState. */
+    /// Creates a new instance for a given AudioProcessorValueTreeState. 
     AudioProcessorValueTreeStateExtension(juce::AudioProcessorValueTreeState& parent);
     
     ~AudioProcessorValueTreeStateExtension();

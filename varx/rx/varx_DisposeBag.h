@@ -8,13 +8,13 @@ class Disposable;
 class DisposeBag
 {
 public:
-    /** Creates a new, empty DisposeBag. */
+    /// Creates a new, empty DisposeBag. 
     DisposeBag();
 
-    /** Disposes all inserted Disposable​s in the DisposeBag. */
+    /// Disposes all inserted Disposable​s in the DisposeBag. 
     ~DisposeBag();
 
-    /** Inserts a Disposable into the DisposeBag. The Disposable is disposed when the DisposeBag is destroyed. */
+    /// Inserts a Disposable into the DisposeBag. The Disposable is disposed when the DisposeBag is destroyed. 
     void insert(Disposable&& disposable);
 
 private:
