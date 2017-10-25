@@ -10,6 +10,7 @@ namespace detail {
  
  This class is used to create a dynamic layer between the type-safe varx::Observable and the type-safe rxcpp::observable.
 */
+///@cond INTERNAL
 class any
 {
 public:
@@ -228,6 +229,7 @@ private:
 
     std::string getTypeName() const;
 };
+///@endcond
 
 inline bool operator==(const any& lhs, const any& rhs)
 {

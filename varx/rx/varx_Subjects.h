@@ -1,9 +1,17 @@
 #pragma once
 
+/**
+ A Subject is an Observer and an Observable in one. Pushing an item to its Observer side causes the Observable side to emit that item.
+ 
+ ​ **If you copy the Observer and Observable side, and destroy the Subject, the Observer and Observable remain connected!** So pushing items to the Observer will still cause the Observable to emit.
+ 
+ For an introduction to Subjects, please refer to http://reactivex.io/documentation/subject.html.
+ */
 template<typename T>
 class Subject : public Observer<T>, public Observable<T>
 {
 protected:
+    ///@cond INTERNAL
     const detail::SubjectImpl impl;
 
     explicit Subject(detail::SubjectImpl&& impl)
@@ -11,11 +19,14 @@ protected:
       Observable<T>(impl),
       impl(impl)
     {}
+    ///@endcond
 };
 
 
 /**
  A subject that starts with an initial item. On subscribe, it emits the most recently emitted item. It then continues to emit any items that are passed to onNext.
+ 
+ For an introduction to Subjects, please refer to http://reactivex.io/documentation/subject.html.
  */
 template<typename T>
 class BehaviorSubject : public Subject<T>
@@ -38,7 +49,9 @@ private:
 
 
 /**
- A subject that initially doesn't have a value. It does not emit an item on subscribe, and emits only those items that are passed to onNext *after the time of the disposable*.
+ A subject that initially doesn't have a value. It does not emit an item on subscribe, and emits only those items that are passed to onNext *after the time of the subscription*.
+ 
+ For an introduction to Subjects, please refer to http://reactivex.io/documentation/subject.html.
  */
 template<typename T>
 class PublishSubject : public Subject<T>
@@ -55,6 +68,8 @@ private:
 
 /**
  A Subject that, on every new disposable, notifies the Observer with all of the items that were emitted since the ReplaySubject was created. It then continues to emit any items that are passed to onNext.
+ 
+ For an introduction to Subjects, please refer to http://reactivex.io/documentation/subject.html.
  */
 template<typename T>
 class ReplaySubject : public Subject<T>

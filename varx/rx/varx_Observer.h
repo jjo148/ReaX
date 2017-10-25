@@ -39,10 +39,12 @@ protected:
     template<typename U>
     friend class Observable;
     
+    ///@cond INTERNAL
     Observer(const detail::ObserverImpl& impl, const std::function<detail::any(const detail::any&)>& convert = [](const detail::any& item){ return item; })
     : impl(impl),
       convert(convert)
     {}
+    ///@endcond
 
 private:
     template<typename U>

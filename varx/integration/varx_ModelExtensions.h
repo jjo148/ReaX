@@ -31,7 +31,7 @@ public:
     /// Creates a new instance for a given AudioProcessor. 
     AudioProcessorExtension(juce::AudioProcessor& parent);
 
-    /// Emits when something (apart from a parameter value) has changed, for example the latency.​ **Type: undefined**. 
+    /// Emits when something (apart from a parameter value) has changed, for example the latency.
     const Observable<Empty> processorChanged;
 
 private:
@@ -52,9 +52,9 @@ public:
     ~AudioProcessorValueTreeStateExtension();
     
     /**
-     Returns a subject to control the value of the parameter with the given ID.​ **Type: float**.
+     Returns a subject to control the value of the parameter with the given ID.
      
-     If this is called early in the app lifecycle, the subject contains var(), and not the parameter's default value. This is because JUCE updates the ValueTree asynchronously. Parameter values can be changed from the audio thread; in this case the subject's Observable emits asynchronously.
+     If this is called early in the app lifecycle, the subject contains var(), and not the parameter's default value. This is because JUCE updates the ValueTree asynchronously. Parameter values can be changed from the audio thread; in this case the subject's Observable side emits asynchronously.
      */
     BehaviorSubject<juce::var> parameterValue(const juce::String& parameterID) const;
     

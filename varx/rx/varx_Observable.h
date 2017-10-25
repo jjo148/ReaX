@@ -3,6 +3,13 @@
 template<typename T>
 class Observer;
 
+/**
+ An Observable emits values of a given type.
+ 
+ Observers can subscribe to Observable​s, to be notified whenever the Observable emits a value.
+ 
+ For an introduction to Observables, please refer to http://reactivex.io/documentation/observable.html.
+ */
 template<typename T = void>
 class Observable
 {
@@ -54,6 +61,13 @@ public:
      The **onCompleted** function is called exactly once to notify that the Observable has generated all data and will not emit any more items.
      
      The returned Disposable can be used to unsubscribe from the Observable, to stop receiving values from it. **You will keep receiving values until you call Disposable::dispose, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
+     
+     Example:
+     
+         DisposeBag disposeBag;
+         Observable::from<int>({4, 17}).subscribe([](int i) {
+             std::cout << i << " ";
+         }).disposedBy(disposeBag); // Output: 4 17
      */
     Disposable subscribe(const std::function<void(const T&)>& onNext,
                          const std::function<void(std::exception_ptr)>& onError = Impl::TerminateOnError,
@@ -87,9 +101,9 @@ public:
 #pragma mark - Operators
     ///@{
     /**
-     Returns an Observable that emits **whenever** an item is emitted by either this Observable **or** o1, o2, …. It combines the **latest** item from each Observable via the given function and emits the result of this function.
+     Returns an Observable that emits **whenever** an item is emitted by either this Observable **or** one of the  `others`. It combines the **latest** item from each Observable via the given function and emits the result of this function.
      
-     This is different from Observable::withLatestFrom because it emits whenever this Observable or o1, o2, … emits an item.
+     This is different from Observable::withLatestFrom because it emits whenever this Observable or one of the  `others` emits an item.
      
      @see Observable::withLatestFrom
      */
@@ -114,9 +128,9 @@ public:
     ///@}
 
     /**
-     Returns an Observable that first emits the items from this Observable, then from the first in the "others" list, then from the second, and so on.
+     Returns an Observable that first emits the items from this Observable, then from the first in the `others` list, then from the second, and so on.
      
-     It only subscribes to the first in the "others" list when this Observable has completed. And only subscribes to the second when the first has completed, and so on.
+     It only subscribes to the first in the `others` list when this Observable has completed. And only subscribes to the second when the first has completed, and so on.
      */
     Observable<T> concat(std::initializer_list<Observable<T>> others) const
     {
@@ -148,9 +162,11 @@ public:
     /**
      Returns an Observable which emits the same items as this Observable, but suppresses consecutive duplicate items.
      
-     If you just use distinctUntilChanged() without a template parameter, it uses juce::any::operator== to determine whether two items are equal.
+     For example:
      
-     **If you are using VARX_DEFINE_VARIANT_CONVERTER to wrap a custom type T into a any, you should call distinctUntilChanged<T>(), declaring your custom type T.** This way, it uses T::operator== to determine whether two items are equal.
+         Observable::from<int>({1, 2, 2, 2, 3, 4, 4, 6}).distinctUntilChanged(); // Emits: 1, 2, 3, 4, 6
+     
+     If T is comparable using ==, this is used to determine whether two items are equal. Otherwise, the items are compared by their addresses.
      
      If, for some reason, the custom type T doesn't have operator==, you can pass a custom equality function.
      */
@@ -184,9 +200,9 @@ public:
      
      This Observable:
      
-     Observable::from({"Hello", "World"}).flatMap([](String s) {
-         return Observable::from({s.toLowerCase(), s.toUpperCase() + "!"});
-     });
+         Observable::from<String>({"Hello", "World"}).flatMap([](String s) {
+             return Observable::from<String>({s.toLowerCase(), s.toUpperCase() + "!"});
+         });
      
      Will emit the items: `"hello"`, `"HELLO!"`, `"world"` and `"WORLD!"`.
      
