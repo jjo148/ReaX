@@ -30,17 +30,11 @@ public:
     /**
         Moves the Disposable into a given DisposeBag. The Disposable is disposed automatically when the DisposeBag is destroyed.
      
-        **This moves the Disposable, so it must be used only when the Disposable is an rvalue. For example:**
+        Can only be used when the Disposable is an rvalue.
      
-             myObservable.subscribe([](int i){ ... }).disposedBy(myDisposeBag); // Okay
-     
-             Disposable myDisposable = myObservable.subscribe([](int i){ ... });
-             myDisposable.disposedBy(myDisposeBag);
-             myDisposable.dispose(); // NOT okay
-        
         @see DisposeBag::insert()
      */
-    void disposedBy(DisposeBag& disposeBag);
+    void disposedBy(DisposeBag& disposeBag) &&;
 
 private:
     friend class detail::ObservableImpl;

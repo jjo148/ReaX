@@ -5,7 +5,7 @@
  
  Instead of creating a juce::Value, create an instance of this as follows:
  
- Reactive<Value> myValue;
+ Reactive<juce::Value> myValue;
  
  It inherits from juce::Value, so you can use it as a drop-in replacement. And you can access `myValue.rx.subject` to subscribe to changes, etc.:
  

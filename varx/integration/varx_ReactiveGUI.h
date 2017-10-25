@@ -1,14 +1,11 @@
 #pragma once
 
 namespace detail {
-template<typename Base, typename T>
-using Is = typename std::enable_if<std::is_base_of<Base, T>::value>::type;
+template<typename T>
+using IsSimpleComponent = typename std::enable_if<std::is_base_of<juce::Component, T>::value && !std::is_base_of<juce::ImageComponent, T>::value && !std::is_base_of<juce::Button, T>::value && !std::is_base_of<juce::Label, T>::value && !std::is_base_of<juce::Slider, T>::value>::type;
 
 template<typename T>
 using IsImageComponent = typename std::enable_if<std::is_base_of<juce::ImageComponent, T>::value>::type;
-
-template<typename T>
-using IsSimpleComponent = typename std::enable_if<std::is_base_of<juce::Component, T>::value && !std::is_base_of<juce::ImageComponent, T>::value && !std::is_base_of<juce::Button, T>::value && !std::is_base_of<juce::Label, T>::value && !std::is_base_of<juce::Slider, T>::value>::type;
 
 template<typename T>
 using IsButton = typename std::enable_if<std::is_base_of<juce::Button, T>::value>::type;
