@@ -4,10 +4,11 @@ ValueExtension::ValueExtension(const Value& inputValue)
 {
     value.addListener(this);
     subject.subscribe([this](const var& newValue) {
-        // Only assign a new value if it has actually changed (to avoid problems with AudioProcessorValueTreeState)
-        if (newValue != value)
-            value = newValue;
-    }).disposedBy(disposeBag);
+               // Only assign a new value if it has actually changed (to avoid problems with AudioProcessorValueTreeState)
+               if (newValue != value)
+                   value = newValue;
+           })
+        .disposedBy(disposeBag);
 }
 
 void ValueExtension::valueChanged(Value&)
@@ -18,14 +19,15 @@ void ValueExtension::valueChanged(Value&)
 }
 
 AudioProcessorExtension::AudioProcessorExtension(AudioProcessor& parent)
-: processorChanged(_processorChanged)
+: _processorChanged(1),
+  processorChanged(_processorChanged)
 {
     parent.addListener(this);
 }
 
 void AudioProcessorExtension::audioProcessorChanged(AudioProcessor* processor)
 {
-    _processorChanged.onNext(Empty());
+    _processorChanged.onNext(Empty(), CongestionPolicy::DropNewest);
 }
 
 struct AudioProcessorValueTreeStateExtension::Impl

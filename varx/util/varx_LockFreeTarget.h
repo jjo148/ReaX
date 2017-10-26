@@ -58,7 +58,9 @@ public:
     : Observer<T>(detail::LockFreeTargetBase<T>::subject)
     {
         const auto onNext = [this](const T& newValue) {
+            // Copy value to a shared_ptr
             const auto latest = std::make_shared<const T>(newValue);
+            
             detail::ReleasePool::get().add(latest);
             std::atomic_store(&latestValue, latest);
         };
