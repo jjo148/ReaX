@@ -31,10 +31,12 @@ struct IsLockFree_Impl
 {
 };
 
+// Enable juce::Atomic for trivially copyable types that are always lock-free:
 template<typename T>
 using IsLockFree = typename std::enable_if<conjunction<std::is_trivially_copyable<T>, IsLockFree_Impl<T>>::value>::type;
 
 #else
+// Enable juce::Atomic for arithmetic types:
 template<typename T>
 using IsLockFree = typename std::enable_if<std::is_arithmetic<T>::value>::type;
 #endif
@@ -55,23 +57,29 @@ public:
     LockFreeTarget()
     : Observer<T>(detail::LockFreeTargetBase<T>::subject)
     {
-        detail::LockFreeTargetBase<T>::subject.subscribe([this](const T& newValue) {
-                                                  const auto latest = std::make_shared<T>(newValue);
-                                                  detail::ReleasePool::get().add(latest);
-                                                  std::atomic_store(&latestValue, latest);
-                                              })
-            .disposedBy(detail::LockFreeTargetBase<T>::disposeBag);
+        const auto onNext = [this](const T& newValue) {
+            const auto latest = std::make_shared<T>(newValue);
+            detail::ReleasePool::get().add(latest);
+            std::atomic_store(&latestValue, latest);
+        };
+
+        detail::LockFreeTargetBase<T>::subject.subscribe(onNext).disposedBy(detail::LockFreeTargetBase<T>::disposeBag);
     }
 
     /// Reads the latest retrieved item atomically. This can be called from the audio thread (or some other realtime thread). **Must not be called before any item has been retrieved.**
     inline T getValue() const
     {
-        const auto latest = std::atomic_load(&latestValue);
+        const auto latest = getValuePointer();
 
         // Must retrieve at least one item before this is called!
         jassert(latest);
 
         return *latest;
+    }
+    
+    inline std::shared_ptr<const T> getValuePointer() const
+    {
+        return std::atomic_load(&latestValue);
     }
 
     /// Returns the latest retrieved item atomically. It just calls getValue(). This can be called from the audio thread (or some other realtime thread).
@@ -98,10 +106,11 @@ public:
     LockFreeTarget()
     : Observer<T>(detail::LockFreeTargetBase<T>::subject)
     {
-        detail::LockFreeTargetBase<T>::subject.subscribe([this](const T& newValue) {
-                                                  latestValue.set(newValue);
-                                              })
-            .disposedBy(detail::LockFreeTargetBase<T>::disposeBag);
+        const auto onNext = [this](const T& newValue) {
+            latestValue.set(newValue);
+        };
+        
+        detail::LockFreeTargetBase<T>::subject.subscribe(onNext).disposedBy(detail::LockFreeTargetBase<T>::disposeBag);
     }
 
     /// Reads the latest retrieved item atomically. This can be called from the audio thread (or some other realtime thread). If this is called before any item has been retrieved, the returned value is uninitialized.

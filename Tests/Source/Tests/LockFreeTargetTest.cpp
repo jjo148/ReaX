@@ -30,6 +30,30 @@ TEST_CASE("LockFreeTarget",
         REQUIRE(target.getValue() == "World!");
     }
     
+    IT("can return a pointer-to-String")
+    {
+        PublishSubject<var> subject;
+        LockFreeTarget<String> target;
+        subject.subscribe(target);
+        CHECK(target.getValuePointer() == nullptr);
+        
+        subject.onNext(var("This is a test."));
+        
+        // Pointer should contain string from subject
+        auto pointer = target.getValuePointer();
+        CHECK(pointer);
+        CHECK(*pointer == "This is a test.");
+        
+        // Emitting another string should not change the pointer retrieved earlier
+        subject.onNext("Another string");
+        CHECK(*pointer == "This is a test.");
+        
+        // The new pointer should contain the new string
+        pointer = target.getValuePointer();
+        CHECK(pointer);
+        REQUIRE(*pointer == "Another string");
+    }
+    
     IT("retrieves other non-primitive values")
     {
         PublishSubject<Point<int>> subject;
