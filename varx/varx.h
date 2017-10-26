@@ -29,6 +29,7 @@ END_JUCE_MODULE_DECLARATION
 #include <iostream>
 #include <map>
 #include <memory>
+#include <tuple>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
@@ -36,20 +37,9 @@ END_JUCE_MODULE_DECLARATION
 #include "util/internal/concurrentqueue.h"
 
 namespace varx {
+/// Used for Observables that don't emit a meaningful value, and just notify that something has changed.
+typedef std::tuple<> Empty;
 
-struct Empty
-{};
-inline bool operator==(const Empty& lhs, const Empty& rhs)
-{
-    return true;
-}
-inline bool operator!=(const Empty& lhs, const Empty& rhs)
-{
-    return !(lhs == rhs);
-}
-}
-
-namespace varx {
 #include "util/internal/varx_any.h"
 #include "rx/varx_Disposable.h"
 #include "rx/varx_DisposeBag.h"
