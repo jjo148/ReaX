@@ -58,7 +58,7 @@ public:
     : Observer<T>(detail::LockFreeTargetBase<T>::subject)
     {
         const auto onNext = [this](const T& newValue) {
-            const auto latest = std::make_shared<T>(newValue);
+            const auto latest = std::make_shared<const T>(newValue);
             detail::ReleasePool::get().add(latest);
             std::atomic_store(&latestValue, latest);
         };
@@ -66,7 +66,11 @@ public:
         detail::LockFreeTargetBase<T>::subject.subscribe(onNext).disposedBy(detail::LockFreeTargetBase<T>::disposeBag);
     }
 
-    /// Reads the latest retrieved item atomically. This can be called from the audio thread (or some other realtime thread). **Must not be called before any item has been retrieved.**
+    /**
+     Reads the latest retrieved item atomically. This can be called from the audio thread (or some other realtime thread). **Must not be called before any item has been retrieved.**
+     
+     It returns a copy of the item. If copying is expensive, feel free to use `getValuePointer()` instead of this.
+     */
     inline T getValue() const
     {
         const auto latest = getValuePointer();
@@ -77,16 +81,20 @@ public:
         return *latest;
     }
     
+    /**
+     Returns a pointer to the latest value.
+     
+     The value in the returned pointer never changes, it is a snapshot of the current state.
+     
+     Unlike `getValue()`, this does not make a copy of the item. So it should be preferred if copying the item is expensive.
+     */
     inline std::shared_ptr<const T> getValuePointer() const
     {
         return std::atomic_load(&latestValue);
     }
 
-    /// Returns the latest retrieved item atomically. It just calls getValue(). This can be called from the audio thread (or some other realtime thread).
-    inline operator T() const { return getValue(); }
-
 private:
-    std::shared_ptr<T> latestValue;
+    std::shared_ptr<const T> latestValue;
 
     JUCE_LEAK_DETECTOR(LockFreeTarget)
 };
@@ -118,9 +126,6 @@ public:
     {
         return latestValue.get();
     }
-
-    /// Returns the latest retrieved item atomically. It just calls getValue().
-    inline operator T() const { return getValue(); }
 
 private:
     juce::Atomic<T> latestValue;
