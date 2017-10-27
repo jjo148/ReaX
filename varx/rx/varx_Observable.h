@@ -483,12 +483,12 @@ private:
     template<typename U>
     static typename std::enable_if<!IsObservable<U>::value, any>::type toAny(U&& u)
     {
-        return any(std::move(u));
+        return any(std::forward<U>(u));
     }
     template<typename U>
     static typename std::enable_if<IsObservable<U>::value, any>::type toAny(U&& u)
     {
-        return any(std::move(u.impl));
+        return any(u.impl);
     }
 
     // any_args<Ts...>::type is a parameter pack with the same length as Ts, where all types are any.
