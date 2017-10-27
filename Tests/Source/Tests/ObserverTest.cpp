@@ -122,8 +122,8 @@ TEST_CASE("Observer contravariance",
             
             int a;
             
-            bool operator==(const Base& rhs){ return (a == rhs.a); }
-            bool operator!=(const Base& rhs){ return !(*this == rhs); }
+            bool operator==(const Base& rhs) const { return (a == rhs.a); }
+            bool operator!=(const Base& rhs) const { return !(*this == rhs); }
         };
         struct Derived : Base
         {
@@ -144,7 +144,5 @@ TEST_CASE("Observer contravariance",
             
             varxRequireItems(items, Base(205));
         }
-        
-        
     }
 }

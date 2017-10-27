@@ -25,6 +25,7 @@
           <FILE id="ShEoW4" name="SchedulingTest.cpp" compile="1" resource="0"
                 file="Source/Tests/Observable/SchedulingTest.cpp"/>
         </GROUP>
+        <FILE id="KYJAZi" name="AnyTest.cpp" compile="1" resource="0" file="Source/Tests/AnyTest.cpp"/>
         <FILE id="K3FGg8" name="DisposableTest.cpp" compile="1" resource="0"
               file="Source/Tests/DisposableTest.cpp"/>
         <FILE id="BSjpdo" name="LockFreeSourceTest.cpp" compile="1" resource="0"
