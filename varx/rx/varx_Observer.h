@@ -11,11 +11,18 @@ template<typename T>
 class Observer
 {
 public:
-    /// Notifies the Observer with a new item. 
+    ///@{
+    /// Notifies the Observer with a new item.
     void onNext(const T& item) const
     {
         impl.onNext(convert(detail::any(item)));
     }
+    
+    void onNext(T&& item) const
+    {
+        impl.onNext(convert(detail::any(std::move(item))));
+    }
+    ///@}
 
     /// Notifies the Observer that an error has occurred. 
     void onError(std::exception_ptr error) const

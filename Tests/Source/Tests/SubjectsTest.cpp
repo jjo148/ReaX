@@ -289,3 +289,32 @@ TEST_CASE("ReplaySubject",
         }
     }
 }
+
+
+TEST_CASE("onNext move overload",
+          "[Subject][Observer]")
+{
+    CopyAndMoveConstructible::Counters counters;
+    PublishSubject<CopyAndMoveConstructible> subject;
+    
+    IT("uses the const T& overload for lvalues")
+    {
+        CopyAndMoveConstructible test(&counters);
+        subject.onNext(test);
+        
+        REQUIRE(counters.numCopyConstructions == 1);
+        REQUIRE(counters.numMoveConstructions == 0);
+        REQUIRE(counters.numCopyAssignments == 0);
+        REQUIRE(counters.numMoveAssignments == 0);
+    }
+    
+    IT("uses the T&& overload for rvalues")
+    {
+        subject.onNext(CopyAndMoveConstructible(&counters));
+        
+        REQUIRE(counters.numCopyConstructions == 0);
+        REQUIRE(counters.numMoveConstructions == 1);
+        REQUIRE(counters.numCopyAssignments == 0);
+        REQUIRE(counters.numMoveAssignments == 0);
+    }
+}
