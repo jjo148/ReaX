@@ -7,10 +7,14 @@ class ComponentExtension : private juce::ComponentListener
 {
     const std::unique_ptr<std::map<int, PublishSubject<juce::Colour>>> colourSubjects;
     juce::Component& parent;
-    
+
 public:
     /// Creates a new instance for a given juce::Component
     ComponentExtension(juce::Component& parent);
+    
+#warning Add tests
+    /// Controls the bounds of the Component, and emits an item whenever they change (relative to the Component's parent).
+    const BehaviorSubject<juce::Rectangle<int>> bounds;
 
     /// Controls the visibility of the Component, and emits an item whenever it changes.
     const BehaviorSubject<bool> visible;
@@ -20,8 +24,10 @@ public:
 
 private:
     const std::unique_ptr<DisposeBag> disposeBag;
-    
-    void componentVisibilityChanged(juce::Component& component) override;
+
+    // Overrides
+    void componentMovedOrResized(juce::Component&, bool, bool) override;
+    void componentVisibilityChanged(juce::Component&) override;
 };
 
 /**
@@ -54,7 +60,7 @@ public:
 
 private:
     DisposeBag disposeBag;
-    
+
     void buttonClicked(juce::Button*) override;
     void buttonStateChanged(juce::Button*) override;
 };
@@ -76,7 +82,7 @@ public:
 
     /// Controls the placement of the image.
     const Observer<juce::RectanglePlacement> imagePlacement;
-    
+
 private:
     DisposeBag disposeBag;
 };
@@ -147,7 +153,7 @@ public:
 
 private:
     DisposeBag disposeBag;
-    
+
     void labelTextChanged(juce::Label*) override;
     void editorShown(juce::Label*, juce::TextEditor&) override;
     void editorHidden(juce::Label*, juce::TextEditor&) override;
@@ -220,7 +226,7 @@ public:
 
 private:
     DisposeBag disposeBag;
-    
+
     void sliderValueChanged(juce::Slider*) override;
     void sliderDragStarted(juce::Slider*) override;
     void sliderDragEnded(juce::Slider*) override;
