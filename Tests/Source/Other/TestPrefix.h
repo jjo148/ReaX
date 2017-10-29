@@ -22,8 +22,8 @@ using namespace varx;
 
 /** Subscribes to an Observable and collects all emitted items into a given Array. */
 #define varxCollectItems(__observable, __arrayName) \
-    DisposeBag JUCE_JOIN_MACRO(__arrayName, JUCE_JOIN_MACRO(Disposable_, __LINE__)); \
-    (__observable).subscribe([&__arrayName](const decltype(__arrayName.getFirst())& item) { __arrayName.add(item); }).disposedBy(JUCE_JOIN_MACRO(__arrayName, JUCE_JOIN_MACRO(Disposable_, __LINE__)));
+    DisposeBag JUCE_JOIN_MACRO(__arrayName, JUCE_JOIN_MACRO(Subscription_, __LINE__)); \
+    (__observable).subscribe([&__arrayName](const decltype(__arrayName.getFirst())& item) { __arrayName.add(item); }).disposedBy(JUCE_JOIN_MACRO(__arrayName, JUCE_JOIN_MACRO(Subscription_, __LINE__)));
 
 /** REQUIREs that a given Array is equal to the list of passed items. */
 #define varxRequireItems(__arrayName, ...) REQUIRE(__arrayName == decltype(__arrayName)({ __VA_ARGS__ }))

@@ -6,7 +6,7 @@ DisposeBag::~DisposeBag()
     wrapped.get<rxcpp::composite_subscription>().unsubscribe();
 }
 
-void DisposeBag::insert(Disposable&& disposable)
+void DisposeBag::insert(Subscription&& subscription)
 {
-    wrapped.get<rxcpp::composite_subscription>().add(disposable.wrapped.get<rxcpp::subscription>());
+    wrapped.get<rxcpp::composite_subscription>().add(subscription.wrapped.get<rxcpp::subscription>());
 }

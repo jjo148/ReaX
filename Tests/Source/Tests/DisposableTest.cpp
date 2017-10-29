@@ -1,8 +1,8 @@
 #include "../Other/TestPrefix.h"
 
 
-TEST_CASE("Disposable",
-          "[Disposable]")
+TEST_CASE("Subscription",
+          "[Subscription]")
 {
     // Create Observable which emits a single item asynchronously
     auto observable = std::make_shared<Observable<String>>(Observable<>::create<String>([](Observer<String> observer) {
@@ -13,7 +13,7 @@ TEST_CASE("Disposable",
 
     // Subscribe to it
     Array<String> items;
-    auto disposable = std::make_shared<Disposable>(observable->subscribe([&](String item) {
+    auto subscription = std::make_shared<Subscription>(observable->subscribe([&](String item) {
         items.add(item);
     }));
 
@@ -26,7 +26,7 @@ TEST_CASE("Disposable",
 
     IT("does not receive items after disposing")
     {
-        disposable->dispose();
+        subscription->unsubscribe();
         varxRunDispatchLoop();
 
         REQUIRE(items.isEmpty());
@@ -34,16 +34,16 @@ TEST_CASE("Disposable",
 
     IT("takes ownership when move constructing")
     {
-        Disposable other = std::move(*disposable);
-        other.dispose();
+        Subscription other = std::move(*subscription);
+        other.unsubscribe();
         varxRunDispatchLoop();
 
         REQUIRE(items.isEmpty());
     }
 
-    IT("does not dispose when being destroyed")
+    IT("does not unsubscribe when being destroyed")
     {
-        disposable.reset();
+        subscription.reset();
         varxRunDispatchLoop();
 
         varxRequireItems(items, "Item");
@@ -57,9 +57,9 @@ TEST_CASE("Disposable",
         varxRequireItems(items, "Item");
     }
 
-    // Unsubscribe after each IT(), to prevent old disposables from filling the items array
-    if (disposable)
-        disposable->dispose();
+    // Unsubscribe after each IT(), to prevent old subscriptions from filling the items array
+    if (subscription)
+        subscription->unsubscribe();
 }
 
 
@@ -97,7 +97,7 @@ TEST_CASE("DisposeBag",
         REQUIRE(items.isEmpty());
     }
 
-    IT("can dispose multiple Disposables")
+    IT("can dispose multiple Subscriptions")
     {
         for (int i = 0; i < 5; ++i) {
             observable.subscribe([&](String item) {

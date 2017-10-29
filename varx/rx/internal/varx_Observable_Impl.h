@@ -27,10 +27,10 @@ struct ObservableImpl
     static ObservableImpl repeat(const any& item, unsigned int times);
 
     // Subscription
-    Disposable subscribe(const std::function<void(const any&)>& onNext,
+    Subscription subscribe(const std::function<void(const any&)>& onNext,
                          const std::function<void(std::exception_ptr)>& onError,
                          const std::function<void()>& onCompleted) const;
-    Disposable subscribe(const ObserverImpl& observer) const;
+    Subscription subscribe(const ObserverImpl& observer) const;
 
     // Operators
     ObservableImpl combineLatest(std::initializer_list<ObservableImpl> others, const any& transform) const;

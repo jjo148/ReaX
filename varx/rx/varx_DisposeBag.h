@@ -1,9 +1,9 @@
 #pragma once
 
-class Disposable;
+class Subscription;
 
 /**
-    Disposes added Disposable​s when it is destroyed.
+    Disposes added Subscription​s when it is destroyed.
  */
 class DisposeBag
 {
@@ -11,11 +11,11 @@ public:
     /// Creates a new, empty DisposeBag. 
     DisposeBag();
 
-    /// Disposes all inserted Disposable​s in the DisposeBag. 
+    /// Disposes all inserted Subscription​s in the DisposeBag. 
     ~DisposeBag();
 
-    /// Inserts a Disposable into the DisposeBag. The Disposable is disposed when the DisposeBag is destroyed. 
-    void insert(Disposable&& disposable);
+    /// Inserts a Subscription into the DisposeBag. The Subscription is disposed when the DisposeBag is destroyed. 
+    void insert(Subscription&& subscription);
 
 private:
     const detail::any wrapped;

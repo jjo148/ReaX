@@ -41,7 +41,7 @@ namespace varx {
 typedef std::tuple<> Empty;
 
 #include "util/internal/varx_any.h"
-#include "rx/varx_Disposable.h"
+#include "rx/varx_Subscription.h"
 #include "rx/varx_DisposeBag.h"
 #include "rx/internal/varx_Observer_Impl.h"
 #include "rx/varx_Observer.h"

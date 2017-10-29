@@ -60,7 +60,7 @@ public:
      
      The **onCompleted** function is called exactly once to notify that the Observable has generated all data and will not emit any more items.
      
-     The returned Disposable can be used to unsubscribe from the Observable, to stop receiving values from it. **You will keep receiving values until you call Disposable::dispose, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
+     The returned Subscription can be used to unsubscribe from the Observable, to stop receiving values from it. **You will keep receiving values until you call Subscription::dispose, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
      
      Example:
      
@@ -69,7 +69,7 @@ public:
              std::cout << i << " ";
          }).disposedBy(disposeBag); // Output: 4 17
      */
-    Disposable subscribe(const std::function<void(const T&)>& onNext,
+    Subscription subscribe(const std::function<void(const T&)>& onNext,
                          const std::function<void(std::exception_ptr)>& onError = Impl::TerminateOnError,
                          const std::function<void()>& onCompleted = Impl::EmptyOnCompleted) const
     {
@@ -83,10 +83,10 @@ public:
     /**
      Subscribes an Observer to an Observable. The Observer is notified whenever the Observable emits an item, or notifies an onError / onCompleted.
      
-     The returned Disposable can be used to unsubscribe the Observer, so it stops being notified by this Observable. **The Observer keeps receiving values until you call Disposable::dispose, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
+     The returned Subscription can be used to unsubscribe the Observer, so it stops being notified by this Observable. **The Observer keeps receiving values until you call Subscription::dispose, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
      */
     template<typename U>
-    typename std::enable_if<std::is_convertible<T, U>::value, Disposable>::type subscribe(const Observer<U>& observer) const
+    typename std::enable_if<std::is_convertible<T, U>::value, Subscription>::type subscribe(const Observer<U>& observer) const
     {
         // Convert items from T to U, using implicit conversion, constructors, whatever works
         auto converted = impl.map([](const any& t) {
