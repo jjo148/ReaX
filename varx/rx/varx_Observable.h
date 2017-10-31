@@ -116,7 +116,7 @@ public:
     template<typename... Ts, typename Transform>
     Observable<CallResult<Transform, T, Ts...>> combineLatest(Transform&& transform, const Observable<Ts>&... others) const
     {
-        static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable.");
+        static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable to combineLatest.");
         static_assert(sizeof...(Ts) <= Impl::MaximumArity, "Too many Observables passed to combineLatest.");
 
         const std::function<any(const any&, const typename any_args<Ts>::type&...)> untypedTransform = [transform](const any& v, const typename any_args<Ts>::type&... vs) {
@@ -381,7 +381,7 @@ public:
     template<typename... Ts, typename Transform>
     Observable<CallResult<Transform, T, Ts...>> withLatestFrom(Transform&& transform, const Observable<Ts>&... others) const
     {
-        static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable.");
+        static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable to withLatestFrom.");
         static_assert(sizeof...(Ts) <= Impl::MaximumArity, "Too many Observables passed to withLatestFrom.");
 
         const std::function<any(const any&, const typename any_args<Ts>::type&...)> untypedTransform = [transform](const any& v, const typename any_args<Ts>::type&... vs) {
@@ -409,7 +409,7 @@ public:
     template<typename... Ts, typename Transform>
     Observable<CallResult<Transform, T, Ts...>> zip(Transform&& transform, const Observable<Ts>&... others) const
     {
-        static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable.");
+        static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable to zip.");
         static_assert(sizeof...(Ts) <= Impl::MaximumArity, "Too many Observables passed to zip.");
 
         const std::function<any(const any&, const typename any_args<Ts>::type&...)> untypedTransform = [transform](const any& v, const typename any_args<Ts>::type&... vs) {
@@ -630,7 +630,7 @@ public:
     template<typename T>
     static Observable<T> range(T first, T last, unsigned int step = 1)
     {
-        static_assert(std::is_integral<T>::value, "first and last must be integral.");
+        static_assert(std::is_integral<T>::value, "first and last must be integral or floating-point.");
         return Impl::integralRange(first, last, step);
     }
     

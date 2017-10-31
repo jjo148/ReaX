@@ -133,7 +133,7 @@ public:
     /// Controls whether the attachedComponent should be attached on the left.
     const Observer<bool> attachedOnLeft;
 
-    /// Controls  the minimum amount that the Label font can be squashed horizontally before it starts using ellipsis.​ **Type: float**
+    /// Controls the minimum amount that the Label font can be squashed horizontally before it starts using ellipsis.
     const Observer<float> minimumHorizontalScale;
 
     /// Controls the keyboard type to use in the TextEditor. If the editor is currently open, the type is changed for the open editor.
