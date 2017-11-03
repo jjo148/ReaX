@@ -30,10 +30,13 @@ private:
  */
 class AudioProcessorExtension : private juce::AudioProcessorListener
 {
+    juce::AudioProcessor& parent;
     LockFreeSource<Empty> _processorChanged;
 public:
     /// Creates a new instance for a given AudioProcessor. 
     AudioProcessorExtension(juce::AudioProcessor& parent);
+    
+    ~AudioProcessorExtension();
 
     /**
      Emits when something (apart from a parameter value) has changed, for example the latency.

@@ -2,7 +2,9 @@ ValueExtension::ValueExtension(const Value& inputValue)
 : subject(inputValue.getValue()),
   value(inputValue)
 {
+    // value is a member variable, so no need to call removeListener in destructor
     value.addListener(this);
+    
     subject.subscribe([this](const var& newValue) {
                // Only assign a new value if it has actually changed (to avoid problems with AudioProcessorValueTreeState)
                if (newValue != value)
@@ -19,10 +21,16 @@ void ValueExtension::valueChanged(Value&)
 }
 
 AudioProcessorExtension::AudioProcessorExtension(AudioProcessor& parent)
-: _processorChanged(1),
+: parent(parent),
+  _processorChanged(1),
   processorChanged(_processorChanged)
 {
     parent.addListener(this);
+}
+
+AudioProcessorExtension::~AudioProcessorExtension()
+{
+    parent.removeListener(this);
 }
 
 void AudioProcessorExtension::audioProcessorChanged(AudioProcessor* processor)

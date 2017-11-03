@@ -17,6 +17,11 @@ ComponentExtension::ComponentExtension(Component& parent)
     visible.skip(1).subscribe(std::bind(&Component::setVisible, &parent, _1)).disposedBy(*disposeBag);
 }
 
+ComponentExtension::~ComponentExtension()
+{
+    parent.removeComponentListener(this);
+}
+
 Observer<Colour> ComponentExtension::colour(int colourId) const
 {
     // Create subject, if not already done
@@ -60,6 +65,11 @@ ButtonExtension::ButtonExtension(Button& parent)
                            parent.setToggleState(toggled, sendNotificationSync);
                        })
         .disposedBy(disposeBag);
+}
+
+ButtonExtension::~ButtonExtension()
+{
+    static_cast<Button&>(parent).removeListener(this);
 }
 
 void ButtonExtension::buttonClicked(Button*)
@@ -159,6 +169,11 @@ LabelExtension::LabelExtension(Label& parent)
         .disposedBy(disposeBag);
 }
 
+LabelExtension::~LabelExtension()
+{
+    static_cast<Label&>(parent).removeListener(this);
+}
+
 void LabelExtension::labelTextChanged(Label* parent)
 {
     if (parent->getText() != text.getLatestItem())
@@ -182,7 +197,9 @@ void LabelExtension::editorHidden(Label* parent, TextEditor&)
 }
 
 
-SliderExtension::SliderExtension(juce::Slider& parent, const Observer<std::function<double(const juce::String&)>>& getValueFromText, const Observer<std::function<juce::String(double)>>& getTextFromValue)
+SliderExtension::SliderExtension(juce::Slider& parent,
+                                 const Observer<std::function<double(const juce::String&)>>& getValueFromText,
+                                 const Observer<std::function<juce::String(double)>>& getTextFromValue)
 : ComponentExtension(parent),
   _dragging(false),
   _discardChangesWhenHidingTextBox(false),
@@ -249,6 +266,11 @@ SliderExtension::SliderExtension(juce::Slider& parent, const Observer<std::funct
         .disposedBy(disposeBag);
 
     _textBoxIsEditable.subscribe(std::bind(&Slider::setTextBoxIsEditable, &parent, _1)).disposedBy(disposeBag);
+}
+
+SliderExtension::~SliderExtension()
+{
+    static_cast<Slider&>(parent).removeListener(this);
 }
 
 void SliderExtension::sliderValueChanged(Slider* slider)
