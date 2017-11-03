@@ -228,6 +228,8 @@ private:
     bool isScalar() const;
 
     std::string getTypeName() const;
+    
+    JUCE_LEAK_DETECTOR(any)
 };
 ///@endcond
 
