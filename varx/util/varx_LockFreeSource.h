@@ -73,34 +73,42 @@ private:
     template<typename U>
     void _onNext(U&& item, CongestionPolicy congestionPolicy)
     {
+        bool needsUpdate = false;
+        
         switch (congestionPolicy) {
             // If allocation is allowed, just enqueue the item, allowing the queue to allocate memory if needed.
             case CongestionPolicy::Allocate:
                 queue.enqueue(std::forward<U>(item));
+                needsUpdate = true;
                 break;
 
             // If the newest item(s) may be dropped, just try to enqueue (without allocating), and do nothing if it fails.
             case CongestionPolicy::DropNewest:
-                queue.try_enqueue(std::forward<U>(item));
+                needsUpdate = queue.try_enqueue(std::forward<U>(item));
                 break;
 
             // If the oldest item may be dropped, try to enqueue (without allocating), and remove the oldest item if needed.
             case CongestionPolicy::DropOldest: {
                 // Try to enqueue the item. If it succeeds, there's no need to copy the dummy.
                 // Cannot use std::forward here: Item must not be moved because try_enqueue may be called again (multiple times) below.
-                if (queue.try_enqueue(item))
+                if (queue.try_enqueue(item)) {
+                    needsUpdate = true;
                     break;
+                }
                 
                 // Queue is full. Drop items from the front until there's space again:
                 T unused(dummy);
                 while (!queue.try_enqueue(item))
                     queue.try_dequeue(unused);
+                
+                needsUpdate = true;
                 break;
             }
         }
 
-        // Trigger an update on the message thread
-        triggerAsyncUpdate();
+        // Trigger an update on the message thread, if needed
+        if (needsUpdate)
+            triggerAsyncUpdate();
     }
 
     void handleAsyncUpdate() override
@@ -111,5 +119,5 @@ private:
             detail::LockFreeSourceBase<T>::subject.onNext(item);
     }
 
-    JUCE_LEAK_DETECTOR(LockFreeSource)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LockFreeSource)
 };
