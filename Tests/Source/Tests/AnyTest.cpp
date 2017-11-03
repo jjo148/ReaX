@@ -128,16 +128,16 @@ TEST_CASE("any",
         {
             REQUIRE(anyPoint != any(Point<int64>(4, 15)));
         }
-        
+
         IT("holds an independent copy of the original value")
         {
             // Create point, wrap it in any
             Point<int> p(14, 66);
             any wrapped(p);
-            
+
             // Change original
             p.x = 53;
-            
+
             // wrapped should not be changed
             REQUIRE(wrapped.get<Point<int>>() == Point<int>(14, 66));
         }
@@ -146,7 +146,8 @@ TEST_CASE("any",
     CONTEXT("polymorphic types")
     {
         // Define Animal class with subclasses Dog and Cat
-        class LivingBeing {};
+        class LivingBeing
+        {};
         class Animal : public LivingBeing
         {
         public:
@@ -166,12 +167,12 @@ TEST_CASE("any",
         public:
             Dog(int weight, int barksPerMinute)
             : Animal(weight), barksPerMinute(barksPerMinute) {}
-            
+
             bool operator==(const Dog& other) const
             {
                 return (Animal::operator==(other) && barksPerMinute == other.barksPerMinute);
             }
-            
+
             int barksPerMinute;
         };
 
@@ -180,15 +181,15 @@ TEST_CASE("any",
         public:
             Cat(int weight, float cutenessFactor)
             : Animal(weight), cutenessFactor(cutenessFactor) {}
-            
+
             bool operator==(const Cat& other) const
             {
                 return (Animal::operator==(other) && cutenessFactor == other.cutenessFactor);
             }
-            
+
             float cutenessFactor;
         };
-        
+
         // Create instances
         any sameWeightAsGarfield(Animal(120));
         any bello(Dog(16, 9));
@@ -196,68 +197,72 @@ TEST_CASE("any",
         any identicalGarfield(Cat(120, 0.001));
         any cuteGarfield(Cat(120, 1));
         any helloKitty(Cat(16, 10000));
-        
+
         IT("can compare instances of the same subclass")
         {
             REQUIRE(garfield == garfield);
             REQUIRE_FALSE(garfield != garfield);
             REQUIRE(garfield == identicalGarfield);
             REQUIRE_FALSE(garfield != identicalGarfield);
-            
+
             REQUIRE_FALSE(garfield == cuteGarfield);
             REQUIRE_FALSE(cuteGarfield == helloKitty);
         }
-        
+
         IT("can cast the right-hand value to the left-hand value, but not vice versa")
         {
             REQUIRE(sameWeightAsGarfield == garfield);
             REQUIRE(garfield != sameWeightAsGarfield);
         }
-        
+
         IT("can compare instances of separate subclasses")
         {
             // Should be non-equal, although the Animal part is equal
             REQUIRE_FALSE(bello == helloKitty);
         }
-        
+
         IT("is equal even if the wrapped value has been copied")
         {
             any copy(garfield.get<Cat>());
-            
+
             REQUIRE(copy == garfield);
             REQUIRE(identicalGarfield == copy);
         }
     }
-    
+
     CONTEXT("Equality with pointer comparison")
     {
-        // Create two instances with equal contents
-        struct Foo { int x; };
-        
+        struct Foo
+        {
+            Foo(int x)
+            : x(x) {}
+            
+            int x;
+        };
+
         IT("is equal if the wrapped value is the same instance")
         {
-            any anyFoo(Foo({.x = 5}));
+            any anyFoo(Foo(5));
             CHECK(anyFoo == anyFoo);
-            
+
             any another = anyFoo;
-            
+
             REQUIRE(anyFoo == another);
         }
-        
+
         IT("is non-equal if two instances are constructed from the same value")
         {
-            Foo foo = {.x = 16};
+            Foo foo(16);
             REQUIRE(any(foo) != any(foo));
         }
-        
+
         IT("is non-equal if two instances are constructed from two different values")
         {
-            Foo foo1 = {.x = 16};
-            Foo foo2 = {.x = 16};
-            
+            Foo foo1(16);
+            Foo foo2(16);
+
             REQUIRE(any(foo1) != any(foo2));
         }
-        
     }
 
     CONTEXT("Copying and moving the wrapped type")
