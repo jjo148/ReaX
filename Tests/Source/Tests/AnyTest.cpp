@@ -209,12 +209,6 @@ TEST_CASE("any",
             REQUIRE_FALSE(cuteGarfield == helloKitty);
         }
 
-        IT("can cast the right-hand value to the left-hand value, but not vice versa")
-        {
-            REQUIRE(sameWeightAsGarfield == garfield);
-            REQUIRE(garfield != sameWeightAsGarfield);
-        }
-
         IT("can compare instances of separate subclasses")
         {
             // Should be non-equal, although the Animal part is equal

@@ -2,9 +2,9 @@
 
 <JUCERPROJECT id="ggJgza" name="varx-Tests" projectType="guiapp" version="1.0.0"
               bundleIdentifier="de.martin-finke.varx-Tests" includeBinaryInAppConfig="1"
-              jucerVersion="5.1.2" companyName="Martin Finke" companyWebsite="http://www.martin-finke.de"
+              jucerVersion="5.2.0" companyName="Martin Finke" companyWebsite="http://www.martin-finke.de"
               displaySplashScreen="0" reportAppUsage="0" splashScreenColour="Dark"
-              cppLanguageStandard="11">
+              cppLanguageStandard="11" companyCopyright="Martin Finke">
   <MAINGROUP id="J6yVM5" name="varx-Tests">
     <GROUP id="{3E021249-15C8-F098-B5C0-2A3DBD19388C}" name="Source">
       <GROUP id="{BBCE1761-6AF0-DAE7-65CD-AE0365C41BE7}" name="Other">
@@ -47,9 +47,11 @@
     <XCODE_MAC targetFolder="Builds/MacOSX" keepCustomXcodeSchemes="1" extraCompilerFlags="-Wno-comma">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="varx-Tests"
-                       osxCompatibility="10.9 SDK" cppLanguageStandard="c++11" cppLibType="libc++"/>
+                       osxCompatibility="10.9 SDK" cppLanguageStandard="c++11" cppLibType="libc++"
+                       enablePluginBinaryCopyStep="1"/>
         <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="varx-Tests"
-                       cppLanguageStandard="c++11" cppLibType="libc++" osxCompatibility="10.9 SDK"/>
+                       cppLanguageStandard="c++11" cppLibType="libc++" osxCompatibility="10.9 SDK"
+                       enablePluginBinaryCopyStep="1"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../JUCE/modules"/>
@@ -66,9 +68,12 @@
     <VS2017 targetFolder="Builds/VisualStudio2017" extraCompilerFlags="/bigobj">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
-                       isDebug="1" optimisation="1" targetName="varx-Tests" headerPath="../../Source/Other"/>
+                       isDebug="1" optimisation="1" targetName="varx-Tests" headerPath="../../Source/Other"
+                       debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"/>
         <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
-                       isDebug="0" optimisation="3" targetName="varx-Tests" headerPath="../../Source/Other"/>
+                       isDebug="0" optimisation="3" targetName="varx-Tests" headerPath="../../Source/Other"
+                       debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
+                       linkTimeOptimisation="1"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="varx" path="../"/>

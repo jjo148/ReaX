@@ -1,17 +1,37 @@
 Reactive<Value>::Reactive()
-: rx(*this) {}
+: rx(value) {}
 
 Reactive<Value>::Reactive(const Value& other)
-: Value(other),
-  rx(*this) {}
+: value(other),
+  rx(value) {}
 
 Reactive<Value>::Reactive(const var& initialValue)
-: Value(initialValue),
-  rx(*this) {}
+: value(initialValue),
+  rx(value) {}
+
+Reactive<Value>::operator juce::Value() const
+{
+    return value;
+}
+
+var Reactive<Value>::getValue() const
+{
+    return value.getValue();
+}
+
+Reactive<Value>::operator var() const
+{
+    return value.operator var();
+}
+
+void Reactive<Value>::setValue(const var& newValue)
+{
+    value.setValue(newValue);
+}
 
 Reactive<Value>& Reactive<Value>::operator=(const var& newValue)
 {
-    Value::operator=(newValue); // Causes Observable to emit
+    value = newValue; // Causes Observable to emit
     return *this;
 }
 

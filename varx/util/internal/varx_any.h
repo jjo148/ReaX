@@ -4,7 +4,7 @@ namespace detail {
 /**
  A dynamic wrapper that can hold a value of any copy-constructible type.
  
- The type of the held value is erased. So to extract the held value (using `any::get()`), you have to provide the type of the held value.
+ The type of the held value is erased. So to extract the held value (using `any::get()`), you have to provide the exact type of the held value. No base-class, of it, but the exact type it was constructed from. If in doubt, use `static_cast` before passing the value to the `any` constructor, to ensure that it's stored as a certain type.
  
  Two `any` instances are equality-comparable. If an instance `a` is compared to an instance `b` as in `a == b`, and both hold a scalar value (e.g. int, float, bool), the scalar values are converted and compared. So `var(1.f) == var(1)`. If both hold an object, it casts `b` to the type of `a`. If that succeeds, it compares them using `a`'s `operator==`. If `a` is not equality-comparable, it checks if the addresses of the wrapped values in `a` and `b` are equal. This may be false if both `a` and `b` were contructed from the same value, because the value may have been copied when constructing. Otherwise, `a` and `b` are considered to be non-equal.
  
@@ -25,11 +25,11 @@ public:
     explicit any(double value);
     ///@}
 
-    /// Checks if T is not any. Used to prevent nested any(any(...)) instances. 
+    /// Checks if T is not any. Used to prevent nested any(any(...)) instances.
     template<typename T>
     using DisableIfAny = typename std::enable_if<!std::is_base_of<any, typename std::decay<T>::type>::value>::type;
 
-    /// Checks if T is a scalar type (e.g. numeric, bool, enum). 
+    /// Checks if T is a scalar type (e.g. numeric, bool, enum).
     template<typename T>
     using IsScalar = std::is_scalar<typename std::decay<T>::type>;
 
@@ -43,13 +43,13 @@ public:
     : any(std::forward<T>(value), IsScalar<T>())
     {}
 
-    /// Default move constructor 
+    /// Default move constructor
     any(any&&) = default;
 
-    /// Default copy constructor. If the wrapped value is scalar, it is copied. Otherwise, it is shared by reference. 
+    /// Default copy constructor. If the wrapped value is scalar, it is copied. Otherwise, it is shared by reference.
     any(const any&) = default;
 
-    /// Default copy assignment operator. If the wrapped value is scalar, it is copied. Otherwise, it is shared by reference. 
+    /// Default copy assignment operator. If the wrapped value is scalar, it is copied. Otherwise, it is shared by reference.
     any& operator=(const any&) = default;
 
     /// Extracts the held value as a T. Throws an exception if the held value is not a T.
@@ -92,13 +92,15 @@ private:
 
     // Object subclass that is also a T. It inherits from T to make this work: any(Derived()).get<Base>();
     template<typename T>
-    struct TypedObject : T, Object
+    struct TypedObject : Object
     {
         template<typename U>
         TypedObject(U&& value)
-        : T(std::forward<U>(value)),
-          Object(typeid(U))
+        : Object(typeid(U)),
+          t(std::forward<U>(value))
         {}
+
+        T t;
     };
 
     // Checks if T has operator==
@@ -126,11 +128,11 @@ private:
 
         bool equals(const Object& other) const override
         {
-            // If other is a T, compare the T portion of this and other:
-            if (auto ptr = dynamic_cast<const T*>(&other))
-                return (static_cast<const T>(*this) == *ptr);
+            // If other contains a T, compare the T portion of this and other:
+            if (auto ptr = dynamic_cast<const EquatableTypedObject<T>*>(&other))
+                return (TypedObject<T>::t == ptr->t);
 
-            // other is not a T, so the objects can't be equal
+            // other does not contain a T, so the objects can't be equal
             else
                 return false;
         }
@@ -203,13 +205,13 @@ private:
     inline T _get(/* is_scalar: */ std::false_type) const
     {
         // Try to cast object value to T
-        if (auto ptr = std::dynamic_pointer_cast<const T>(objectValue))
-            return *ptr;
+        if (auto ptr = std::dynamic_pointer_cast<const TypedObject<T>>(objectValue))
+            return ptr->t;
 
         // Type mismatch
         throw typeMismatchError<T>();
     }
-    
+
     template<typename T>
     inline std::runtime_error typeMismatchError() const
     {
@@ -226,13 +228,13 @@ private:
     template<typename T>
     inline bool _is(/* is_scalar: */ std::false_type) const
     {
-        return (!isScalar() && std::dynamic_pointer_cast<const T>(objectValue) != nullptr);
+        return (!isScalar() && std::dynamic_pointer_cast<const TypedObject<T>>(objectValue) != nullptr);
     }
 
     bool isScalar() const;
 
     std::string getTypeName() const;
-    
+
     JUCE_LEAK_DETECTOR(any)
 };
 ///@endcond
