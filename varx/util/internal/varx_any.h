@@ -136,7 +136,7 @@ private:
         }
     };
 
-    // The type of the held value. Needed to use the correct member of the enum.
+    // The type of the held value. Needed to use the correct member of the union.
     enum class Type {
         Int,
         Int64,
@@ -192,11 +192,9 @@ private:
             case Type::Double:
                 return static_cast<T>(value.doubleValue);
 
-            default: {
-                // Type mismatch. Throw error:
-                static const std::string RequestedType = typeid(T).name();
-                throw std::runtime_error("Error getting type from any. Requested: " + RequestedType + ". Actual: " + getTypeName() + ".");
-            }
+            default:
+                // Type mismatch
+                throw typeMismatchError<T>();
         }
     }
 
@@ -208,9 +206,15 @@ private:
         if (auto ptr = std::dynamic_pointer_cast<const T>(objectValue))
             return *ptr;
 
-        // Type mismatch. Throw error:
+        // Type mismatch
+        throw typeMismatchError<T>();
+    }
+    
+    template<typename T>
+    inline std::runtime_error typeMismatchError() const
+    {
         static const std::string RequestedType = typeid(T).name();
-        throw std::runtime_error("Error getting type from any. Requested: " + RequestedType + ". Actual: " + getTypeName() + ".");
+        return std::runtime_error("Error getting type from any. Requested: " + RequestedType + ". Actual: " + getTypeName() + ".");
     }
 
     template<typename T>
