@@ -132,4 +132,31 @@ TEST_CASE("LockFreeTarget",
             }
         }
     }
+    
+    CONTEXT("move semantics")
+    {
+        LockFreeTarget<CopyAndMoveConstructible> target;
+        CopyAndMoveConstructible::Counters counters;
+        
+        IT("copies when passing an rvalue to onNext")
+        {
+            target.onNext(CopyAndMoveConstructible(&counters));
+            
+            CHECK(counters.numCopyConstructions == 2);
+            CHECK(counters.numMoveConstructions == 1);
+            CHECK(counters.numCopyAssignments == 0);
+            REQUIRE(counters.numMoveAssignments == 0);
+            
+            IT("uses move assignment when emptying the queue, and makes no further copies")
+            {
+                CopyAndMoveConstructible value(nullptr);
+                target.tryDequeueAll(value);
+                
+                CHECK(counters.numCopyConstructions == 2);
+                CHECK(counters.numMoveConstructions == 1);
+                CHECK(counters.numCopyAssignments == 0);
+                REQUIRE(counters.numMoveAssignments == 1);
+            }
+        }
+    }
 }

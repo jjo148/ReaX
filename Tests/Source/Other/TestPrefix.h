@@ -84,6 +84,7 @@ struct CopyAndMoveConstructible
         int numMoveConstructions = 0;
         int numCopyAssignments = 0;
         int numMoveAssignments = 0;
+        bool printDebugMessages = false;
     };
 
     CopyAndMoveConstructible(Counters* counters)
@@ -95,6 +96,8 @@ struct CopyAndMoveConstructible
     : counters(other.counters)
     {
         counters->numCopyConstructions++;
+        if (counters->printDebugMessages)
+            std::cout << "CopyAndMoveConstructible copy constructor" << std::endl;
     }
 
     // Move constructor
@@ -102,6 +105,8 @@ struct CopyAndMoveConstructible
     : counters(std::move(other.counters))
     {
         counters->numMoveConstructions++;
+        if (counters->printDebugMessages)
+            std::cout << "CopyAndMoveConstructible move constructor" << std::endl;
     }
 
     // Copy assignment
@@ -109,6 +114,8 @@ struct CopyAndMoveConstructible
     {
         counters = other.counters;
         counters->numCopyAssignments++;
+        if (counters->printDebugMessages)
+            std::cout << "CopyAndMoveConstructible copy assignment" << std::endl;
         
         return *this;
     }
@@ -118,6 +125,8 @@ struct CopyAndMoveConstructible
     {
         counters = std::move(other.counters);
         counters->numMoveAssignments++;
+        if (counters->printDebugMessages)
+            std::cout << "CopyAndMoveConstructible move assignment" << std::endl;
         
         return *this;
     }

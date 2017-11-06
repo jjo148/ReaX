@@ -15,12 +15,12 @@ public:
     /// Notifies the Observer with a new item.
     void onNext(const T& item) const
     {
-        impl.onNext(convert(detail::any(item)));
+        impl.onNext(convert ? convert(detail::any(item)) : detail::any(item));
     }
     
     void onNext(T&& item) const
     {
-        impl.onNext(convert(detail::any(std::move(item))));
+        impl.onNext(convert ? convert(detail::any(std::move(item))) : detail::any(std::move(item)));
     }
     ///@}
 
@@ -47,7 +47,7 @@ protected:
     friend class Observable;
     
     ///@cond INTERNAL
-    Observer(const detail::ObserverImpl& impl, const std::function<detail::any(const detail::any&)>& convert = [](const detail::any& item){ return item; })
+    Observer(const detail::ObserverImpl& impl, const std::function<detail::any(const detail::any&)>& convert = nullptr)
     : impl(impl),
       convert(convert)
     {}
