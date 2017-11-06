@@ -74,14 +74,14 @@ TEST_CASE("any",
             REQUIRE(anyEnumClass.get<TestEnumClass>() == TestEnumClass::Bar);
         }
 
-        IT("coerces enums to int")
+        IT("does not coerce enums to int")
         {
-            REQUIRE(anyEnum.get<int>() == 17);
+            REQUIRE_THROWS_WITH(anyEnum.get<juce::int64>(), Contains("Error getting type from any."));
         }
 
         IT("can compare enums for equality")
         {
-            REQUIRE(anyEnum == any(17));
+            REQUIRE(anyEnum == any(TestEnumFoo));
             REQUIRE(anyEnum != any(TestEnumBar));
             REQUIRE(anyEnumClass == any(TestEnumClass::Bar));
             REQUIRE(anyEnumClass != any(TestEnumClass::Foo));
@@ -143,6 +143,31 @@ TEST_CASE("any",
         }
     }
 
+    CONTEXT("pointers")
+    {
+        IT("can store a pointer to a struct")
+        {
+            struct S
+            {
+                int i;
+            };
+            
+            S s;
+            s.i = 1829;
+            
+            any anyS(&s);
+            REQUIRE(anyS.get<S*>()->i == 1829);
+        }
+        
+        IT("can store a pointer to an int")
+        {
+            int x = -19381;
+            any anyInt(&x);
+            
+            REQUIRE(*anyInt.get<int*>() == -19381);
+        }
+    }
+
     CONTEXT("polymorphic types")
     {
         // Define Animal class with subclasses Dog and Cat
@@ -179,7 +204,7 @@ TEST_CASE("any",
         class Cat : public Animal
         {
         public:
-            Cat(int weight, float cutenessFactor)
+            Cat(int weight, double cutenessFactor)
             : Animal(weight), cutenessFactor(cutenessFactor) {}
 
             bool operator==(const Cat& other) const
@@ -187,7 +212,7 @@ TEST_CASE("any",
                 return (Animal::operator==(other) && cutenessFactor == other.cutenessFactor);
             }
 
-            float cutenessFactor;
+            double cutenessFactor;
         };
 
         // Create instances
@@ -230,7 +255,7 @@ TEST_CASE("any",
         {
             Foo(int x)
             : x(x) {}
-            
+
             int x;
         };
 

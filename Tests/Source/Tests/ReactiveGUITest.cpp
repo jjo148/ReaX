@@ -197,7 +197,7 @@ TEST_CASE("Reactive<Button>",
             for (auto colourId : { TextButton::buttonColourId, TextButton::buttonOnColourId, TextButton::textColourOffId }) {
                 auto observer = button.rx.colour(colourId);
 
-                for (auto colour : { Colours::red, Colour::fromFloatRGBA(0.3, 0.47, 0.11, 0.575), Colours::white }) {
+                for (auto colour : { Colours::red, Colour::fromFloatRGBA(0.3f, 0.47f, 0.11f, 0.575f), Colours::white }) {
                     observer.onNext(colour);
                     REQUIRE(button.isColourSpecified(colourId));
                     REQUIRE(button.findColour(colourId) == colour);
@@ -372,8 +372,8 @@ TEST_CASE("Reactive<Label>",
 
     CONTEXT("font")
     {
-        const Font font1(18.43, Font::bold | Font::underlined);
-        const Font font2(4.3, Font::italic);
+        const Font font1(18.43f, Font::bold | Font::underlined);
+        const Font font2(4.3f, Font::italic);
 
         IT("changes the Label font when pushing items")
         {
@@ -776,7 +776,7 @@ TEST_CASE("Template ambiguities")
         public:
             MyButton()
             : Button("") {}
-            void paintButton(Graphics &g, bool isMouseOverButton, bool isButtonDown) override {}
+            void paintButton(Graphics &, bool, bool) override {}
         };
         Reactive<MyButton> myButton;
         static_assert(isSame<decltype(myButton.rx), ButtonExtension>::value, "rx Member has wrong type.");

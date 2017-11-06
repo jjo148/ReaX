@@ -1,7 +1,7 @@
 #pragma once
 
 namespace detail {
-    class ObservableImpl;
+    struct ObservableImpl;
 }
 
 class DisposeBag;

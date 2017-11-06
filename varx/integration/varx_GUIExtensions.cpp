@@ -122,11 +122,11 @@ LabelExtension::LabelExtension(Label& parent)
 
     text.skip(1).subscribe(std::bind(&Label::setText, &parent, _1, sendNotificationSync)).disposedBy(disposeBag);
 
-    showEditor.skip(1).withLatestFrom(_discardChangesWhenHidingEditor).subscribe([&parent](const std::pair<bool, bool>& pair) {
-                                                                          if (pair.first)
+    showEditor.skip(1).withLatestFrom(_discardChangesWhenHidingEditor).subscribe([&parent](const std::tuple<bool, bool>& tuple) {
+                                                                          if (std::get<0>(tuple))
                                                                               parent.showEditor();
                                                                           else
-                                                                              parent.hideEditor(pair.second);
+                                                                              parent.hideEditor(std::get<1>(tuple));
                                                                       })
         .disposedBy(disposeBag);
 
@@ -257,11 +257,11 @@ SliderExtension::SliderExtension(juce::Slider& parent,
 
     _skewFactorMidPoint.subscribe(std::bind(&Slider::setSkewFactorFromMidPoint, &parent, _1)).disposedBy(disposeBag);
 
-    _showTextBox.withLatestFrom(_discardChangesWhenHidingTextBox).subscribe([&parent](const std::pair<bool, bool>& pair) {
-                                                                     if (pair.first)
+    _showTextBox.withLatestFrom(_discardChangesWhenHidingTextBox).subscribe([&parent](const std::tuple<bool, bool>& tuple) {
+                                                                     if (std::get<0>(tuple))
                                                                          parent.showTextBox();
                                                                      else
-                                                                         parent.hideTextBox(pair.second);
+                                                                         parent.hideTextBox(std::get<1>(tuple));
                                                                  })
         .disposedBy(disposeBag);
 

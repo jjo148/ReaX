@@ -35,7 +35,7 @@ public:
 
     /// The return type of calling a function of type Transform with parameters of types Args. 
     template<typename Transform, typename... Args>
-    using CallResult = decltype(std::declval<Transform>()(std::declval<Args>()...));
+    using CallResult = typename std::result_of<Transform(Args...)>::type;
 
     
 #pragma mark - Creation
