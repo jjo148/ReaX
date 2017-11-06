@@ -11,11 +11,18 @@ template<typename T>
 class Observer
 {
 public:
-    /// Notifies the Observer with a new item. 
+    ///@{
+    /// Notifies the Observer with a new item.
     void onNext(const T& item) const
     {
-        impl.onNext(convert(detail::any(item)));
+        impl.onNext(convert ? convert(detail::any(item)) : detail::any(item));
     }
+    
+    void onNext(T&& item) const
+    {
+        impl.onNext(convert ? convert(detail::any(std::move(item))) : detail::any(std::move(item)));
+    }
+    ///@}
 
     /// Notifies the Observer that an error has occurred. 
     void onError(std::exception_ptr error) const
@@ -40,7 +47,7 @@ protected:
     friend class Observable;
     
     ///@cond INTERNAL
-    Observer(const detail::ObserverImpl& impl, const std::function<detail::any(const detail::any&)>& convert = [](const detail::any& item){ return item; })
+    Observer(const detail::ObserverImpl& impl, const std::function<detail::any(const detail::any&)>& convert = nullptr)
     : impl(impl),
       convert(convert)
     {}

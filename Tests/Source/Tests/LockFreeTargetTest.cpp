@@ -8,13 +8,17 @@ TEST_CASE("LockFreeTarget",
         BehaviorSubject<float> subject(5.467f);
         LockFreeTarget<float> target;
         subject.subscribe(target);
-        CHECK(target.getValue() == 5.467f);
+        float value;
+        CHECK(target.tryDequeueAll(value));
+        CHECK(value == 5.467f);
         
         subject.onNext(100.24f);
-        CHECK(target.getValue() == 100.24f);
+        CHECK(target.tryDequeue(value));
+        CHECK(value == 100.24f);
         
         subject.onNext(-14.274f);
-        REQUIRE(target.getValue() == -14.274f);
+        CHECK(target.tryDequeueAll(value));
+        REQUIRE(value == -14.274f);
     }
     
     IT("retrieves String values")
@@ -24,10 +28,25 @@ TEST_CASE("LockFreeTarget",
         subject.subscribe(target);
         
         subject.onNext("Hello");
-        CHECK(target.getValue() == "Hello");
+        String value;
+        CHECK(target.tryDequeue(value));
+        CHECK(value == "Hello");
         
+        // Enqueue 3 values
+        subject.onNext("This should be discarded.");
+        subject.onNext("This should be discarded, too.");
         subject.onNext("World!");
-        REQUIRE(target.getValue() == "World!");
+        
+        // Dequeue all of them, should get the last value
+        CHECK(target.tryDequeueAll(value));
+        REQUIRE(value == "World!");
+        
+        // Should be empty now, and not touch "value" parameter
+        String anotherValue("anotherValue");
+        CHECK_FALSE(target.tryDequeue(anotherValue));
+        CHECK_FALSE(target.tryDequeueAll(anotherValue));
+        REQUIRE(value == "World!");
+        REQUIRE(anotherValue == "anotherValue");
     }
     
     IT("retrieves other non-primitive values")
@@ -37,59 +56,107 @@ TEST_CASE("LockFreeTarget",
         subject.subscribe(target);
         
         subject.onNext(Point<int>(43, 29));
-        CHECK(target.getValue() == Point<int>(43, 29));
+        Point<int> value;
+        CHECK(target.tryDequeueAll(value));
+        CHECK(value == Point<int>(43, 29));
         
+        // Enqueue 3 items
         subject.onNext(Point<int>(18, -5));
-        REQUIRE(target.getValue() == Point<int>(18, -5));
+        subject.onNext(Point<int>(-163, 122));
+        subject.onNext(Point<int>(0, 774));
+        
+        // Dequeue 3 items
+        CHECK(target.tryDequeue(value));
+        CHECK(value == Point<int>(18, -5));
+        CHECK(target.tryDequeue(value));
+        REQUIRE(value == Point<int>(-163, 122));
+        CHECK(target.tryDequeue(value));
+        REQUIRE(value == Point<int>(0, 774));
+        
+        // Should be empty now
+        Point<int> anotherValue(371, 4819);
+        CHECK_FALSE(target.tryDequeue(anotherValue));
+        CHECK_FALSE(target.tryDequeueAll(anotherValue));
+        REQUIRE(value == Point<int>(0, 774));
+        REQUIRE(anotherValue == Point<int>(371, 4819));
     }
     
-    
-    IT("doesn't use the ReleasePool for primitive types")
+    IT("can convert between convertible types")
     {
-        // Make sure ReleasePool is initially empty
-        detail::ReleasePool::get().cleanup();
-        CHECK(detail::ReleasePool::get().size() == 0);
+        LockFreeTarget<int> target;
+        int64 value;
         
-        PublishSubject<var> subject;
-        LockFreeTarget<int> intTarget;
-        LockFreeTarget<bool> boolTarget;
-        LockFreeTarget<double> doubleTarget;
-        
-        subject.subscribe(intTarget);
-        subject.subscribe(boolTarget);
-        subject.subscribe(doubleTarget);
-        
-        subject.onNext(3.474);
-        
-        REQUIRE(detail::ReleasePool::get().size() == 0);
+        target.onNext(312);
+        CHECK(target.tryDequeueAll(value));
+        REQUIRE(value == 312);
     }
     
-    IT("uses the ReleasePool for non-primitive types")
+    CONTEXT("queue is empty")
     {
-        // Make sure ReleasePool is initially empty
-        detail::ReleasePool::get().cleanup();
-        CHECK(detail::ReleasePool::get().size() == 0);
+        LockFreeTarget<int64> target;
+        int64 value;
         
-        // After one onNext, there should be 1 item in the ReleasePool
-        PublishSubject<Point<float>> subject;
-        LockFreeTarget<Point<float>> target;
-        subject.subscribe(target);
-        subject.onNext(Point<float>(4.52f, 1.23f));
-        REQUIRE(detail::ReleasePool::get().size() == 1);
+        IT("returns false when calling tryDequeue")
+        {
+            // Call multiple times, just to check
+            CHECK_FALSE(target.tryDequeue(value));
+            REQUIRE_FALSE(target.tryDequeue(value));
+        }
         
-        // After another onNext, there should be 2 items
-        PublishSubject<String> stringSubject;
-        LockFreeTarget<String> stringTarget;
-        stringSubject.subscribe(stringTarget);
-        stringSubject.onNext("Hello");
-        REQUIRE(detail::ReleasePool::get().size() == 2);
+        IT("returns false when calling tryDequeueAll")
+        {
+            // Call multiple times, just to check
+            CHECK_FALSE(target.tryDequeueAll(value));
+            REQUIRE_FALSE(target.tryDequeueAll(value));
+        }
         
-        // After another onNext, there should be 3 items
-        stringSubject.onNext("World!");
-        REQUIRE(detail::ReleasePool::get().size() == 3);
+        CONTEXT("after retrieving and dequeing values")
+        {
+            IT("returns false after retrieving and dequeueing 1 value")
+            {
+                target.onNext(45009);
+                CHECK(target.tryDequeue(value));
+                CHECK_FALSE(target.tryDequeue(value));
+                CHECK_FALSE(target.tryDequeueAll(value));
+            }
+            
+            IT("returns false after retrieving and dequeueing 3 value")
+            {
+                target.onNext(231);
+                target.onNext(12310);
+                target.onNext(-9481);
+                
+                CHECK(target.tryDequeueAll(value));
+                CHECK_FALSE(target.tryDequeue(value));
+                CHECK_FALSE(target.tryDequeueAll(value));
+            }
+        }
+    }
+    
+    CONTEXT("move semantics")
+    {
+        LockFreeTarget<CopyAndMoveConstructible> target;
+        CopyAndMoveConstructible::Counters counters;
         
-        // After a cleanup, there should be just 2 items again
-        detail::ReleasePool::get().cleanup();
-        REQUIRE(detail::ReleasePool::get().size() == 2);
+        IT("copies when passing an rvalue to onNext")
+        {
+            target.onNext(CopyAndMoveConstructible(&counters));
+            
+            CHECK(counters.numCopyConstructions == 2);
+            CHECK(counters.numMoveConstructions == 1);
+            CHECK(counters.numCopyAssignments == 0);
+            REQUIRE(counters.numMoveAssignments == 0);
+            
+            IT("uses move assignment when emptying the queue, and makes no further copies")
+            {
+                CopyAndMoveConstructible value(nullptr);
+                target.tryDequeueAll(value);
+                
+                CHECK(counters.numCopyConstructions == 2);
+                CHECK(counters.numMoveConstructions == 1);
+                CHECK(counters.numCopyAssignments == 0);
+                REQUIRE(counters.numMoveAssignments == 1);
+            }
+        }
     }
 }

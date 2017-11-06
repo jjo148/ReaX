@@ -98,17 +98,21 @@ TEST_CASE("Reactive<AudioProcessor>",
         REQUIRE(items.isEmpty());
     }
     
-    IT("emits when setting the latency")
+    IT("emits asynchronously when setting the latency")
     {
         processor.setLatencySamples(256);
+        CHECK(items.isEmpty());
+        varxRunDispatchLoop();
         varxRequireItems(items, Empty());
         
         // Set to same value as before, shouldn't emit
         processor.setLatencySamples(256);
+        varxRunDispatchLoop();
         varxRequireItems(items, Empty());
         
         // Set to different value, should emit
         processor.setLatencySamples(512);
+        varxRunDispatchLoop();
         varxRequireItems(items, Empty(), Empty());
     }
 }

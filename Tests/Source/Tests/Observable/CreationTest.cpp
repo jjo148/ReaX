@@ -46,27 +46,27 @@ TEST_CASE("Observable::create",
             });
         }));
 
-        IT("emits when there's still a disposable")
+        IT("emits when there's still a subscription")
         {
-            auto disposable = observable->subscribe([&](String next) { items.add(next); });
+            auto subscription = observable->subscribe([&](String next) { items.add(next); });
             observable.reset();
             varxRunDispatchLoop();
 
             varxRequireItems(items, "First", "Second");
         }
 
-        IT("doesn't emit when the disposable has unsubscribed")
+        IT("doesn't emit when the subscription has unsubscribed")
         {
-            auto disposable = observable->subscribe([&](String next) { items.add(next); });
+            auto subscription = observable->subscribe([&](String next) { items.add(next); });
             observable.reset();
-            disposable.dispose();
+            subscription.unsubscribe();
             varxRunDispatchLoop();
 
             REQUIRE(items.isEmpty());
         }
     }
 
-    IT("calls onSubscribe again for each new disposable")
+    IT("calls onSubscribe again for each new subscription")
     {
         auto observable = Observable<>::create<String>([](Observer<String> observer) {
             observer.onNext("onSubscribe called");
@@ -254,7 +254,7 @@ TEST_CASE("Observable::fromValue",
         varxRequireItems(items, "Initial Item", "4");
     }
 
-    IT("notifies multiple Disposables on subscribe")
+    IT("notifies multiple Subscriptions on subscribe")
     {
         auto another = Observable<>::fromValue(value);
         varxCollectItems(another, items);
@@ -271,7 +271,7 @@ TEST_CASE("Observable::fromValue",
         varxRequireItems(items, "Initial Item", "Initial Item");
     }
 
-    IT("notifies multiple Disposables if a Value is set multiple times")
+    IT("notifies multiple Subscriptions if a Value is set multiple times")
     {
         DisposeBag disposeBag;
         observable.subscribe([&](String newValue) {
@@ -433,7 +433,7 @@ TEST_CASE("Observable::just",
         varxRequireItems(items, 18.3);
     }
 
-    IT("notifies multiple disposables")
+    IT("notifies multiple subscriptions")
     {
         Array<String> items;
         auto o = Observable<>::just<String>("Hello");
@@ -576,8 +576,8 @@ TEST_CASE("Observable covariance",
             
             int a;
             
-            bool operator==(const Base& rhs){ return (a == rhs.a); }
-            bool operator!=(const Base& rhs){ return !(*this == rhs); }
+            bool operator==(const Base& rhs) const { return (a == rhs.a); }
+            bool operator!=(const Base& rhs) const { return !(*this == rhs); }
         };
         struct Derived : Base
         {

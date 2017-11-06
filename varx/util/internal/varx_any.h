@@ -6,7 +6,7 @@ namespace detail {
  
  The type of the held value is erased. So to extract the held value (using `any::get()`), you have to provide the type of the held value.
  
- Two `any` instances are equality-comparable. If an instance `a` is compared to an instance `b`, and both hold a scalar value (e.g. int, float, bool), the scalar values are converted and compared. So `var(1.f) == var(1)`. If both hold an object, it casts `b` to the type of `a`. If that succeeds, it compares them using `a`'s `operator==`. If `a` is not equality-comparable, it checks if the addresses of `a` and `b` are equal. Otherwise, `a` and `b` are considered to be non-equal.
+ Two `any` instances are equality-comparable. If an instance `a` is compared to an instance `b` as in `a == b`, and both hold a scalar value (e.g. int, float, bool), the scalar values are converted and compared. So `var(1.f) == var(1)`. If both hold an object, it casts `b` to the type of `a`. If that succeeds, it compares them using `a`'s `operator==`. If `a` is not equality-comparable, it checks if the addresses of the wrapped values in `a` and `b` are equal. This may be false if both `a` and `b` were contructed from the same value, because the value may have been copied when constructing. Otherwise, `a` and `b` are considered to be non-equal.
  
  This class is used to create a dynamic layer between the type-safe varx::Observable and the type-safe rxcpp::observable.
 */
@@ -103,7 +103,7 @@ private:
 
     // Checks if T has operator==
     template<typename T>
-    using HasEqualityOperator = typename std::enable_if<true, decltype(std::declval<const T&>() == std::declval<const T&>(), (void)0)>::type;
+    using HasEqualityOperator = typename std::enable_if<true, decltype(std::declval<T&>() == std::declval<T&>(), (void)0)>::type;
 
     // Implements the equals() function using pointer comparison
     template<typename T, typename Enable = void>
@@ -136,7 +136,7 @@ private:
         }
     };
 
-    // The type of the held value. Needed to use the correct member of the enum.
+    // The type of the held value. Needed to use the correct member of the union.
     enum class Type {
         Int,
         Int64,
@@ -192,11 +192,9 @@ private:
             case Type::Double:
                 return static_cast<T>(value.doubleValue);
 
-            default: {
-                // Type mismatch. Throw error:
-                static const std::string RequestedType = typeid(T).name();
-                throw std::runtime_error("Error getting type from any. Requested: " + RequestedType + ". Actual: " + getTypeName() + ".");
-            }
+            default:
+                // Type mismatch
+                throw typeMismatchError<T>();
         }
     }
 
@@ -208,9 +206,15 @@ private:
         if (auto ptr = std::dynamic_pointer_cast<const T>(objectValue))
             return *ptr;
 
-        // Type mismatch. Throw error:
+        // Type mismatch
+        throw typeMismatchError<T>();
+    }
+    
+    template<typename T>
+    inline std::runtime_error typeMismatchError() const
+    {
         static const std::string RequestedType = typeid(T).name();
-        throw std::runtime_error("Error getting type from any. Requested: " + RequestedType + ". Actual: " + getTypeName() + ".");
+        return std::runtime_error("Error getting type from any. Requested: " + RequestedType + ". Actual: " + getTypeName() + ".");
     }
 
     template<typename T>
@@ -228,6 +232,8 @@ private:
     bool isScalar() const;
 
     std::string getTypeName() const;
+    
+    JUCE_LEAK_DETECTOR(any)
 };
 ///@endcond
 

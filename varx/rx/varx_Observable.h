@@ -60,7 +60,7 @@ public:
      
      The **onCompleted** function is called exactly once to notify that the Observable has generated all data and will not emit any more items.
      
-     The returned Disposable can be used to unsubscribe from the Observable, to stop receiving values from it. **You will keep receiving values until you call Disposable::dispose, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
+     The returned Subscription can be used to unsubscribe from the Observable, to stop receiving values from it. **You will keep receiving values until you call Subscription::dispose, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
      
      Example:
      
@@ -69,7 +69,7 @@ public:
              std::cout << i << " ";
          }).disposedBy(disposeBag); // Output: 4 17
      */
-    Disposable subscribe(const std::function<void(const T&)>& onNext,
+    Subscription subscribe(const std::function<void(const T&)>& onNext,
                          const std::function<void(std::exception_ptr)>& onError = Impl::TerminateOnError,
                          const std::function<void()>& onCompleted = Impl::EmptyOnCompleted) const
     {
@@ -83,10 +83,10 @@ public:
     /**
      Subscribes an Observer to an Observable. The Observer is notified whenever the Observable emits an item, or notifies an onError / onCompleted.
      
-     The returned Disposable can be used to unsubscribe the Observer, so it stops being notified by this Observable. **The Observer keeps receiving values until you call Disposable::dispose, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
+     The returned Subscription can be used to unsubscribe the Observer, so it stops being notified by this Observable. **The Observer keeps receiving values until you call Subscription::dispose, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
      */
     template<typename U>
-    typename std::enable_if<std::is_convertible<T, U>::value, Disposable>::type subscribe(const Observer<U>& observer) const
+    typename std::enable_if<std::is_convertible<T, U>::value, Subscription>::type subscribe(const Observer<U>& observer) const
     {
         // Convert items from T to U, using implicit conversion, constructors, whatever works
         auto converted = impl.map([](const any& t) {
@@ -116,7 +116,7 @@ public:
     template<typename... Ts, typename Transform>
     Observable<CallResult<Transform, T, Ts...>> combineLatest(Transform&& transform, const Observable<Ts>&... others) const
     {
-        static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable.");
+        static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable to combineLatest.");
         static_assert(sizeof...(Ts) <= Impl::MaximumArity, "Too many Observables passed to combineLatest.");
 
         const std::function<any(const any&, const typename any_args<Ts>::type&...)> untypedTransform = [transform](const any& v, const typename any_args<Ts>::type&... vs) {
@@ -381,7 +381,7 @@ public:
     template<typename... Ts, typename Transform>
     Observable<CallResult<Transform, T, Ts...>> withLatestFrom(Transform&& transform, const Observable<Ts>&... others) const
     {
-        static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable.");
+        static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable to withLatestFrom.");
         static_assert(sizeof...(Ts) <= Impl::MaximumArity, "Too many Observables passed to withLatestFrom.");
 
         const std::function<any(const any&, const typename any_args<Ts>::type&...)> untypedTransform = [transform](const any& v, const typename any_args<Ts>::type&... vs) {
@@ -409,7 +409,7 @@ public:
     template<typename... Ts, typename Transform>
     Observable<CallResult<Transform, T, Ts...>> zip(Transform&& transform, const Observable<Ts>&... others) const
     {
-        static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable.");
+        static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable to zip.");
         static_assert(sizeof...(Ts) <= Impl::MaximumArity, "Too many Observables passed to zip.");
 
         const std::function<any(const any&, const typename any_args<Ts>::type&...)> untypedTransform = [transform](const any& v, const typename any_args<Ts>::type&... vs) {
@@ -483,12 +483,12 @@ private:
     template<typename U>
     static typename std::enable_if<!IsObservable<U>::value, any>::type toAny(U&& u)
     {
-        return any(std::move(u));
+        return any(std::forward<U>(u));
     }
     template<typename U>
     static typename std::enable_if<IsObservable<U>::value, any>::type toAny(U&& u)
     {
-        return any(std::move(u.impl));
+        return any(u.impl);
     }
 
     // any_args<Ts...>::type is a parameter pack with the same length as Ts, where all types are any.
@@ -630,7 +630,7 @@ public:
     template<typename T>
     static Observable<T> range(T first, T last, unsigned int step = 1)
     {
-        static_assert(std::is_integral<T>::value, "first and last must be integral.");
+        static_assert(std::is_integral<T>::value, "first and last must be integral or floating-point.");
         return Impl::integralRange(first, last, step);
     }
     

@@ -193,23 +193,23 @@ ObservableImpl ObservableImpl::repeat(const any& item, unsigned int times)
 }
 
 
-#pragma mark - Disposable
+#pragma mark - Subscription
 
-Disposable ObservableImpl::subscribe(const std::function<void(const any&)>& onNext,
+Subscription ObservableImpl::subscribe(const std::function<void(const any&)>& onNext,
                                      const std::function<void(std::exception_ptr)>& onError,
                                      const std::function<void()>& onCompleted) const
 {
-    auto disposable = unwrap(wrapped).subscribe(onNext, onError, onCompleted);
+    auto subscription = unwrap(wrapped).subscribe(onNext, onError, onCompleted);
 
-    return Disposable(any(disposable));
+    return Subscription(any(subscription));
 }
 
-Disposable ObservableImpl::subscribe(const ObserverImpl& observer) const
+Subscription ObservableImpl::subscribe(const ObserverImpl& observer) const
 {
     auto subscriber = observer.wrapped.get<rxcpp::subscriber<any>>();
-    auto disposable = unwrap(wrapped).subscribe(subscriber);
+    auto subscription = unwrap(wrapped).subscribe(subscriber);
 
-    return Disposable(any(disposable));
+    return Subscription(any(subscription));
 }
 
 

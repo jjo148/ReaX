@@ -12,7 +12,7 @@ ReleasePool::ReleasePool()
     startTimer(1000);
 }
 
-void ReleasePool::add(const std::shared_ptr<void>& item)
+void ReleasePool::add(const std::shared_ptr<const void>& item)
 {
     if (!item)
         return;
@@ -48,7 +48,7 @@ void ReleasePool::timerCallback()
     cleanup();
 }
 
-bool ReleasePool::isUnused(const std::shared_ptr<void>& item)
+bool ReleasePool::isUnused(const std::shared_ptr<const void>& item)
 {
     // An item is unused if it's not referenced by anything except for this pool
     return (item.use_count() <= 1);

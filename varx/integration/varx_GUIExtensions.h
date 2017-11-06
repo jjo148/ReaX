@@ -1,16 +1,26 @@
 #pragma once
 
 /**
-    Adds reactive extensions to a juce::Component.
+ Adds reactive extensions to a juce::Component.
+ 
+ If you use this directly (instead of `Reactive<Component>`), you **must** ensure that the `Component` has a longer lifetime than this `ComponentExtension`!
  */
-class ComponentExtension : private juce::ComponentListener
+class ComponentExtension : private juce::ComponentListener, private juce::MouseListener
 {
     const std::unique_ptr<std::map<int, PublishSubject<juce::Colour>>> colourSubjects;
-    juce::Component& parent;
     
+protected:
+    juce::Component& parent;
+
 public:
     /// Creates a new instance for a given juce::Component
     ComponentExtension(juce::Component& parent);
+    
+    ~ComponentExtension();
+    
+//#warning Add tests
+    /// Controls the bounds of the Component, and emits an item whenever they change (relative to the Component's parent).
+    const BehaviorSubject<juce::Rectangle<int>> bounds;
 
     /// Controls the visibility of the Component, and emits an item whenever it changes.
     const BehaviorSubject<bool> visible;
@@ -20,12 +30,18 @@ public:
 
 private:
     const std::unique_ptr<DisposeBag> disposeBag;
+
+    // Overrides
+    void componentMovedOrResized(juce::Component&, bool, bool) override;
+    void componentVisibilityChanged(juce::Component&) override;
     
-    void componentVisibilityChanged(juce::Component& component) override;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ComponentExtension);
 };
 
 /**
-    Adds reactive extensions to a juce::Button.
+ Adds reactive extensions to a juce::Button.
+ 
+ If you use this directly (instead of `Reactive<Button>`), you **must** ensure that the `Button` has a longer lifetime than this `ButtonExtension`!
  */
 class ButtonExtension : public ComponentExtension, private juce::Button::Listener
 {
@@ -36,6 +52,8 @@ class ButtonExtension : public ComponentExtension, private juce::Button::Listene
 public:
     /// Creates a new instance for a given Button.
     ButtonExtension(juce::Button& parent);
+    
+    ~ButtonExtension();
 
     /// Emits an item whenever the Button is clicked.
     const Observable<Empty> clicked;
@@ -54,13 +72,17 @@ public:
 
 private:
     DisposeBag disposeBag;
-    
+
     void buttonClicked(juce::Button*) override;
     void buttonStateChanged(juce::Button*) override;
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ButtonExtension);
 };
 
 /**
     Adds reactive extensions to a juce::ImageComponent.
+ 
+ If you use this directly (instead of `Reactive<ImageComponent>`), you **must** ensure that the `ImageComponent` has a longer lifetime than this `ImageComponentExtension`!
  */
 class ImageComponentExtension : public ComponentExtension
 {
@@ -76,13 +98,17 @@ public:
 
     /// Controls the placement of the image.
     const Observer<juce::RectanglePlacement> imagePlacement;
-    
+
 private:
     DisposeBag disposeBag;
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ImageComponentExtension);
 };
 
 /**
-    Adds reactive extensions to a juce::Label.
+ Adds reactive extensions to a juce::Label.
+ 
+ If you use this directly (instead of `Reactive<Label>`), you **must** ensure that the `Label` has a longer lifetime than this `LabelExtension`!
  */
 class LabelExtension : public ComponentExtension, private juce::Label::Listener
 {
@@ -102,6 +128,8 @@ class LabelExtension : public ComponentExtension, private juce::Label::Listener
 public:
     /// Creates a new instance for a given Label.
     LabelExtension(juce::Label& parent);
+    
+    ~LabelExtension();
 
     /// Controls the Label's text. Setting a new string notifies all Label::Listeners.
     const BehaviorSubject<juce::String> text;
@@ -127,7 +155,7 @@ public:
     /// Controls whether the attachedComponent should be attached on the left.
     const Observer<bool> attachedOnLeft;
 
-    /// Controls  the minimum amount that the Label font can be squashed horizontally before it starts using ellipsis.​ **Type: float**
+    /// Controls the minimum amount that the Label font can be squashed horizontally before it starts using ellipsis.
     const Observer<float> minimumHorizontalScale;
 
     /// Controls the keyboard type to use in the TextEditor. If the editor is currently open, the type is changed for the open editor.
@@ -147,15 +175,19 @@ public:
 
 private:
     DisposeBag disposeBag;
-    
+
     void labelTextChanged(juce::Label*) override;
     void editorShown(juce::Label*, juce::TextEditor&) override;
     void editorHidden(juce::Label*, juce::TextEditor&) override;
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LabelExtension);
 };
 
 
 /**
-    Adds reactive extensions to a juce::Slider.
+ Adds reactive extensions to a juce::Slider.
+ 
+ If you use this directly (instead of `Reactive<Slider>`), you **must** ensure that the `Slider` has a longer lifetime than this `SliderExtension`!
  */
 class SliderExtension : public ComponentExtension, private juce::Slider::Listener
 {
@@ -171,7 +203,11 @@ class SliderExtension : public ComponentExtension, private juce::Slider::Listene
 
 public:
     /// Creates a new instance for a given Slider.
-    SliderExtension(juce::Slider& parent, const Observer<std::function<double(const juce::String&)>>& getValueFromText, const Observer<std::function<juce::String(double)>>& getTextFromValue);
+    SliderExtension(juce::Slider& parent,
+                    const Observer<std::function<double(const juce::String&)>>& getValueFromText,
+                    const Observer<std::function<juce::String(double)>>& getTextFromValue);
+    
+    ~SliderExtension();
 
     /// Controls the Slider value.
     const BehaviorSubject<double> value;
@@ -220,10 +256,12 @@ public:
 
 private:
     DisposeBag disposeBag;
-    
+
     void sliderValueChanged(juce::Slider*) override;
     void sliderDragStarted(juce::Slider*) override;
     void sliderDragEnded(juce::Slider*) override;
 
     static bool hasMultipleThumbs(const juce::Slider& parent);
+    
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SliderExtension);
 };

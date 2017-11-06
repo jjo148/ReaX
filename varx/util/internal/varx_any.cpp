@@ -28,7 +28,7 @@ bool any::equals(const any& other) const
 {
     if (isScalar() != other.isScalar())
         return false;
-    
+
     switch (type) {
         case Type::Int:
             return (get<int>() == other.get<int>());

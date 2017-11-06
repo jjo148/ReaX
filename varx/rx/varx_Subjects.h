@@ -67,7 +67,7 @@ private:
 };
 
 /**
- A Subject that, on every new disposable, notifies the Observer with all of the items that were emitted since the ReplaySubject was created. It then continues to emit any items that are passed to onNext.
+ A Subject that, on every new subscription, notifies the Observer with all of the items that were emitted since the ReplaySubject was created. It then continues to emit any items that are passed to onNext.
  
  For an introduction to Subjects, please refer to http://reactivex.io/documentation/subject.html.
  */
