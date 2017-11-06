@@ -25,15 +25,6 @@ public:
     explicit any(double value);
     ///@}
 
-    /// Checks if T is not any. Used to prevent nested any(any(...)) instances.
-    template<typename T>
-    using DisableIfAny = typename std::enable_if<!std::is_base_of<any, typename std::decay<T>::type>::value>::type;
-
-    /// Checks if T is a scalar type (e.g. numeric, bool, enum).
-    template<typename T>
-    using IsScalar = std::is_scalar<typename std::decay<T>::type>;
-
-
     template<typename T>
     using is_enum = std::is_enum<typename std::decay<T>::type>;
 
@@ -96,9 +87,7 @@ public:
     }
 
     /**
-     Checks whether the held value is a T. For class types, it returns true if the wrapped type is a T or an instance of a subclass of T.
-     
-     **It returns false if the wrapped type is just implicitly convertible to T.**
+     Checks whether the held value is a T. For class types, it returns true only if the wrapped type is exactly T, not a base class.
      */
     template<typename T>
     inline bool is() const

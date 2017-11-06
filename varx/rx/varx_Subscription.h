@@ -37,7 +37,7 @@ public:
     void disposedBy(DisposeBag& disposeBag) &&;
 
 private:
-    friend class detail::ObservableImpl;
+    friend struct detail::ObservableImpl;
     friend class DisposeBag;
     
     const detail::any wrapped;
