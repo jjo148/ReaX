@@ -42,7 +42,7 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" keepCustomXcodeSchemes="1" extraCompilerFlags="-Wno-comma">
+    <XCODE_MAC targetFolder="Builds/MacOSX" keepCustomXcodeSchemes="1" extraCompilerFlags="-Weverything&#10;-Wno-comma&#10;-Wno-undef&#10;-Wno-c++98-compat&#10;-Wno-c++98-compat-pedantic&#10;-Wno-old-style-cast&#10;-Wno-padded&#10;-Wno-weak-vtables&#10;-Wno-double-promotion&#10;-Wno-float-equal&#10;-Wno-global-constructors&#10;-Wno-switch-enum&#10;-Wno-implicit-fallthrough&#10;-Wno-cast-align&#10;-Wno-documentation&#10;-Wno-documentation-unknown-command&#10;-Wno-deprecated&#10;-Wno-covered-switch-default&#10;-Wno-missing-variable-declarations&#10;-Wno-date-time&#10;-Wno-reserved-id-macro&#10;-Wno-packed&#10;-Wno-shift-sign-overflow&#10;-Wno-nullable-to-nonnull-conversion&#10;-Wno-undefined-func-template&#10;-Wno-unused-exception-parameter&#10;-Wno-missing-noreturn&#10;-Wno-undefined-reinterpret-cast">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="varx-Tests"
                        osxCompatibility="10.9 SDK" cppLanguageStandard="c++11" cppLibType="libc++"

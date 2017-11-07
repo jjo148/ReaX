@@ -34,7 +34,12 @@ END_JUCE_MODULE_DECLARATION
 #include <typeinfo>
 #include <utility>
 #include <vector>
+
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wextra-semi"
 #include "util/internal/concurrentqueue.h"
+#pragma clang diagnostic pop
 
 namespace varx {
 /// Used for Observables that don't emit a meaningful value, and just notify that something has changed.

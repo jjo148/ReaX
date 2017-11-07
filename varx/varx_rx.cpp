@@ -1,7 +1,10 @@
 #include <juce_core/juce_core.h>
 #include <juce_data_structures/juce_data_structures.h>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wextra-semi"
 #include "RxCpp/Rx/v2/src/rxcpp/rx.hpp"
+#pragma clang diagnostic pop
 
 namespace varx {
 using namespace juce;

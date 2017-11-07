@@ -28,9 +28,8 @@ TEST_CASE("Observable onError",
                 observer.onNext(3);
             });
         });
-        asyncThrow = asyncThrow.map([](int i) {
+        asyncThrow = asyncThrow.map([](int i) -> int {
             throw std::runtime_error("Async Error!");
-            return i;
         });
 
         bool called = false;

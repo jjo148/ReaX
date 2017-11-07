@@ -1,7 +1,10 @@
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
 
+#define DONT_SET_USING_JUCE_NAMESPACE 1
 #include "JuceHeader.h"
+
+using namespace juce;
 
 class TestRunnerApplication : public JUCEApplication
 {

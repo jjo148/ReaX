@@ -1,10 +1,17 @@
 #pragma once
 
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wheader-hygiene"
+
 #include "JuceHeader.h"
 #include "catch.hpp"
 
 using namespace juce;
 using namespace varx;
+
+#pragma clang diagnostic pop
+
 
 #define CONTEXT(desc) SECTION(std::string(" Context: ") + desc, "")
 #define IT(desc) SECTION(std::string("       It ") + desc, "")

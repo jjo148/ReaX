@@ -20,7 +20,7 @@ private:
     
     void valueChanged(juce::Value&) override;
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ValueExtension);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ValueExtension)
 };
 
 /**
@@ -51,7 +51,7 @@ private:
     void audioProcessorParameterChanged(juce::AudioProcessor*, int, float) override {}
     void audioProcessorChanged(juce::AudioProcessor*) override;
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioProcessorExtension);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioProcessorExtension)
 };
 
 /**
@@ -81,5 +81,5 @@ private:
     juce::AudioProcessorValueTreeState& parent;
     DisposeBag disposeBag;
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioProcessorValueTreeStateExtension);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioProcessorValueTreeStateExtension)
 };

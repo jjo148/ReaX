@@ -35,7 +35,7 @@ private:
     void componentMovedOrResized(juce::Component&, bool, bool) override;
     void componentVisibilityChanged(juce::Component&) override;
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ComponentExtension);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ComponentExtension)
 };
 
 /**
@@ -76,7 +76,7 @@ private:
     void buttonClicked(juce::Button*) override;
     void buttonStateChanged(juce::Button*) override;
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ButtonExtension);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ButtonExtension)
 };
 
 /**
@@ -102,7 +102,7 @@ public:
 private:
     DisposeBag disposeBag;
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ImageComponentExtension);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ImageComponentExtension)
 };
 
 /**
@@ -180,7 +180,7 @@ private:
     void editorShown(juce::Label*, juce::TextEditor&) override;
     void editorHidden(juce::Label*, juce::TextEditor&) override;
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LabelExtension);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LabelExtension)
 };
 
 
@@ -263,5 +263,5 @@ private:
 
     static bool hasMultipleThumbs(const juce::Slider& parent);
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SliderExtension);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SliderExtension)
 };
