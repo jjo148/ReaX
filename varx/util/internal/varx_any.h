@@ -16,7 +16,7 @@ class any
 public:
     ///@{
     /**
-     Creates an instance from a primitive value.
+     Creates an instance from an arithmetic value.
      */
     explicit any(int value);
     explicit any(juce::int64 value);
@@ -25,22 +25,46 @@ public:
     explicit any(double value);
     ///@}
 
-    /// Checks if T is not any. Used to prevent nested any(any(...)) instances.
     template<typename T>
-    using DisableIfAny = typename std::enable_if<!std::is_base_of<any, typename std::decay<T>::type>::value>::type;
+    using is_enum = std::is_enum<typename std::decay<T>::type>;
 
-    /// Checks if T is a scalar type (e.g. numeric, bool, enum).
     template<typename T>
-    using IsScalar = std::is_scalar<typename std::decay<T>::type>;
+    using is_pointer = std::is_pointer<typename std::decay<T>::type>;
+
+    template<typename T>
+    using is_arithmetic = std::is_arithmetic<typename std::decay<T>::type>;
+
+    template<typename T>
+    using is_class = std::is_class<typename std::decay<T>::type>;
+
+    template<typename T>
+    using is_any = std::is_base_of<any, typename std::decay<T>::type>;
+
+
+    template<typename T, typename std::enable_if<is_enum<T>::value>::type...>
+    explicit any(T&& value)
+    : type(Type::Enum)
+    {
+        this->value.enumValue = static_cast<juce::int64>(value);
+    }
+
+    template<typename T, typename std::enable_if<is_pointer<T>::value>::type...>
+    explicit any(T&& value)
+    : type(Type::RawPointer)
+    {
+        this->value.rawPointerValue = value;
+    }
 
     /**
      Creates a new instance, wrapping an arbitrary copy- or move-constructible type.
      
-     If you use this constructor, make sure that the value you're passing in actually has the type that you try to `get()` later on. Example: You have a type `T` that is implicitly convertible to `U`, but not a subclass. If you pass in a `T` here, and then call `get<U>()`, it will throw an exception. One way to ensure this is to use `any(static_cast<U>(myT))`.
+     If you use this constructor, make sure that the value you're passing in actually has the type that you try to `get<T>()` later on. One way to ensure this is to use `any(static_cast<T>(myT))`.
      */
-    template<typename T, typename Enable = DisableIfAny<T>>
+    template<typename T, typename std::enable_if<is_class<T>::value && !is_any<T>::value>::type...>
     explicit any(T&& value)
-    : any(std::forward<T>(value), IsScalar<T>())
+    : type(Type::Object),
+      value({}),
+      objectValue(std::make_shared<EquatableTypedObject<typename std::decay<T>::type>>(std::forward<T>(value)))
     {}
 
     /// Default move constructor
@@ -56,18 +80,19 @@ public:
     template<typename T>
     inline T get() const
     {
-        return _get<T>(IsScalar<T>());
+        if (is<T>())
+            return _get<T>();
+        else
+            throw typeMismatchError<T>();
     }
 
     /**
-     Checks whether the held value is a T. For class types, it returns true if the wrapped type is a T or an instance of a subclass of T.
-     
-     **It returns false if the wrapped type is just implicitly convertible to T.**
+     Checks whether the held value is a T. For class types, it returns true only if the wrapped type is exactly T, not a base class.
      */
     template<typename T>
     inline bool is() const
     {
-        return _is<T>(IsScalar<T>());
+        return _is<T>();
     }
 
     /**
@@ -128,7 +153,7 @@ private:
 
         bool equals(const Object& other) const override
         {
-            // If other contains a T, compare the T portion of this and other:
+            // If other contains a T, compare them:
             if (auto ptr = dynamic_cast<const EquatableTypedObject<T>*>(&other))
                 return (TypedObject<T>::t == ptr->t);
 
@@ -145,6 +170,8 @@ private:
         Bool,
         Float,
         Double,
+        RawPointer,
+        Enum,
         Object
     };
 
@@ -158,41 +185,41 @@ private:
         bool boolValue;
         float floatValue;
         double doubleValue;
+        void* rawPointerValue;
+        juce::int64 enumValue;
     } value;
 
     // The held value, if it's non-scalar.
     std::shared_ptr<Object> objectValue;
 
-    // Constructor for scalar values that aren't handled by any of the specialized public constructors. For example: enums.
-    template<typename T>
-    any(T&& value, /* is_scalar: */ std::true_type)
-    : any(static_cast<juce::int64>(value))
-    {}
 
-    // Constructor for non-scalar values
-    template<typename T>
-    any(T&& value, /* is_scalar: */ std::false_type)
-    : type(Type::Object),
-      value({}),
-      objectValue(std::make_shared<EquatableTypedObject<typename std::decay<T>::type>>(std::forward<T>(value)))
-    {}
+    template<typename T, typename std::enable_if<is_enum<T>::value>::type...>
+    inline T _get() const
+    {
+        return static_cast<T>(value.enumValue);
+    }
 
-    // Getter for scalar values (including enums)
-    template<typename T>
-    inline T _get(/* is_scalar: */ std::true_type) const
+    template<typename T, typename std::enable_if<is_pointer<T>::value>::type...>
+    inline T _get() const
+    {
+        return static_cast<T>(value.rawPointerValue);
+    }
+
+    template<typename T, typename std::enable_if<is_arithmetic<T>::value>::type...>
+    inline T _get() const
     {
         switch (type) {
             case Type::Int:
-                return static_cast<T>(value.intValue);
+                return value.intValue;
             case Type::Int64:
                 // int64 can be converted to int
                 return static_cast<T>(value.int64Value);
             case Type::Bool:
-                return static_cast<T>(value.boolValue);
+                return value.boolValue;
             case Type::Float:
-                return static_cast<T>(value.floatValue);
+                return value.floatValue;
             case Type::Double:
-                return static_cast<T>(value.doubleValue);
+                return value.doubleValue;
 
             default:
                 // Type mismatch
@@ -200,16 +227,12 @@ private:
         }
     }
 
-    // Getter for non-scalar values
-    template<typename T>
-    inline T _get(/* is_scalar: */ std::false_type) const
+    // Getter for object values
+    template<typename T, typename std::enable_if<is_class<T>::value>::type...>
+    inline T _get() const
     {
-        // Try to cast object value to T
-        if (auto ptr = std::dynamic_pointer_cast<const TypedObject<T>>(objectValue))
-            return ptr->t;
-
-        // Type mismatch
-        throw typeMismatchError<T>();
+        // Type checking was already done in get()
+        return getObjectPointer<T>()->t;
     }
 
     template<typename T>
@@ -219,19 +242,37 @@ private:
         return std::runtime_error("Error getting type from any. Requested: " + RequestedType + ". Actual: " + getTypeName() + ".");
     }
 
-    template<typename T>
-    inline bool _is(/* is_scalar: */ std::true_type) const
+    template<typename T, typename std::enable_if<is_enum<T>::value>::type...>
+    inline bool _is() const
     {
-        return isScalar();
+        return (type == Type::Enum);
+    }
+
+    template<typename T, typename std::enable_if<is_pointer<T>::value>::type...>
+    inline bool _is() const
+    {
+        return (type == Type::RawPointer);
+    }
+
+    template<typename T, typename std::enable_if<is_arithmetic<T>::value>::type...>
+    inline bool _is() const
+    {
+        return isArithmetic();
+    }
+
+    template<typename T, typename std::enable_if<is_class<T>::value>::type...>
+    inline bool _is() const
+    {
+        return (getObjectPointer<T>() != nullptr);
     }
 
     template<typename T>
-    inline bool _is(/* is_scalar: */ std::false_type) const
+    inline const TypedObject<T>* getObjectPointer() const
     {
-        return (!isScalar() && std::dynamic_pointer_cast<const TypedObject<T>>(objectValue) != nullptr);
+        return std::dynamic_pointer_cast<const TypedObject<T>>(objectValue).get();
     }
 
-    bool isScalar() const;
+    bool isArithmetic() const;
 
     std::string getTypeName() const;
 

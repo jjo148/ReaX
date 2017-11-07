@@ -19,7 +19,7 @@ TEST_CASE("Subscription",
 
     IT("received items while being subscribed")
     {
-        varxRunDispatchLoop();
+        varxRunDispatchLoopUntil(!items.isEmpty());
 
         varxRequireItems(items, "Item");
     }
@@ -27,7 +27,7 @@ TEST_CASE("Subscription",
     IT("does not receive items after disposing")
     {
         subscription->unsubscribe();
-        varxRunDispatchLoop();
+        varxRunDispatchLoop(20);
 
         REQUIRE(items.isEmpty());
     }
@@ -36,7 +36,7 @@ TEST_CASE("Subscription",
     {
         Subscription other = std::move(*subscription);
         other.unsubscribe();
-        varxRunDispatchLoop();
+        varxRunDispatchLoop(20);
 
         REQUIRE(items.isEmpty());
     }
@@ -44,7 +44,7 @@ TEST_CASE("Subscription",
     IT("does not unsubscribe when being destroyed")
     {
         subscription.reset();
-        varxRunDispatchLoop();
+        varxRunDispatchLoopUntil(!items.isEmpty());
 
         varxRequireItems(items, "Item");
     }
@@ -52,7 +52,7 @@ TEST_CASE("Subscription",
     IT("continues to receive items after the Observable is gone")
     {
         observable.reset();
-        varxRunDispatchLoop();
+        varxRunDispatchLoopUntil(!items.isEmpty());
 
         varxRequireItems(items, "Item");
     }
@@ -84,7 +84,7 @@ TEST_CASE("DisposeBag",
 
     IT("received items while not destroyed")
     {
-        varxRunDispatchLoop();
+        varxRunDispatchLoopUntil(!items.isEmpty());
 
         varxRequireItems(items, "Item");
     }
@@ -92,7 +92,7 @@ TEST_CASE("DisposeBag",
     IT("does not receive items after being destroyed")
     {
         disposeBag.reset();
-        varxRunDispatchLoop();
+        varxRunDispatchLoop(20);
 
         REQUIRE(items.isEmpty());
     }
@@ -107,7 +107,7 @@ TEST_CASE("DisposeBag",
         }
 
         disposeBag.reset();
-        varxRunDispatchLoop();
+        varxRunDispatchLoop(20);
 
         REQUIRE(items.isEmpty());
     }

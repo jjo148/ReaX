@@ -293,7 +293,7 @@ TEST_CASE("Interaction between Observable::map and Observable::switchOnNext",
         CHECK(items.isEmpty());
 
         source.reset();
-        varxRunDispatchLoop();
+        varxRunDispatchLoopUntil(!items.isEmpty());
 
         // The item should be emitted, although there's no reference to the source anymore
         varxRequireItems(items, 17 * 3);

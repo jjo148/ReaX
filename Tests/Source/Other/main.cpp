@@ -8,12 +8,23 @@ class TestRunnerApplication : public JUCEApplication
 public:
     void initialise(const String& commandLine) override
     {
+        // Show debug output on windows (Visual Studio):
+#if JUCE_DEBUG && JUCE_WINDOWS
+        AllocConsole();
+        freopen("CONOUT$", "w", stdout);
+        freopen("CONOUT$", "w", stderr);
+#endif
         Catch::ConfigData config;
         //		config.shouldDebugBreak = true;
 
         Catch::Session session;
         session.useConfigData(config);
         session.run();
+
+        // Keep debug output window open on exit (Visual Studio):
+#if JUCE_DEBUG && JUCE_WINDOWS
+		system("pause");
+#endif
 
         quit();
     }

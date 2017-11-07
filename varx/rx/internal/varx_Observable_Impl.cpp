@@ -289,7 +289,8 @@ ObservableImpl ObservableImpl::elementAt(int index) const
 
 ObservableImpl ObservableImpl::filter(const std::function<bool(const any&)>& predicate) const
 {
-    return wrap(unwrap(wrapped).filter(predicate));
+    // On Visual Studio, the predicate must be wrapped in a lambda, otherwise RxCpp fails to compile
+    return wrap(unwrap(wrapped).filter([predicate](const any& value) { return predicate(value); }));
 }
 
 ObservableImpl ObservableImpl::flatMap(const std::function<ObservableImpl(const any&)>& f) const
@@ -364,7 +365,8 @@ ObservableImpl ObservableImpl::takeUntil(const ObservableImpl& other) const
 
 ObservableImpl ObservableImpl::takeWhile(const std::function<bool(const any&)>& predicate) const
 {
-    return wrap(unwrap(wrapped).take_while(predicate));
+    // On Visual Studio, the predicate must be wrapped in a lambda, otherwise RxCpp fails to compile
+    return wrap(unwrap(wrapped).take_while([predicate](const any& value) { return predicate(value); }));
 }
 
 ObservableImpl ObservableImpl::withLatestFrom(std::initializer_list<ObservableImpl> others, const any& transform) const {
