@@ -33,7 +33,7 @@ AudioProcessorExtension::~AudioProcessorExtension()
     parent.removeListener(this);
 }
 
-void AudioProcessorExtension::audioProcessorChanged(AudioProcessor* processor)
+void AudioProcessorExtension::audioProcessorChanged(AudioProcessor*)
 {
     // If there's already an item in the queue, it will be emitted soon. So there's no need to add another one.
     _processorChanged.onNext(Empty(), CongestionPolicy::DropNewest);

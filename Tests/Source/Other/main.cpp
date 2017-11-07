@@ -9,7 +9,7 @@ using namespace juce;
 class TestRunnerApplication : public JUCEApplication
 {
 public:
-    void initialise(const String& commandLine) override
+    void initialise(const String&) override
     {
         // Show debug output on windows (Visual Studio):
 #if JUCE_DEBUG && JUCE_WINDOWS
@@ -40,4 +40,9 @@ public:
     bool moreThanOneInstanceAllowed() override { return false; }
 };
 
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#pragma clang diagnostic ignored "-Wmissing-prototypes"
 START_JUCE_APPLICATION(TestRunnerApplication)
+#pragma clang diagnostic pop

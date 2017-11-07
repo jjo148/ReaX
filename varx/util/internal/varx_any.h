@@ -210,16 +210,16 @@ private:
     {
         switch (type) {
             case Type::Int:
-                return value.intValue;
+                return static_cast<T>(value.intValue);
             case Type::Int64:
                 // int64 can be converted to int
                 return static_cast<T>(value.int64Value);
             case Type::Bool:
-                return value.boolValue;
+                return static_cast<T>(value.boolValue);
             case Type::Float:
-                return value.floatValue;
+                return static_cast<T>(value.floatValue);
             case Type::Double:
-                return value.doubleValue;
+                return static_cast<T>(value.doubleValue);
 
             default:
                 // Type mismatch

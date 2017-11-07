@@ -188,7 +188,7 @@ void LabelExtension::editorShown(Label* parent, TextEditor&)
     _textEditor.onNext(parent->getCurrentTextEditor());
 }
 
-void LabelExtension::editorHidden(Label* parent, TextEditor&)
+void LabelExtension::editorHidden(Label*, TextEditor&)
 {
     if (showEditor.getLatestItem())
         showEditor.onNext(false);

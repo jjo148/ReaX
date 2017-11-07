@@ -1,15 +1,14 @@
 #pragma once
 
+#include "catch.hpp"
+
+#define DONT_SET_USING_JUCE_NAMESPACE 1
+#include "JuceHeader.h"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wheader-hygiene"
-
-#include "JuceHeader.h"
-#include "catch.hpp"
-
 using namespace juce;
 using namespace varx;
-
 #pragma clang diagnostic pop
 
 

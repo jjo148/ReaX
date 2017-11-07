@@ -63,7 +63,7 @@ struct ObservableImpl
     juce::Array<any> toArray(const std::function<void(std::exception_ptr)>& onError) const;
 
     // Default error/completion handlers
-    static void TerminateOnError(std::exception_ptr);
+    [[ noreturn ]] static void TerminateOnError(std::exception_ptr);
     static void EmptyOnCompleted();
     
     // The maximum number of parameters for operators like combineLatest, merge, zip, etc., NOT including the observable it is called on

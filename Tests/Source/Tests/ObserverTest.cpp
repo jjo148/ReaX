@@ -77,7 +77,7 @@ TEST_CASE("Observer contravariance",
             Array<var> items;
             Observer<float> o = vars;
             varxCollectItems(vars, items);
-            o.onNext(14.57);
+            o.onNext(14.57f);
             
             varxRequireItems(items, 14.57f);
         }

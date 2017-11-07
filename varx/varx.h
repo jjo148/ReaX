@@ -16,6 +16,8 @@ END_JUCE_MODULE_DECLARATION
 
 #pragma once
 
+#include "util/internal/concurrentqueue.h"
+
 #include <juce_core/juce_core.h>
 #include <juce_data_structures/juce_data_structures.h>
 #include <juce_events/juce_events.h>
@@ -35,11 +37,22 @@ END_JUCE_MODULE_DECLARATION
 #include <utility>
 #include <vector>
 
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wextra-semi"
-#include "util/internal/concurrentqueue.h"
-#pragma clang diagnostic pop
+// Use stricter warnings (basically all except for a few):
+#pragma clang diagnostic warning "-Weverything"
+#pragma clang diagnostic ignored "-Wc++98-compat"
+#pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
+#pragma clang diagnostic ignored "-Wshadow"
+#pragma clang diagnostic ignored "-Wshadow-ivar"
+#pragma clang diagnostic ignored "-Wpadded"
+#pragma clang diagnostic ignored "-Wswitch-enum"
+#pragma clang diagnostic ignored "-Wexit-time-destructors"
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#pragma clang diagnostic ignored "-Wundef"
+#pragma clang diagnostic ignored "-Wdocumentation"
+#pragma clang diagnostic ignored "-Wdocumentation-unknown-command"
+#pragma clang diagnostic ignored "-Wweak-vtables"
+#pragma clang diagnostic ignored "-Wdouble-promotion"
+#pragma clang diagnostic ignored "-Wfloat-equal"
 
 namespace varx {
 /// Used for Observables that don't emit a meaningful value, and just notify that something has changed.
