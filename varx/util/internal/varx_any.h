@@ -75,16 +75,61 @@ public:
 
     /// Default copy assignment operator. If the wrapped value is scalar, it is copied. Otherwise, it is shared by reference.
     any& operator=(const any&) = default;
-
+    
+    ///@{
     /// Extracts the held value as a T. Throws an exception if the held value is not a T.
-    template<typename T>
+    template<typename T, typename std::enable_if<is_enum<T>::value>::type...>
     inline T get() const
     {
-        if (is<T>())
-            return _get<T>();
-        else
+        if (!is<T>())
             throw typeMismatchError<T>();
+        
+        return static_cast<T>(value.enumValue);
     }
+    
+    template<typename T, typename std::enable_if<is_pointer<T>::value>::type...>
+    inline T get() const
+    {
+        if (!is<T>())
+            throw typeMismatchError<T>();
+        
+        return static_cast<T>(value.rawPointerValue);
+    }
+    
+    template<typename T, typename std::enable_if<is_arithmetic<T>::value>::type...>
+    inline T get() const
+    {
+        if (!is<T>())
+            throw typeMismatchError<T>();
+        
+        switch (type) {
+            case Type::Int:
+                return static_cast<T>(value.intValue);
+            case Type::Int64:
+                // int64 can be converted to int
+                return static_cast<T>(value.int64Value);
+            case Type::Bool:
+                return static_cast<T>(value.boolValue);
+            case Type::Float:
+                return static_cast<T>(value.floatValue);
+            case Type::Double:
+                return static_cast<T>(value.doubleValue);
+                
+            default:
+                // Type mismatch
+                throw typeMismatchError<T>();
+        }
+    }
+    
+    template<typename T, typename std::enable_if<is_class<T>::value>::type...>
+    inline const T& get() const
+    {
+        if (!is<T>())
+            throw typeMismatchError<T>();
+        
+        return getObjectPointer<T>()->t;
+    }
+    ///@}
 
     /**
      Checks whether the held value is a T. For class types, it returns true only if the wrapped type is exactly T, not a base class.
@@ -191,49 +236,6 @@ private:
 
     // The held value, if it's non-scalar.
     std::shared_ptr<Object> objectValue;
-
-
-    template<typename T, typename std::enable_if<is_enum<T>::value>::type...>
-    inline T _get() const
-    {
-        return static_cast<T>(value.enumValue);
-    }
-
-    template<typename T, typename std::enable_if<is_pointer<T>::value>::type...>
-    inline T _get() const
-    {
-        return static_cast<T>(value.rawPointerValue);
-    }
-
-    template<typename T, typename std::enable_if<is_arithmetic<T>::value>::type...>
-    inline T _get() const
-    {
-        switch (type) {
-            case Type::Int:
-                return static_cast<T>(value.intValue);
-            case Type::Int64:
-                // int64 can be converted to int
-                return static_cast<T>(value.int64Value);
-            case Type::Bool:
-                return static_cast<T>(value.boolValue);
-            case Type::Float:
-                return static_cast<T>(value.floatValue);
-            case Type::Double:
-                return static_cast<T>(value.doubleValue);
-
-            default:
-                // Type mismatch
-                throw typeMismatchError<T>();
-        }
-    }
-
-    // Getter for object values
-    template<typename T, typename std::enable_if<is_class<T>::value>::type...>
-    inline T _get() const
-    {
-        // Type checking was already done in get()
-        return getObjectPointer<T>()->t;
-    }
 
     template<typename T>
     inline std::runtime_error typeMismatchError() const

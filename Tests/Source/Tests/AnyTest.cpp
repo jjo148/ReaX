@@ -320,6 +320,18 @@ TEST_CASE("any",
                 REQUIRE(counters.numCopyAssignments == 0);
                 REQUIRE(counters.numMoveAssignments == 0);
             }
+            
+            IT("doesn't copy when getting the object value")
+            {
+                // Should return by const reference
+                const CopyAndMoveConstructible& ref = test.get<CopyAndMoveConstructible>();
+                
+                // Wrapped value should not be copied
+                REQUIRE(ref.counters->numCopyConstructions == 0);
+                REQUIRE(ref.counters->numMoveConstructions == 1);
+                REQUIRE(ref.counters->numCopyAssignments == 0);
+                REQUIRE(ref.counters->numMoveAssignments == 0);
+            }
         }
     }
 }

@@ -37,22 +37,10 @@ END_JUCE_MODULE_DECLARATION
 #include <utility>
 #include <vector>
 
-// Use stricter warnings (basically all except for a few):
-#pragma clang diagnostic warning "-Weverything"
-#pragma clang diagnostic ignored "-Wc++98-compat"
-#pragma clang diagnostic ignored "-Wc++98-compat-pedantic"
-#pragma clang diagnostic ignored "-Wshadow"
-#pragma clang diagnostic ignored "-Wshadow-ivar"
-#pragma clang diagnostic ignored "-Wpadded"
-#pragma clang diagnostic ignored "-Wswitch-enum"
-#pragma clang diagnostic ignored "-Wexit-time-destructors"
-#pragma clang diagnostic ignored "-Wglobal-constructors"
-#pragma clang diagnostic ignored "-Wundef"
-#pragma clang diagnostic ignored "-Wdocumentation"
-#pragma clang diagnostic ignored "-Wdocumentation-unknown-command"
-#pragma clang diagnostic ignored "-Wweak-vtables"
-#pragma clang diagnostic ignored "-Wdouble-promotion"
-#pragma clang diagnostic ignored "-Wfloat-equal"
+// Enable stricter warnings
+#include "util/internal/varx_ExtraWarnings.h"
+#pragma clang diagnostic push
+VARX_ENABLE_EXTRA_WARNINGS
 
 namespace varx {
 /// Used for Observables that don't emit a meaningful value, and just notify that something has changed.
@@ -79,3 +67,5 @@ typedef std::tuple<> Empty;
 #include "integration/varx_ReactiveGUI.h"
 #include "integration/varx_ReactiveModel.h"
 }
+
+#pragma clang diagnostic pop

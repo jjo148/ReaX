@@ -110,7 +110,7 @@ public:
     template<typename... Ts>
     Observable<std::tuple<T, Ts...>> combineLatest(const Observable<Ts>&... others) const
     {
-        return combineLatest(std::make_tuple<T, Ts...>, others...);
+        return combineLatest(std::make_tuple<const T&, const Ts&...>, others...);
     }
 
     template<typename... Ts, typename Transform>
@@ -375,7 +375,7 @@ public:
     template<typename... Ts>
     Observable<std::tuple<T, Ts...>> withLatestFrom(const Observable<Ts>&... others) const
     {
-        return withLatestFrom(std::make_tuple<T, Ts...>, others...);
+        return withLatestFrom(std::make_tuple<const T&, const Ts&...>, others...);
     }
 
     template<typename... Ts, typename Transform>
@@ -403,7 +403,7 @@ public:
     template<typename... Ts>
     Observable<std::tuple<T, Ts...>> zip(const Observable<Ts>&... others) const
     {
-        return zip(std::make_tuple<T, Ts...>, others...);
+        return zip(std::make_tuple<const T&, const Ts&...>, others...);
     }
 
     template<typename... Ts, typename Transform>
@@ -481,12 +481,12 @@ private:
 
     // Calls the any() constructor, but for Observable<T> it stores the ObservableImpl
     template<typename U>
-    static typename std::enable_if<!IsObservable<U>::value, any>::type toAny(U&& u)
+    static typename std::enable_if<!IsObservable<U>::value, any>::type toAny(const U& u)
     {
-        return any(std::forward<U>(u));
+        return any(u);
     }
     template<typename U>
-    static typename std::enable_if<IsObservable<U>::value, any>::type toAny(U&& u)
+    static typename std::enable_if<IsObservable<U>::value, any>::type toAny(const U& u)
     {
         return any(u.impl);
     }

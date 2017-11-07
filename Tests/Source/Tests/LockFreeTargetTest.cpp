@@ -142,7 +142,7 @@ TEST_CASE("LockFreeTarget",
         {
             target.onNext(CopyAndMoveConstructible(&counters));
             
-            CHECK(counters.numCopyConstructions == 2);
+            CHECK(counters.numCopyConstructions == 1);
             CHECK(counters.numMoveConstructions == 1);
             CHECK(counters.numCopyAssignments == 0);
             REQUIRE(counters.numMoveAssignments == 0);
@@ -152,7 +152,7 @@ TEST_CASE("LockFreeTarget",
                 CopyAndMoveConstructible value(nullptr);
                 target.tryDequeueAll(value);
                 
-                CHECK(counters.numCopyConstructions == 2);
+                CHECK(counters.numCopyConstructions == 1);
                 CHECK(counters.numMoveConstructions == 1);
                 CHECK(counters.numCopyAssignments == 0);
                 REQUIRE(counters.numMoveAssignments == 1);
