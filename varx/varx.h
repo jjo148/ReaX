@@ -57,7 +57,6 @@ typedef std::tuple<> Empty;
 #include "rx/internal/varx_Subjects_Impl.h"
 #include "rx/varx_Subjects.h"
 
-#include "util/internal/varx_ReleasePool.h"
 #include "util/varx_LockFreeSource.h"
 #include "util/varx_LockFreeTarget.h"
 

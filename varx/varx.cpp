@@ -13,7 +13,6 @@ using namespace juce;
 #include "integration/varx_ReactiveModel.cpp"
 
 #include "util/internal/varx_any.cpp"
-#include "util/internal/varx_ReleasePool.cpp"
 }
 
 #pragma clang diagnostic pop
