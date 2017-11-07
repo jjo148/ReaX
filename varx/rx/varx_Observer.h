@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- Retrieves items. You can call onNext to notify the Observer with a new item.
+ Retrieves values. You can call onNext to notify the Observer with a new value.
  
  An Observer does **not** automatically call onCompleted when it's destroyed.
  
@@ -12,15 +12,15 @@ class Observer
 {
 public:
     ///@{
-    /// Notifies the Observer with a new item.
-    void onNext(const T& item) const
+    /// Notifies the Observer with a new value.
+    void onNext(const T& value) const
     {
-        impl.onNext(convert ? convert(detail::any(item)) : detail::any(item));
+        impl.onNext(convert ? convert(detail::any(value)) : detail::any(value));
     }
     
-    void onNext(T&& item) const
+    void onNext(T&& value) const
     {
-        impl.onNext(convert ? convert(detail::any(std::move(item))) : detail::any(std::move(item)));
+        impl.onNext(convert ? convert(detail::any(std::move(value))) : detail::any(std::move(value)));
     }
     ///@}
 
@@ -39,7 +39,7 @@ public:
     /// Contravariant constructor: If T is convertible to U, an Observer<U> is convertible to an Observer<T>. 
     template<typename U>
     Observer(const Observer<U>& other, typename std::enable_if<std::is_convertible<T, U>::value>::type* = 0)
-    : Observer(other.impl, [](const detail::any& item){ return detail::any(static_cast<U>(item.get<T>())); })
+    : Observer(other.impl, [](const detail::any& value){ return detail::any(static_cast<U>(value.get<T>())); })
     {}
 
 protected:

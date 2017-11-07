@@ -16,7 +16,7 @@ ValueExtension::ValueExtension(const Value& inputValue)
 void ValueExtension::valueChanged(Value&)
 {
     // Only emit a new value if it has actually changed
-    if (value.getValue() != subject.getLatestItem())
+    if (value.getValue() != subject.getValue())
         subject.onNext(value.getValue());
 }
 
@@ -35,7 +35,7 @@ AudioProcessorExtension::~AudioProcessorExtension()
 
 void AudioProcessorExtension::audioProcessorChanged(AudioProcessor*)
 {
-    // If there's already an item in the queue, it will be emitted soon. So there's no need to add another one.
+    // If there's already a value in the queue, it will be emitted soon. So there's no need to add another one.
     _processorChanged.onNext(Empty(), CongestionPolicy::DropNewest);
 }
 

@@ -17,7 +17,7 @@ SubjectImpl SubjectImpl::MakeReplaySubjectImpl(size_t bufferSize)
     return SubjectImpl(any(subject), any(subject->get_subscriber().as_dynamic()), any(subject->get_observable().as_dynamic()));
 }
 
-any SubjectImpl::getLatestItem() const
+any SubjectImpl::getValue() const
 {
     return wrapped.get<std::shared_ptr<rxcpp::subjects::behavior<any>>>()->get_value();
 }

@@ -18,11 +18,11 @@ public:
     
     ~ComponentExtension();
     
-//#warning Add tests
-    /// Controls the bounds of the Component, and emits an item whenever they change (relative to the Component's parent).
+#pragma message("Add tests")
+    /// Controls the bounds of the Component, and emits a value whenever they change (relative to the Component's parent).
     const BehaviorSubject<juce::Rectangle<int>> bounds;
 
-    /// Controls the visibility of the Component, and emits an item whenever it changes.
+    /// Controls the visibility of the Component, and emits a value whenever it changes.
     const BehaviorSubject<bool> visible;
 
     /// Returns an Observer that controls the colour for the given colourId.
@@ -55,7 +55,7 @@ public:
     
     ~ButtonExtension();
 
-    /// Emits an item whenever the Button is clicked.
+    /// Emits a value whenever the Button is clicked.
     const Observable<Empty> clicked;
 
     /// Controls the ButtonState.
@@ -218,10 +218,10 @@ public:
     /// Controls the maximum Slider value.
     const Observer<double> maximum;
 
-    /// Control the lowest value in a Slider with multiple thumbs. **Do not push items if the Slider has just one thumb.**
+    /// Control the lowest value in a Slider with multiple thumbs. **Do not push values if the Slider has just one thumb.**
     const BehaviorSubject<double> minValue;
 
-    /// Control the highest value in a Slider with multiple thumbs.​ **Do not push items if the Slider has just one thumb.**
+    /// Control the highest value in a Slider with multiple thumbs.​ **Do not push values if the Slider has just one thumb.**
     const BehaviorSubject<double> maxValue;
 
     /// Controls the default value of the slider.​ Call onNext(DBL_MAX) to prevent double-clicking from resetting the slider.

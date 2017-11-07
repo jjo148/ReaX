@@ -58,7 +58,7 @@ inline rxcpp::observable<any> unwrap(const any& wrapped)
     if (wrapped.is<rxcpp::observable<any>>())
         return wrapped.get<rxcpp::observable<any>>();
     else
-        return wrapped.get<std::shared_ptr<ValueObservable>>()->getObservable().map([](const var& item) { return any(item); });
+        return wrapped.get<std::shared_ptr<ValueObservable>>()->getObservable().map([](const var& value) { return any(value); });
 }
 
 template<typename T>
@@ -69,13 +69,13 @@ rxcpp::observable<any> _range(const T& first, const T& last, unsigned int step)
 
     auto o = rxcpp::observable<>::range<T>(first, last, step, rxcpp::identity_immediate());
 
-    return o.map([](const T& item) { return any(item); });
+    return o.map([](const T& value) { return any(value); });
 }
 
-template<typename Transform, typename... Os>
-rxcpp::observable<any> _combineLatest(const any& wrapped, Transform&& transform, Os&&... observables)
+template<typename Function, typename... Os>
+rxcpp::observable<any> _combineLatest(const any& wrapped, Function&& function, Os&&... observables)
 {
-    return unwrap(wrapped).combine_latest(transform, unwrap(observables.wrapped)...);
+    return unwrap(wrapped).combine_latest(function, unwrap(observables.wrapped)...);
 }
 
 template<typename... Os>
@@ -90,22 +90,22 @@ rxcpp::observable<any> _merge(const any& wrapped, Os&&... observables)
     return unwrap(wrapped).merge(unwrap(observables.wrapped)...);
 }
 
-template<typename... Items>
-rxcpp::observable<any> _startWith(const any& wrapped, Items&&... items)
+template<typename... Values>
+rxcpp::observable<any> _startWith(const any& wrapped, Values&&... values)
 {
-    return unwrap(wrapped).start_with(items...);
+    return unwrap(wrapped).start_with(values...);
 }
 
-template<typename Transform, typename... Os>
-rxcpp::observable<any> _withLatestFrom(const any& wrapped, Transform&& transform, Os&&... observables)
+template<typename Function, typename... Os>
+rxcpp::observable<any> _withLatestFrom(const any& wrapped, Function&& function, Os&&... observables)
 {
-    return unwrap(wrapped).with_latest_from(transform, unwrap(observables.wrapped)...);
+    return unwrap(wrapped).with_latest_from(function, unwrap(observables.wrapped)...);
 }
 
-template<typename Transform, typename... Os>
-rxcpp::observable<any> _zip(const any& wrapped, Transform&& transform, Os&&... observables)
+template<typename Function, typename... Os>
+rxcpp::observable<any> _zip(const any& wrapped, Function&& function, Os&&... observables)
 {
-    return unwrap(wrapped).zip(transform, unwrap(observables.wrapped)...);
+    return unwrap(wrapped).zip(function, unwrap(observables.wrapped)...);
 }
 }
 
@@ -141,9 +141,9 @@ ObservableImpl ObservableImpl::error(const std::exception& error)
     return wrap(rxcpp::observable<>::error<any>(error));
 }
 
-ObservableImpl ObservableImpl::from(Array<any>&& items)
+ObservableImpl ObservableImpl::from(Array<any>&& values)
 {
-    return wrap(rxcpp::observable<>::iterate(std::move(items), rxcpp::identity_immediate()));
+    return wrap(rxcpp::observable<>::iterate(std::move(values), rxcpp::identity_immediate()));
 }
 
 ObservableImpl ObservableImpl::fromValue(Value value)
@@ -154,7 +154,7 @@ ObservableImpl ObservableImpl::fromValue(Value value)
 ObservableImpl ObservableImpl::interval(const juce::RelativeTime& period)
 {
     auto o = rxcpp::observable<>::interval(durationFromRelativeTime(period));
-    return wrap(o.map([](long long item) { return any(item); }));
+    return wrap(o.map([](long long value) { return any(value); }));
 }
 
 ObservableImpl ObservableImpl::just(const any& value)
@@ -182,14 +182,14 @@ ObservableImpl ObservableImpl::doubleRange(double first, double last, unsigned i
     return wrap(_range(first, last, step));
 }
 
-ObservableImpl ObservableImpl::repeat(const any& item)
+ObservableImpl ObservableImpl::repeat(const any& value)
 {
-    return wrap(rxcpp::observable<>::just(item).repeat());
+    return wrap(rxcpp::observable<>::just(value).repeat());
 }
 
-ObservableImpl ObservableImpl::repeat(const any& item, unsigned int times)
+ObservableImpl ObservableImpl::repeat(const any& value, unsigned int times)
 {
-    return wrap(rxcpp::observable<>::just(item).repeat(times));
+    return wrap(rxcpp::observable<>::just(value).repeat(times));
 }
 
 
@@ -239,32 +239,32 @@ Subscription ObservableImpl::subscribe(const ObserverImpl& observer) const
             return any(0); \
     }
 
-#define VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_TRANSFORM(__functionName, __list, __transform) \
+#define VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_FUNCTION(__functionName, __list, __function) \
     const auto it = __list.begin(); \
     switch (__list.size()) { \
         case 1: \
-            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __transform.get<Function2>(), *it)); \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __function.get<Function2>(), *it)); \
         case 2: \
-            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __transform.get<Function3>(), *it, *(it + 1))); \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __function.get<Function3>(), *it, *(it + 1))); \
         case 3: \
-            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __transform.get<Function4>(), *it, *(it + 1), *(it + 2))); \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __function.get<Function4>(), *it, *(it + 1), *(it + 2))); \
         case 4: \
-            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __transform.get<Function5>(), *it, *(it + 1), *(it + 2), *(it + 3))); \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __function.get<Function5>(), *it, *(it + 1), *(it + 2), *(it + 3))); \
         case 5: \
-            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __transform.get<Function6>(), *it, *(it + 1), *(it + 2), *(it + 3), *(it + 4))); \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __function.get<Function6>(), *it, *(it + 1), *(it + 2), *(it + 3), *(it + 4))); \
         case 6: \
-            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __transform.get<Function7>(), *it, *(it + 1), *(it + 2), *(it + 3), *(it + 4), *(it + 5))); \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __function.get<Function7>(), *it, *(it + 1), *(it + 2), *(it + 3), *(it + 4), *(it + 5))); \
         case 7: \
-            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __transform.get<Function8>(), *it, *(it + 1), *(it + 2), *(it + 3), *(it + 4), *(it + 5), *(it + 6))); \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __function.get<Function8>(), *it, *(it + 1), *(it + 2), *(it + 3), *(it + 4), *(it + 5), *(it + 6))); \
         case 8: \
-            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __transform.get<Function9>(), *it, *(it + 1), *(it + 2), *(it + 3), *(it + 4), *(it + 5), *(it + 6), *(it + 7))); \
+            return wrap(JUCE_JOIN_MACRO(_, __functionName)(wrapped, __function.get<Function9>(), *it, *(it + 1), *(it + 2), *(it + 3), *(it + 4), *(it + 5), *(it + 6), *(it + 7))); \
         default: \
             jassertfalse; \
             return any(0); \
     }
 
-ObservableImpl ObservableImpl::combineLatest(std::initializer_list<ObservableImpl> others, const any& transform) const {
-    VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_TRANSFORM(combineLatest, others, transform)
+ObservableImpl ObservableImpl::combineLatest(std::initializer_list<ObservableImpl> others, const any& function) const {
+    VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_FUNCTION(combineLatest, others, function)
 }
 
 ObservableImpl ObservableImpl::concat(const Array<ObservableImpl>& others) const
@@ -300,9 +300,9 @@ ObservableImpl ObservableImpl::flatMap(const std::function<ObservableImpl(const 
     }));
 }
 
-ObservableImpl ObservableImpl::map(const std::function<any(const any&)>& transform) const
+ObservableImpl ObservableImpl::map(const std::function<any(const any&)>& function) const
 {
-    return wrap(unwrap(wrapped).map(transform));
+    return wrap(unwrap(wrapped).map(function));
 }
 
 ObservableImpl ObservableImpl::merge(const juce::Array<ObservableImpl>& others) const {
@@ -324,9 +324,9 @@ ObservableImpl ObservableImpl::scan(const any& startValue, const std::function<a
     return wrap(unwrap(wrapped).scan(startValue, f));
 }
 
-ObservableImpl ObservableImpl::skip(unsigned int numItems) const
+ObservableImpl ObservableImpl::skip(unsigned int numValues) const
 {
-    return wrap(unwrap(wrapped).skip(numItems));
+    return wrap(unwrap(wrapped).skip(numValues));
 }
 
 ObservableImpl ObservableImpl::skipUntil(const ObservableImpl& other) const
@@ -334,9 +334,9 @@ ObservableImpl ObservableImpl::skipUntil(const ObservableImpl& other) const
     return wrap(unwrap(wrapped).skip_until(unwrap(other.wrapped)));
 }
 
-ObservableImpl ObservableImpl::startWith(juce::Array<any>&& items) const
+ObservableImpl ObservableImpl::startWith(juce::Array<any>&& values) const
 {
-    VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION(startWith, items);
+    VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION(startWith, values);
 }
 
 ObservableImpl ObservableImpl::switchOnNext() const
@@ -348,14 +348,14 @@ ObservableImpl ObservableImpl::switchOnNext() const
     return wrap(unwrapped.switch_on_next());
 }
 
-ObservableImpl ObservableImpl::take(unsigned int numItems) const
+ObservableImpl ObservableImpl::take(unsigned int numValues) const
 {
-    return wrap(unwrap(wrapped).take(numItems));
+    return wrap(unwrap(wrapped).take(numValues));
 }
 
-ObservableImpl ObservableImpl::takeLast(unsigned int numItems) const
+ObservableImpl ObservableImpl::takeLast(unsigned int numValues) const
 {
-    return wrap(unwrap(wrapped).take_last(numItems));
+    return wrap(unwrap(wrapped).take_last(numValues));
 }
 
 ObservableImpl ObservableImpl::takeUntil(const ObservableImpl& other) const
@@ -369,13 +369,13 @@ ObservableImpl ObservableImpl::takeWhile(const std::function<bool(const any&)>& 
     return wrap(unwrap(wrapped).take_while([predicate](const any& value) { return predicate(value); }));
 }
 
-ObservableImpl ObservableImpl::withLatestFrom(std::initializer_list<ObservableImpl> others, const any& transform) const {
-    VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_TRANSFORM(withLatestFrom, others, transform)
+ObservableImpl ObservableImpl::withLatestFrom(std::initializer_list<ObservableImpl> others, const any& function) const {
+    VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_FUNCTION(withLatestFrom, others, function)
 }
 
-ObservableImpl ObservableImpl::zip(std::initializer_list<ObservableImpl> others, const any& transform) const
+ObservableImpl ObservableImpl::zip(std::initializer_list<ObservableImpl> others, const any& function) const
 {
-    VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_TRANSFORM(zip, others, transform)
+    VARX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_FUNCTION(zip, others, function)
 }
 
 
@@ -391,14 +391,14 @@ ObservableImpl ObservableImpl::observeOn(const SchedulerImpl& scheduler) const
 
 juce::Array<any> ObservableImpl::toArray(const std::function<void(std::exception_ptr)>& onError) const
 {
-    Array<any> items;
+    Array<any> values;
 
-    unwrap(wrapped).as_blocking().subscribe([&](const any& item) {
-        items.add(item);
+    unwrap(wrapped).as_blocking().subscribe([&](const any& value) {
+        values.add(value);
     },
                                             onError);
 
-    return items;
+    return values;
 }
 
 void ObservableImpl::TerminateOnError(std::exception_ptr)

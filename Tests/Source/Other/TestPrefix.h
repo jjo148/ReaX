@@ -17,16 +17,16 @@ using namespace varx;
 #define CONTEXT(desc) SECTION(std::string(" Context: ") + desc, "")
 #define IT(desc) SECTION(std::string("       It ") + desc, "")
 
-/// Subscribes to an Observable and collects all emitted items into a given Array.
-#define varxCollectItems(__observable, __arrayName) \
+/// Subscribes to an Observable and collects all emitted values into a given Array.
+#define varxCollectValues(__observable, __arrayName) \
     DisposeBag JUCE_JOIN_MACRO(__arrayName, JUCE_JOIN_MACRO(Subscription_, __LINE__)); \
-    (__observable).subscribe([&__arrayName](const decltype(__arrayName.getFirst())& item) { __arrayName.add(item); }).disposedBy(JUCE_JOIN_MACRO(__arrayName, JUCE_JOIN_MACRO(Subscription_, __LINE__)));
+    (__observable).subscribe([&__arrayName](const decltype(__arrayName.getFirst())& value) { __arrayName.add(value); }).disposedBy(JUCE_JOIN_MACRO(__arrayName, JUCE_JOIN_MACRO(Subscription_, __LINE__)));
 
-/// REQUIREs that a given Array is equal to the list of passed items.
-#define varxRequireItems(__arrayName, ...) REQUIRE(__arrayName == decltype(__arrayName)({ __VA_ARGS__ }))
+/// REQUIREs that a given Array is equal to the given list of values.
+#define varxRequireValues(__arrayName, ...) REQUIRE(__arrayName == decltype(__arrayName)({ __VA_ARGS__ }))
 
-/// CHECKs that a given Array is equal to the list of passed items.
-#define varxCheckItems(__arrayName, ...) CHECK(__arrayName == decltype(__arrayName)({ __VA_ARGS__ }))
+/// CHECKs that a given Array is equal to the given list of values.
+#define varxCheckValues(__arrayName, ...) CHECK(__arrayName == decltype(__arrayName)({ __VA_ARGS__ }))
 
 
 /// Runs the JUCE dispatch loop for a given time, to process async callbacks.

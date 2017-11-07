@@ -6,20 +6,20 @@ using Catch::Contains;
 TEST_CASE("Observable::create",
           "[Observable][Observable::create]")
 {
-    Array<String> items;
+    Array<String> values;
 
-    IT("emits items when pushing items synchronously")
+    IT("emits values when pushing values synchronously")
     {
         auto observable = Observable<>::create<String>([](Observer<String> observer) {
             observer.onNext("First");
             observer.onNext("Second");
         });
-        varxCollectItems(observable, items);
+        varxCollectValues(observable, values);
 
-        varxRequireItems(items, "First", "Second");
+        varxRequireValues(values, "First", "Second");
     }
 
-    IT("emits items when pushing items asynchronously")
+    IT("emits values when pushing values asynchronously")
     {
         auto observable = Observable<>::create<String>([](Observer<String> observer) {
             MessageManager::getInstance()->callAsync([observer]() {
@@ -27,17 +27,17 @@ TEST_CASE("Observable::create",
                 observer.onNext("Second");
             });
         });
-        varxCollectItems(observable, items);
+        varxCollectValues(observable, values);
 
-        // There shouldn't be any items until the async callback is executed
-        CHECK(items.isEmpty());
+        // There shouldn't be any values until the async callback is executed
+        CHECK(values.isEmpty());
 
-        // The items should be there after running the dispatch loop
-        varxRunDispatchLoopUntil(items.size() == 2);
-        varxRequireItems(items, "First", "Second");
+        // The values should be there after running the dispatch loop
+        varxRunDispatchLoopUntil(values.size() == 2);
+        varxRequireValues(values, "First", "Second");
     }
 
-    IT("emits can emit items asynchronously after being destroyed")
+    IT("emits can emit values asynchronously after being destroyed")
     {
         auto observable = std::make_shared<Observable<String>>(Observable<>::create<String>([](Observer<String> observer) {
             MessageManager::getInstance()->callAsync([observer]() {
@@ -48,21 +48,21 @@ TEST_CASE("Observable::create",
 
         IT("emits when there's still a subscription")
         {
-            auto subscription = observable->subscribe([&](String next) { items.add(next); });
+            auto subscription = observable->subscribe([&](String next) { values.add(next); });
             observable.reset();
-            varxRunDispatchLoopUntil(items.size() == 2);
+            varxRunDispatchLoopUntil(values.size() == 2);
 
-            varxRequireItems(items, "First", "Second");
+            varxRequireValues(values, "First", "Second");
         }
 
         IT("doesn't emit when the subscription has unsubscribed")
         {
-            auto subscription = observable->subscribe([&](String next) { items.add(next); });
+            auto subscription = observable->subscribe([&](String next) { values.add(next); });
             observable.reset();
             subscription.unsubscribe();
             varxRunDispatchLoop(20);
 
-            REQUIRE(items.isEmpty());
+            REQUIRE(values.isEmpty());
         }
     }
 
@@ -71,11 +71,11 @@ TEST_CASE("Observable::create",
         auto observable = Observable<>::create<String>([](Observer<String> observer) {
             observer.onNext("onSubscribe called");
         });
-        varxCollectItems(observable, items);
-        varxCollectItems(observable, items);
-        varxCollectItems(observable, items);
+        varxCollectValues(observable, values);
+        varxCollectValues(observable, values);
+        varxCollectValues(observable, values);
 
-        varxRequireItems(items, "onSubscribe called", "onSubscribe called", "onSubscribe called");
+        varxRequireValues(values, "onSubscribe called", "onSubscribe called", "onSubscribe called");
     }
 
     IT("captures an object until the Observable is destroyed")
@@ -118,7 +118,7 @@ TEST_CASE("Observable::create",
 TEST_CASE("Observable::defer",
           "[Observable][Observable::defer]")
 {
-    Array<int> items;
+    Array<int> values;
 
     IT("calls the factory function on every new subscription")
     {
@@ -128,11 +128,11 @@ TEST_CASE("Observable::defer",
             return Observable<>::from<int>({ 3, 4 });
         });
 
-        varxCollectItems(observable, items);
-        varxCollectItems(observable, items);
-        varxCollectItems(observable, items);
+        varxCollectValues(observable, values);
+        varxCollectValues(observable, values);
+        varxCollectValues(observable, values);
 
-        varxRequireItems(items, 3, 4, 3, 4, 3, 4);
+        varxRequireValues(values, 3, 4, 3, 4, 3, 4);
         REQUIRE(numCalls == 3);
     }
 }
@@ -141,15 +141,15 @@ TEST_CASE("Observable::defer",
 TEST_CASE("Observable::empty",
           "[Observable][Observable::empty]")
 {
-    Array<int> items;
+    Array<int> values;
     auto o = Observable<>::empty<int>();
 
-    IT("doesn't emit any items")
+    IT("doesn't emit any values")
     {
-        varxCollectItems(o, items);
+        varxCollectValues(o, values);
         varxRunDispatchLoop(20);
 
-        REQUIRE(items.isEmpty());
+        REQUIRE(values.isEmpty());
     }
 
     IT("notifies onCompleted immediately")
@@ -166,16 +166,16 @@ TEST_CASE("Observable::empty",
 TEST_CASE("Observable::error",
           "[Observable][Observable::error]")
 {
-    Array<int> items;
+    Array<int> values;
     auto o = Observable<>::error<int>(std::runtime_error("Error!!111!"));
     DisposeBag disposeBag;
 
-    IT("doesn't emit any items")
+    IT("doesn't emit any values")
     {
-        o.subscribe([&](var item) { items.add(item); }, [](std::exception_ptr) {}).disposedBy(disposeBag);
+        o.subscribe([&](var value) { values.add(value); }, [](std::exception_ptr) {}).disposedBy(disposeBag);
         varxRunDispatchLoop(20);
 
-        REQUIRE(items.isEmpty());
+        REQUIRE(values.isEmpty());
     }
 
     IT("notifies onCompleted immediately")
@@ -193,34 +193,34 @@ TEST_CASE("Observable::from",
 {
     IT("can be created from an Array<int>")
     {
-        Array<long> items;
-        varxCollectItems(Observable<>::from<int>(Array<int>({ 3, 6, 8 })), items);
+        Array<long> values;
+        varxCollectValues(Observable<>::from<int>(Array<int>({ 3, 6, 8 })), values);
 
-        varxRequireItems(items, 3, 6, 8);
+        varxRequireValues(values, 3, 6, 8);
     }
 
     IT("can be created from a std::initializer_list<var>")
     {
-        Array<var> items;
-        varxCollectItems(Observable<>::from<var>({ var("Hello"), var(15.5) }), items);
+        Array<var> values;
+        varxCollectValues(Observable<>::from<var>({ var("Hello"), var(15.5) }), values);
 
-        varxRequireItems(items, var("Hello"), var(15.5));
+        varxRequireValues(values, var("Hello"), var(15.5));
     }
 
     IT("can be created from a std::initializer_list<int>")
     {
-        Array<double> items;
-        varxCollectItems(Observable<>::from<int>({ 1, 4 }), items);
+        Array<double> values;
+        varxCollectValues(Observable<>::from<int>({ 1, 4 }), values);
 
-        varxRequireItems(items, 1, 4);
+        varxRequireValues(values, 1, 4);
     }
 
     IT("can be created from a std::initializer_list<String>")
     {
-        Array<String> items;
-        varxCollectItems(Observable<>::from<String>({ "Hello", "Test" }), items);
+        Array<String> values;
+        varxCollectValues(Observable<>::from<String>({ "Hello", "Test" }), values);
 
-        varxRequireItems(items, "Hello", "Test");
+        varxRequireValues(values, "Hello", "Test");
     }
 }
 
@@ -228,68 +228,68 @@ TEST_CASE("Observable::from",
 TEST_CASE("Observable::fromValue",
           "[Observable][Observable::fromValue]")
 {
-    Value value(String("Initial Item"));
+    Value value(String("Initial Value"));
     const auto observable = Observable<>::fromValue(value);
-    Array<String> items;
-    varxCollectItems(observable, items);
+    Array<String> values;
+    varxCollectValues(observable, values);
 
-    varxCheckItems(items, "Initial Item");
+    varxCheckValues(values, "Initial Value");
 
     IT("emits if a copy of the Value sets a new value")
     {
         Value copy(value);
         copy.setValue("Set by copy");
-        varxRunDispatchLoopUntil(items.size() == 2);
+        varxRunDispatchLoopUntil(values.size() == 2);
 
-        varxRequireItems(items, "Initial Item", "Set by copy");
+        varxRequireValues(values, "Initial Value", "Set by copy");
     }
 
-    IT("emites only one item if the Value is set multiple times synchronously")
+    IT("emites only one value if the Value is set multiple times synchronously")
     {
         value = "2";
         value = "3";
         value = "4";
-        varxRunDispatchLoopUntil(items.size() == 2);
+        varxRunDispatchLoopUntil(values.size() == 2);
 
-        varxRequireItems(items, "Initial Item", "4");
+        varxRequireValues(values, "Initial Value", "4");
     }
 
     IT("notifies multiple Subscriptions on subscribe")
     {
         auto another = Observable<>::fromValue(value);
-        varxCollectItems(another, items);
+        varxCollectValues(another, values);
 
-        varxRequireItems(items, "Initial Item", "Initial Item");
+        varxRequireValues(values, "Initial Value", "Initial Value");
     }
 
     IT("notifies multiple Values referring to the same ValueSource")
     {
         Value anotherValue(value);
         auto anotherObservable = Observable<>::fromValue(anotherValue);
-        varxCollectItems(anotherObservable, items);
+        varxCollectValues(anotherObservable, values);
 
-        varxRequireItems(items, "Initial Item", "Initial Item");
+        varxRequireValues(values, "Initial Value", "Initial Value");
     }
 
     IT("notifies multiple Subscriptions if a Value is set multiple times")
     {
         DisposeBag disposeBag;
         observable.subscribe([&](String newValue) {
-                      items.add(newValue.toUpperCase());
+                      values.add(newValue.toUpperCase());
                   })
             .disposedBy(disposeBag);
 
         value = "Bar";
-        varxRunDispatchLoopUntil(items.size() == 4);
+        varxRunDispatchLoopUntil(values.size() == 4);
 
         value = "Baz";
-        varxRunDispatchLoopUntil(items.size() == 6);
+        varxRunDispatchLoopUntil(values.size() == 6);
 
-        CHECK(items.size() == 6);
+        CHECK(values.size() == 6);
 
         // Subscribers are notified in no particular order
-        for (auto s : { "Initial Item", "INITIAL ITEM", "BAR", "Bar", "BAZ", "Baz" })
-            REQUIRE(items.contains(s));
+        for (auto s : { "Initial Value", "INITIAL VALUE", "BAR", "Bar", "BAZ", "Baz" })
+            REQUIRE(values.contains(s));
     }
 }
 
@@ -304,53 +304,53 @@ TEST_CASE("Observable::fromValue lifetime",
     // Create another Observable from the source Observable
     auto mapped = source->map([](String s) { return s; });
 
-    // Collect items from the mapped Observable
-    Array<var> items;
-    varxCollectItems(mapped, items);
+    // Collect values from the mapped Observable
+    Array<var> values;
+    varxCollectValues(mapped, values);
 
-    varxCheckItems(items, "Initial");
+    varxCheckValues(values, "Initial");
 
-    IT("emits items when the source Observable is alive")
+    IT("emits values when the source Observable is alive")
     {
         value.setValue("New Value");
-        varxRunDispatchLoopUntil(items.size() == 2);
+        varxRunDispatchLoopUntil(values.size() == 2);
 
-        varxRequireItems(items, "Initial", "New Value");
+        varxRequireValues(values, "Initial", "New Value");
     }
 
-    IT("stops emitting items as soon as the source Observable is destroyed")
+    IT("stops emitting values as soon as the source Observable is destroyed")
     {
         source.reset();
         value.setValue("Two");
         value.setValue("Three");
         varxRunDispatchLoop(20);
 
-        varxRequireItems(items, "Initial");
+        varxRequireValues(values, "Initial");
     }
 
-    IT("does not emit an item if the Observable is destroyed immediately after calling setValue")
+    IT("does not emit a value if the Observable is destroyed immediately after calling setValue")
     {
         value.setValue("New Value");
         source.reset();
         varxRunDispatchLoop(20);
 
-        varxRequireItems(items, "Initial");
+        varxRequireValues(values, "Initial");
     }
 
-    IT("continues to emit items if the source Observable is copied and then destroyed")
+    IT("continues to emit values if the source Observable is copied and then destroyed")
     {
         auto copy = std::make_shared<Observable<var>>(*source);
-        Array<var> copyItems;
-        varxCollectItems(*copy, copyItems);
+        Array<var> copyValues;
+        varxCollectValues(*copy, copyValues);
 
-        varxCheckItems(copyItems, "Initial");
+        varxCheckValues(copyValues, "Initial");
 
         source.reset();
         varxRunDispatchLoop(20);
         value.setValue("New");
-        varxRunDispatchLoopUntil(items.size() == 2);
+        varxRunDispatchLoopUntil(values.size() == 2);
 
-        varxRequireItems(copyItems, "Initial", "New");
+        varxRequireValues(copyValues, "Initial", "New");
     }
 
     IT("notified onComplete when the Observable is destroyed")
@@ -372,16 +372,16 @@ TEST_CASE("Observable::fromValue with a Slider",
     Slider slider;
     slider.setValue(7.6);
     auto o = Observable<>::fromValue(slider.getValueObject());
-    Array<var> items;
-    varxCollectItems(o, items);
-    varxCheckItems(items, 7.6);
+    Array<var> values;
+    varxCollectValues(o, values);
+    varxCheckValues(values, 7.6);
 
     IT("emits once if the Slider is changed once")
     {
         slider.setValue(0.45);
-        varxRunDispatchLoopUntil(items.size() == 2);
+        varxRunDispatchLoopUntil(values.size() == 2);
 
-        varxRequireItems(items, 7.6, 0.45);
+        varxRequireValues(values, 7.6, 0.45);
     }
 
     IT("emits just once if the Slider value changes rapidly")
@@ -389,9 +389,9 @@ TEST_CASE("Observable::fromValue with a Slider",
         for (double value : { 3.41, 9.54, 4.67, 3.56 })
             slider.setValue(value);
 
-        varxRunDispatchLoopUntil(items.size() == 2);
+        varxRunDispatchLoopUntil(values.size() == 2);
 
-        varxRequireItems(items, 7.6, 3.56);
+        varxRequireValues(values, 7.6, 3.56);
     }
 }
 
@@ -417,7 +417,7 @@ TEST_CASE("Observable::interval",
         REQUIRE(intervals[1].inSeconds() == Approx(0.04).epsilon(0.03));
         REQUIRE(intervals[2].inSeconds() == Approx(0.04).epsilon(0.03));
 
-        varxRequireItems(ints, 1, 2, 3);
+        varxRequireValues(ints, 1, 2, 3);
     }
 }
 
@@ -427,20 +427,20 @@ TEST_CASE("Observable::just",
 {
     IT("emits a single value on subscribe")
     {
-        Array<float> items;
-        varxCollectItems(Observable<>::just(18.3), items);
+        Array<float> values;
+        varxCollectValues(Observable<>::just(18.3), values);
 
-        varxRequireItems(items, 18.3);
+        varxRequireValues(values, 18.3);
     }
 
     IT("notifies multiple subscriptions")
     {
-        Array<String> items;
+        Array<String> values;
         auto o = Observable<>::just<String>("Hello");
-        varxCollectItems(o, items);
-        varxCollectItems(o, items);
+        varxCollectValues(o, values);
+        varxCollectValues(o, values);
 
-        varxRequireItems(items, "Hello", "Hello");
+        varxRequireValues(values, "Hello", "Hello");
     }
 }
 
@@ -473,24 +473,24 @@ TEST_CASE("Observable::never",
 TEST_CASE("Observable::range",
           "[Observable][Observable::range]")
 {
-    Array<var> items;
+    Array<var> values;
 
     IT("emits integer numbers with an integer range")
     {
-        varxCollectItems(Observable<>::range(3, 7, 3), items);
-        varxRequireItems(items, 3, 6, 7);
+        varxCollectValues(Observable<>::range(3, 7, 3), values);
+        varxRequireValues(values, 3, 6, 7);
     }
 
     IT("emits double numbers with a double range")
     {
-        varxCollectItems(Observable<>::range(17.5, 22.8, 2), items);
-        varxRequireItems(items, 17.5, 19.5, 21.5, 22.8);
+        varxCollectValues(Observable<>::range(17.5, 22.8, 2), values);
+        varxRequireValues(values, 17.5, 19.5, 21.5, 22.8);
     }
 
     IT("emits just start if start == end")
     {
-        varxCollectItems(Observable<>::range(10, 10), items);
-        varxRequireItems(items, 10);
+        varxCollectValues(Observable<>::range(10, 10), values);
+        varxRequireValues(values, 10);
     }
 
     IT("throws if start > end")
@@ -503,20 +503,20 @@ TEST_CASE("Observable::range",
 TEST_CASE("Observable::repeat",
           "[Observable][Observable::repeat]")
 {
-    Array<var> items;
+    Array<var> values;
 
-    IT("repeats an item indefinitely")
+    IT("repeats a value indefinitely")
     {
-        varxCollectItems(Observable<>::repeat(8).take(9), items);
+        varxCollectValues(Observable<>::repeat(8).take(9), values);
 
-        varxRequireItems(items, 8, 8, 8, 8, 8, 8, 8, 8, 8);
+        varxRequireValues(values, 8, 8, 8, 8, 8, 8, 8, 8, 8);
     }
 
-    IT("repeats an items a limited number of times")
+    IT("repeats a values a limited number of times")
     {
-        varxCollectItems(Observable<>::repeat<String>("4", 7), items);
+        varxCollectValues(Observable<>::repeat<String>("4", 7), values);
 
-        varxRequireItems(items, "4", "4", "4", "4", "4", "4", "4");
+        varxRequireValues(values, "4", "4", "4", "4", "4", "4", "4");
     }
 }
 
@@ -532,38 +532,38 @@ TEST_CASE("Observable covariance",
         
         IT("can convert from var to float")
         {
-            Array<float> items;
+            Array<float> values;
             floats = vars;
-            varxCollectItems(floats, items);
+            varxCollectValues(floats, values);
             
-            varxRequireItems(items, 51);
+            varxRequireValues(values, 51);
         }
         
         IT("can convert from float to var")
         {
-            Array<var> items;
+            Array<var> values;
             vars = floats;
-            varxCollectItems(vars, items);
+            varxCollectValues(vars, values);
             
-            varxRequireItems(items, 17);
+            varxRequireValues(values, 17);
         }
         
         IT("can convert from String to var")
         {
-            Array<var> items;
+            Array<var> values;
             vars = strings;
-            varxCollectItems(vars, items);
+            varxCollectValues(vars, values);
             
-            varxRequireItems(items, "Hello");
+            varxRequireValues(values, "Hello");
         }
         
         IT("can convert from float to double")
         {
-            Array<double> items;
+            Array<double> values;
             doubles = floats;
-            varxCollectItems(doubles, items);
+            varxCollectValues(doubles, values);
             
-            varxRequireItems(items, 17);
+            varxRequireValues(values, 17);
         }
     }
     
@@ -591,11 +591,11 @@ TEST_CASE("Observable covariance",
         
         IT("can convert from Deriveds to Bases")
         {
-            Array<Base> items;
+            Array<Base> values;
             bases = deriveds;
-            varxCollectItems(bases, items);
+            varxCollectValues(bases, values);
             
-            varxRequireItems(items, Base(200));
+            varxRequireValues(values, Base(200));
         }
     }
 }

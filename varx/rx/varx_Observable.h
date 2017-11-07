@@ -15,7 +15,7 @@ class Observable
 {
 public:
 #pragma mark - Helpers
-    typedef T ItemType;
+    typedef T ValueType;
 
     typedef detail::ObservableImpl Impl;
     typedef detail::any any;
@@ -33,14 +33,14 @@ public:
     };
     ///@}
 
-    /// The return type of calling a function of type Transform with parameters of types Args. 
-    template<typename Transform, typename... Args>
-    using CallResult = typename std::result_of<Transform(Args...)>::type;
+    /// The return type of calling a function of type Function with parameters of types Args.
+    template<typename Function, typename... Args>
+    using CallResult = typename std::result_of<Function(Args...)>::type;
 
     
 #pragma mark - Creation
     /**
-     Creates an Observable that doesn't emit any items and notifies onComplete immediately.
+     Creates an Observable that doesn't emit any values and notifies onComplete immediately.
      
      This is the same as Observable<T>::empty().
      */
@@ -54,11 +54,11 @@ public:
     /**
      Subscribes to an Observable, to receive values it emits.
      
-     The **onNext** function is called whenever the Observable emits a new item. It may be called synchronously before subscribe() returns.
+     The **onNext** function is called whenever the Observable emits a new value. It may be called synchronously before subscribe() returns.
      
      The **onError** function is called when the Observable has failed to generate the expected data, or has encountered some other error. If onError is called, the Observable will not make any more calls. **If you don't pass an onError handler, an exception inside the Observable will terminate your app.**
      
-     The **onCompleted** function is called exactly once to notify that the Observable has generated all data and will not emit any more items.
+     The **onCompleted** function is called exactly once to notify that the Observable has generated all data and will not emit any more values.
      
      The returned Subscription can be used to unsubscribe from the Observable, to stop receiving values from it. **You will keep receiving values until you call Subscription::dispose, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
      
@@ -81,14 +81,14 @@ public:
     }
 
     /**
-     Subscribes an Observer to an Observable. The Observer is notified whenever the Observable emits an item, or notifies an onError / onCompleted.
+     Subscribes an Observer to an Observable. The Observer is notified whenever the Observable emits a value, or notifies an onError / onCompleted.
      
      The returned Subscription can be used to unsubscribe the Observer, so it stops being notified by this Observable. **The Observer keeps receiving values until you call Subscription::dispose, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
      */
     template<typename U>
     typename std::enable_if<std::is_convertible<T, U>::value, Subscription>::type subscribe(const Observer<U>& observer) const
     {
-        // Convert items from T to U, using implicit conversion, constructors, whatever works
+        // Convert values from T to U, using implicit conversion, constructors, whatever works
         auto converted = impl.map([](const any& t) {
             return toAny<U>(t.get<T>());
         });
@@ -101,9 +101,9 @@ public:
 #pragma mark - Operators
     ///@{
     /**
-     Returns an Observable that emits **whenever** an item is emitted by either this Observable **or** one of the  `others`. It combines the **latest** item from each Observable via the given function and emits the result of this function.
+     Returns an Observable that emits **whenever** a value is emitted by either this Observable **or** one of the  `others`. It combines the **latest** value from each Observable via the given function and emits the result of this function.
      
-     This is different from Observable::withLatestFrom because it emits whenever this Observable or one of the  `others` emits an item.
+     This is different from Observable::withLatestFrom because it emits whenever this Observable or one of the  `others` emits a value.
      
      @see Observable::withLatestFrom
      */
@@ -113,22 +113,22 @@ public:
         return combineLatest(std::make_tuple<const T&, const Ts&...>, others...);
     }
 
-    template<typename... Ts, typename Transform>
-    Observable<CallResult<Transform, T, Ts...>> combineLatest(Transform&& transform, const Observable<Ts>&... others) const
+    template<typename... Ts, typename Function>
+    Observable<CallResult<Function, T, Ts...>> combineLatest(Function&& function, const Observable<Ts>&... others) const
     {
         static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable to combineLatest.");
         static_assert(sizeof...(Ts) <= Impl::MaximumArity, "Too many Observables passed to combineLatest.");
 
-        const std::function<any(const any&, const typename any_args<Ts>::type&...)> untypedTransform = [transform](const any& v, const typename any_args<Ts>::type&... vs) {
-            return toAny(transform(v.get<T>(), vs.template get<Ts>()...));
+        const std::function<any(const any&, const typename any_args<Ts>::type&...)> untypedFunction = [function](const any& v, const typename any_args<Ts>::type&... vs) {
+            return toAny(function(v.get<T>(), vs.template get<Ts>()...));
         };
 
-        return impl.combineLatest({ others.impl... }, toAny(untypedTransform));
+        return impl.combineLatest({ others.impl... }, toAny(untypedFunction));
     }
     ///@}
 
     /**
-     Returns an Observable that first emits the items from this Observable, then from the first in the `others` list, then from the second, and so on.
+     Returns an Observable that first emits the values from this Observable, then from the first in the `others` list, then from the second, and so on.
      
      It only subscribes to the first in the `others` list when this Observable has completed. And only subscribes to the second when the first has completed, and so on.
      */
@@ -148,7 +148,7 @@ public:
     }
 
     /**
-     Returns an Observable which emits if `interval` has passed without this Observable emitting an item. The returned Observable emits the latest item from this Observable.
+     Returns an Observable which emits if `interval` has passed without this Observable emitting a value. The returned Observable emits the latest value from this Observable.
      
      It's like the instant search in a search engine: Search suggestions are only loaded if the user hasn't pressed a key for a short period of time.
      
@@ -160,13 +160,13 @@ public:
     }
 
     /**
-     Returns an Observable which emits the same items as this Observable, but suppresses consecutive duplicate items.
+     Returns an Observable which emits the same values as this Observable, but suppresses consecutive duplicate values.
      
      For example:
      
          Observable::from<int>({1, 2, 2, 2, 3, 4, 4, 6}).distinctUntilChanged(); // Emits: 1, 2, 3, 4, 6
      
-     If T is comparable using ==, this is used to determine whether two items are equal. Otherwise, the items are compared by their addresses.
+     If T is comparable using ==, this is used to determine whether two values are equal. Otherwise, the values are compared by their addresses.
      
      If, for some reason, the custom type T doesn't have operator==, you can pass a custom equality function.
      */
@@ -178,7 +178,7 @@ public:
     }
 
     /**
-     Returns an Observable which emits only one item: The `index`th item emitted by this Observable.
+     Returns an Observable which emits only one value: The `index`th value emitted by this Observable.
      */
     Observable<T> elementAt(int index) const
     {
@@ -186,17 +186,17 @@ public:
     }
 
     /**
-     Returns an Observable that emits only those items from this Observable that pass a predicate function.
+     Returns an Observable that emits only those values from this Observable that pass a predicate function.
      */
     Observable<T> filter(const std::function<bool(const T&)>& predicate) const
     {
-        return impl.filter([predicate](const any& item) {
-            return predicate(item.get<T>());
+        return impl.filter([predicate](const any& value) {
+            return predicate(value.get<T>());
         });
     }
 
     /**
-     For each emitted item, calls `f` and subscribes to the Observable returned from `f`. The emitted items from all these returned Observables are *merged* (so they interleave).
+     For each emitted value, calls `f` and subscribes to the Observable returned from `f`. The emitted values from all these returned Observables are *merged* (so they interleave).
      
      This Observable:
      
@@ -204,33 +204,33 @@ public:
              return Observable::from<String>({s.toLowerCase(), s.toUpperCase() + "!"});
          });
      
-     Will emit the items: `"hello"`, `"HELLO!"`, `"world"` and `"WORLD!"`.
+     Will emit the values: `"hello"`, `"HELLO!"`, `"world"` and `"WORLD!"`.
      
      @see Observable::merge, Observable::switchOnNext.
      */
-    template<typename Transform>
-    typename std::enable_if<IsObservable<CallResult<Transform, T>>::value, Observable<typename CallResult<Transform, T>::ItemType>>::type flatMap(Transform&& transform) const
+    template<typename Function>
+    typename std::enable_if<IsObservable<CallResult<Function, T>>::value, Observable<typename CallResult<Function, T>::ValueType>>::type flatMap(Function&& function) const
     {
-        return impl.flatMap([transform](const any& item) {
-            return transform(item.get<T>()).impl;
+        return impl.flatMap([function](const any& value) {
+            return function(value.get<T>()).impl;
         });
     }
 
     /**
-     For each item emitted by this Observable, call the function with that item and emit the result.
+     For each value emitted by this Observable, call the function with that value and emit the result.
      
      If `f` returns an Observable, you can use Observable::switchOnNext afterwards.
      */
-    template<typename Transform>
-    Observable<CallResult<Transform, T>> map(Transform&& transform) const
+    template<typename Function>
+    Observable<CallResult<Function, T>> map(Function&& function) const
     {
-        return impl.map([transform](const any& item) {
-            return toAny(transform(item.get<T>()));
+        return impl.map([function](const any& value) {
+            return toAny(function(value.get<T>()));
         });
     }
 
     /**
-     Merges the emitted items of this observable and the others into one Observable. The items are interleaved, depending on when the source Observables emit items.
+     Merges the emitted values of this observable and the others into one Observable. The values are interleaved, depending on when the source Observables emit values.
      
      An error in one of the source Observables notifies the result Observable's `onError` immediately.
      */
@@ -250,7 +250,7 @@ public:
     }
 
     /**
-     Begins with a `startValue`, and then applies `f` to all items emitted by this Observable, and returns the aggregate result as a single-element Observable sequence.
+     Begins with a `startValue`, and then applies `f` to all values emitted by this Observable, and returns the aggregate result as a single-element Observable sequence.
      */
     Observable<T> reduce(const T& startValue, const std::function<T(const T&, const T&)>& f) const
     {
@@ -260,9 +260,9 @@ public:
     }
 
     /**
-     Returns an Observable which checks every `interval` milliseconds whether this Observable has emitted any new items. If so, the returned Observable emits the latest item from this Observable.
+     Returns an Observable which checks every `interval` milliseconds whether this Observable has emitted any new values. If so, the returned Observable emits the latest value from this Observable.
      
-     For example, this is useful when an Observable emits items very rapidly, but you only want to update a GUI component 25 times per second to reduce CPU load.
+     For example, this is useful when an Observable emits values very rapidly, but you only want to update a GUI component 25 times per second to reduce CPU load.
      
      The interval has millisecond resolution.
      */
@@ -272,9 +272,9 @@ public:
     }
 
     /**
-     Calls a function `f` with the given `startValue` and the first item emitted by this Observable. The value returned from `f` is remembered. When the second item is emitted, `f` is called with the remembered value (called the *accumulator*) and the second emitted item. The returned item is remembered, until the third item is emitted, and so on.
+     Calls a function `f` with the given `startValue` and the first value emitted by this Observable. The value returned from `f` is remembered. When the second value is emitted, `f` is called with the remembered value (called the *accumulator*) and the second emitted value. The returned value is remembered, until the third value is emitted, and so on.
      
-     The first parameter to `f` is the accumulator, the second is the current item.
+     The first parameter to `f` is the accumulator, the second is the current value.
      */
     Observable<T> scan(const T& startValue, const std::function<T(const T&, const T&)>& f) const
     {
@@ -284,15 +284,15 @@ public:
     }
 
     /**
-     Returns an Observable which suppresses emitting the first `numItems` items from this Observable.
+     Returns an Observable which suppresses emitting the first `numValues` values from this Observable.
      */
-    Observable<T> skip(unsigned int numItems) const
+    Observable<T> skip(unsigned int numValues) const
     {
-        return impl.skip(numItems);
+        return impl.skip(numValues);
     }
 
     /**
-     Returns an Observable which suppresses emitting items from this Observable until the `other` Observable sequence emits an item.
+     Returns an Observable which suppresses emitting values from this Observable until the `other` Observable sequence emits a value.
      */
     template<typename T1>
     Observable<T> skipUntil(const Observable<T1>& other) const
@@ -301,25 +301,25 @@ public:
     }
 
     /**
-     Emits the given item(s) before beginning to emit the items in this Observable.
+     Emits the given value(s) before beginning to emit the values in this Observable.
      */
-    Observable<T> startWith(std::initializer_list<T> items) const
+    Observable<T> startWith(std::initializer_list<T> values) const
     {
-        // Must pass at least one item:
-        jassert(items.size() > 0);
+        // Must pass at least one value:
+        jassert(values.size() > 0);
 
-        // Too many items:
-        jassert(items.size() <= Impl::MaximumArity);
+        // Too many values:
+        jassert(values.size() <= Impl::MaximumArity);
 
-        juce::Array<any> anyItems;
-        for (auto& item : items)
-            anyItems.add(toAny(item));
+        juce::Array<any> anyValues;
+        for (auto& value : values)
+            anyValues.add(toAny(value));
 
-        return impl.startWith(std::move(anyItems));
+        return impl.startWith(std::move(anyValues));
     }
 
     /**
-     ​Returns an Observable that emits the items emitted by the Observables which this Observable emits.
+     ​Returns an Observable that emits the values emitted by the Observables which this Observable emits.
      
      Therefore, it can only be used when this Observable emits Observables.
      */
@@ -330,23 +330,23 @@ public:
     }
 
     /**
-     Returns an Observable that emits only the first `numItems` items from this Observable.
+     Returns an Observable that emits only the first `numValues` values from this Observable.
      */
-    Observable<T> take(unsigned int numItems) const
+    Observable<T> take(unsigned int numValues) const
     {
-        return impl.take(numItems);
+        return impl.take(numValues);
     }
 
     /**
-     Returns an Observable that emits only the last `numItems` items from this Observable.
+     Returns an Observable that emits only the last `numValues` values from this Observable.
      */
-    Observable<T> takeLast(unsigned int numItems) const
+    Observable<T> takeLast(unsigned int numValues) const
     {
-        return impl.takeLast(numItems);
+        return impl.takeLast(numValues);
     }
 
     /**
-     Emits items from this Observable until the `other` Observable sequence emits an item.
+     Emits values from this Observable until the `other` Observable sequence emits a value.
      */
     template<typename U>
     Observable<T> takeUntil(const Observable<U>& other) const
@@ -355,22 +355,22 @@ public:
     }
 
     /**
-     Emits items from the beginning of this Observable as long as the given `predicate` returns `true`.
+     Emits values from the beginning of this Observable as long as the given `predicate` returns `true`.
      
-     The predicate is called on each item emitted by this Observable, until it returns `false`.
+     The predicate is called on each value emitted by this Observable, until it returns `false`.
      */
     Observable<T> takeWhile(const std::function<bool(const T&)>& predicate) const
     {
-        return impl.takeWhile([predicate](const any& item) {
-            return predicate(item.get<T>());
+        return impl.takeWhile([predicate](const any& value) {
+            return predicate(value.get<T>());
         });
     }
 
     ///@{
     /**
-     Returns an Observable that emits whenever an item is emitted by this Observable. It combines the latest item from each Observable via the given function and emits the result of this function.
+     Returns an Observable that emits whenever a value is emitted by this Observable. It combines the latest value from each Observable via the given function and emits the result of this function.
      
-     This is different from Observable::combineLatest because it only emits when this Observable emits an item (not when o1, o2, … emit items).
+     This is different from Observable::combineLatest because it only emits when this Observable emits a value (not when o1, o2, … emit values).
      */
     template<typename... Ts>
     Observable<std::tuple<T, Ts...>> withLatestFrom(const Observable<Ts>&... others) const
@@ -378,27 +378,27 @@ public:
         return withLatestFrom(std::make_tuple<const T&, const Ts&...>, others...);
     }
 
-    template<typename... Ts, typename Transform>
-    Observable<CallResult<Transform, T, Ts...>> withLatestFrom(Transform&& transform, const Observable<Ts>&... others) const
+    template<typename... Ts, typename Function>
+    Observable<CallResult<Function, T, Ts...>> withLatestFrom(Function&& function, const Observable<Ts>&... others) const
     {
         static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable to withLatestFrom.");
         static_assert(sizeof...(Ts) <= Impl::MaximumArity, "Too many Observables passed to withLatestFrom.");
 
-        const std::function<any(const any&, const typename any_args<Ts>::type&...)> untypedTransform = [transform](const any& v, const typename any_args<Ts>::type&... vs) {
-            return toAny(transform(v.get<T>(), vs.template get<Ts>()...));
+        const std::function<any(const any&, const typename any_args<Ts>::type&...)> untypedFunction = [function](const any& v, const typename any_args<Ts>::type&... vs) {
+            return toAny(function(v.get<T>(), vs.template get<Ts>()...));
         };
 
-        return impl.withLatestFrom({ others.impl... }, toAny(untypedTransform));
+        return impl.withLatestFrom({ others.impl... }, toAny(untypedFunction));
     }
     ///@}
 
     ///@{
     /**
-     Returns an Observable that emits **whenever** an item is emitted by either this Observable **or** o1, o2, …. It combines the **latest** item from each Observable via the given function and emits the result of this function.
+     Returns an Observable that emits **whenever** a value is emitted by either this Observable **or** o1, o2, …. It combines the **latest** value from each Observable via the given function and emits the result of this function.
      
-     It applies this function in strict sequence, so the first item emitted by the returned Observable is the result of `f` applied to the first item emitted by this Observable and the first item emitted by `o1`; the second item emitted by the returned Observable is the result of `f` applied to the second item emitted by this Observable and the second item emitted by `o1`; and so on.
+     It applies this function in strict sequence, so the first value emitted by the returned Observable is the result of `f` applied to the first value emitted by this Observable and the first value emitted by `o1`; the second value emitted by the returned Observable is the result of `f` applied to the second value emitted by this Observable and the second value emitted by `o1`; and so on.
      
-     The returned Observable only emits as many items as the number of items emitted by the source Observable that emits the fewest items.
+     The returned Observable only emits as many values as the number of values emitted by the source Observable that emits the fewest values.
      */
     template<typename... Ts>
     Observable<std::tuple<T, Ts...>> zip(const Observable<Ts>&... others) const
@@ -406,17 +406,17 @@ public:
         return zip(std::make_tuple<const T&, const Ts&...>, others...);
     }
 
-    template<typename... Ts, typename Transform>
-    Observable<CallResult<Transform, T, Ts...>> zip(Transform&& transform, const Observable<Ts>&... others) const
+    template<typename... Ts, typename Function>
+    Observable<CallResult<Function, T, Ts...>> zip(Function&& function, const Observable<Ts>&... others) const
     {
         static_assert(sizeof...(Ts) > 0, "Must pass at least one other Observable to zip.");
         static_assert(sizeof...(Ts) <= Impl::MaximumArity, "Too many Observables passed to zip.");
 
-        const std::function<any(const any&, const typename any_args<Ts>::type&...)> untypedTransform = [transform](const any& v, const typename any_args<Ts>::type&... vs) {
-            return toAny(transform(v.get<T>(), vs.template get<Ts>()...));
+        const std::function<any(const any&, const typename any_args<Ts>::type&...)> untypedFunction = [function](const any& v, const typename any_args<Ts>::type&... vs) {
+            return toAny(function(v.get<T>(), vs.template get<Ts>()...));
         };
 
-        return impl.zip({ others.impl... }, toAny(untypedTransform));
+        return impl.zip({ others.impl... }, toAny(untypedFunction));
     }
         ///@}
 
@@ -445,7 +445,7 @@ public:
 
 #pragma mark - Misc
     /**
-     Blocks until the Observable has completed, then returns an Array of all emitted items.
+     Blocks until the Observable has completed, then returns an Array of all emitted values.
      
      Be careful when you use this on the message thread: If the Observable needs to process something *asynchronously* on the message thread, calling this will deadlock.
      
@@ -453,12 +453,12 @@ public:
      */
     juce::Array<T> toArray(const std::function<void(std::exception_ptr)>& onError = Impl::TerminateOnError) const
     {
-        juce::Array<T> items;
+        juce::Array<T> values;
 
         for (const any& v : impl.toArray(onError))
-            items.add(v.get<T>());
+            values.add(v.get<T>());
 
-        return items;
+        return values;
     }
 
     /// Covariant constructor: If U is convertible to T, an Observable<U> is convertible to an Observable<T>. 
@@ -536,7 +536,7 @@ public:
     }
     
     /**
-     Creates an Observable that doesn't emit any items and notifies onComplete immediately.
+     Creates an Observable that doesn't emit any values and notifies onComplete immediately.
      */
     template<typename T>
     static Observable<T> empty()
@@ -545,7 +545,7 @@ public:
     }
     
     /**
-     Creates an Observable which doesn't emit any items, and immediately notifies onError.
+     Creates an Observable which doesn't emit any values, and immediately notifies onError.
      */
     template<typename T>
     static Observable<T> error(const std::exception& error)
@@ -554,7 +554,7 @@ public:
     }
     
     /**
-     Creates an Observable that immediately emits the items from the given Array.
+     Creates an Observable that immediately emits the values from the given Array.
      
      Note that you can also pass an initializer list, like this:
      
@@ -565,16 +565,16 @@ public:
     template<typename T>
     static Observable<T> from(const juce::Array<T>& array)
     {
-        juce::Array<any> items;
+        juce::Array<any> values;
         
-        for (auto& item : array)
-            items.add(Observable<T>::toAny(item));
+        for (auto& value : array)
+            values.add(Observable<T>::toAny(value));
         
-        return Impl::from(std::move(items));
+        return Impl::from(std::move(values));
     }
     
     /**
-     Creates an Observable from a given JUCE Value. The returned Observable **only emits items until it is destroyed**, so you are responsible for managing its lifetime. Or use Reactive<Value>, which will handle this.
+     Creates an Observable from a given JUCE Value. The returned Observable **only emits values until it is destroyed**, so you are responsible for managing its lifetime. Or use Reactive<Value>, which will handle this.
      
      The returned Observable notifies the onComplete handler when it's destroyed. @see Observable::subscribe
      
@@ -586,9 +586,9 @@ public:
     }
     
     /**
-     Returns an Observable that emits one item every `interval`, starting at the time of subscription (where the first item is emitted). The emitted items are `1`, `2`, `3`, and so on.
+     Returns an Observable that emits one value every `interval`, starting at the time of subscription (where the first value is emitted). The emitted values are `1`, `2`, `3`, and so on.
      
-     The Observable emits endlessly, but you can use Observable::take to get a finite number of items (for example).
+     The Observable emits endlessly, but you can use Observable::take to get a finite number of values (for example).
      
      The interval has millisecond resolution.
      */
@@ -598,7 +598,7 @@ public:
     }
     
     /**
-     Creates an Observable which emits a single item.
+     Creates an Observable which emits a single value.
      
      The value is emitted immediately on each new subscription.
      */
@@ -618,7 +618,7 @@ public:
     }
     
     /**
-     Creates an Observable which emits a range of items, starting at `first` to (and including) `last`. It completes after emitting the `last` item.
+     Creates an Observable which emits a range of values, starting at `first` to (and including) `last`. It completes after emitting the `last` value.
      
      ​ **Throws an exception if first > last.**
      
@@ -635,20 +635,20 @@ public:
     }
     
     /**
-     Creates an Observable which emits a given item repeatedly.
+     Creates an Observable which emits a given value repeatedly.
      
-     An optional `times` parameter specifies how often the item should be repeated. If omitted, the item will is repeated indefinitely.
+     An optional `times` parameter specifies how often the value should be repeated. If omitted, the value will is repeated indefinitely.
      */
     template<typename T>
-    static Observable<T> repeat(const T& item)
+    static Observable<T> repeat(const T& value)
     {
-        return Impl::repeat(Observable<T>::toAny(item));
+        return Impl::repeat(Observable<T>::toAny(value));
     }
     /// \overload 
     template<typename T>
-    static Observable<T> repeat(const T& item, unsigned int times)
+    static Observable<T> repeat(const T& value, unsigned int times)
     {
-        return Impl::repeat(Observable<T>::toAny(item), times);
+        return Impl::repeat(Observable<T>::toAny(value), times);
     }
 };
 

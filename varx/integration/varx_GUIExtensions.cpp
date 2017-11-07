@@ -37,13 +37,13 @@ Observer<Colour> ComponentExtension::colour(int colourId) const
 
 void ComponentExtension::componentMovedOrResized(Component&, bool, bool)
 {
-    if (parent.getBounds() != bounds.getLatestItem())
+    if (parent.getBounds() != bounds.getValue())
         bounds.onNext(parent.getBounds());
 }
 
 void ComponentExtension::componentVisibilityChanged(Component&)
 {
-    if (parent.isVisible() != visible.getLatestItem())
+    if (parent.isVisible() != visible.getValue())
         visible.onNext(parent.isVisible());
 }
 
@@ -79,10 +79,10 @@ void ButtonExtension::buttonClicked(Button*)
 
 void ButtonExtension::buttonStateChanged(Button* button)
 {
-    if (button->getState() != buttonState.getLatestItem())
+    if (button->getState() != buttonState.getValue())
         buttonState.onNext(button->getState());
 
-    if (button->getToggleState() != toggleState.getLatestItem())
+    if (button->getToggleState() != toggleState.getValue())
         toggleState.onNext(button->getToggleState());
 }
 
@@ -176,13 +176,13 @@ LabelExtension::~LabelExtension()
 
 void LabelExtension::labelTextChanged(Label* parent)
 {
-    if (parent->getText() != text.getLatestItem())
+    if (parent->getText() != text.getValue())
         text.onNext(parent->getText());
 }
 
 void LabelExtension::editorShown(Label* parent, TextEditor&)
 {
-    if (!showEditor.getLatestItem())
+    if (!showEditor.getValue())
         showEditor.onNext(true);
 
     _textEditor.onNext(parent->getCurrentTextEditor());
@@ -190,7 +190,7 @@ void LabelExtension::editorShown(Label* parent, TextEditor&)
 
 void LabelExtension::editorHidden(Label*, TextEditor&)
 {
-    if (showEditor.getLatestItem())
+    if (showEditor.getValue())
         showEditor.onNext(false);
 
     _textEditor.onNext(nullptr);
@@ -275,13 +275,13 @@ SliderExtension::~SliderExtension()
 
 void SliderExtension::sliderValueChanged(Slider* slider)
 {
-    if (slider->getValue() != value.getLatestItem())
+    if (slider->getValue() != value.getValue())
         value.onNext(slider->getValue());
 
-    if (hasMultipleThumbs(*slider) && slider->getMinValue() != minValue.getLatestItem())
+    if (hasMultipleThumbs(*slider) && slider->getMinValue() != minValue.getValue())
         minValue.onNext(slider->getMinValue());
 
-    if (hasMultipleThumbs(*slider) && slider->getMaxValue() != maxValue.getLatestItem())
+    if (hasMultipleThumbs(*slider) && slider->getMaxValue() != maxValue.getValue())
         maxValue.onNext(slider->getMaxValue());
 }
 

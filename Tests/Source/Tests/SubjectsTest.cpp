@@ -4,34 +4,34 @@
 TEST_CASE("BehaviorSubject",
           "[Subject][BehaviorSubject]")
 {
-    BehaviorSubject<var> subject("Initial Item");
+    BehaviorSubject<var> subject("Initial Value");
 
     // Subscribe to the subject's Observable
-    Array<var> items;
-    varxCollectItems(subject, items);
+    Array<var> values;
+    varxCollectValues(subject, values);
 
     IT("changes value when changing the Observer")
     {
-        CHECK(subject.getLatestItem() == "Initial Item");
+        CHECK(subject.getValue() == "Initial Value");
         subject.onNext(32.55);
 
-        REQUIRE(subject.getLatestItem() == var(32.55));
+        REQUIRE(subject.getValue() == var(32.55));
     }
 
-    IT("has the initial item after being created")
+    IT("has the initial value after being created")
     {
-        CHECK(subject.getLatestItem() == "Initial Item");
-        varxRequireItems(items, "Initial Item");
+        CHECK(subject.getValue() == "Initial Value");
+        varxRequireValues(values, "Initial Value");
     }
 
-    IT("emits when pushing a new item")
+    IT("emits when pushing a new value")
     {
-        varxCheckItems(items, "Initial Item");
+        varxCheckValues(values, "Initial Value");
 
-        subject.onNext("New Item");
+        subject.onNext("New Value");
 
-        CHECK(subject.getLatestItem() == "New Item");
-        varxRequireItems(items, "Initial Item", "New Item");
+        CHECK(subject.getValue() == "New Value");
+        varxRequireValues(values, "Initial Value", "New Value");
     }
 
     IT("emits an error when calling onError")
@@ -72,7 +72,7 @@ TEST_CASE("BehaviorSubject",
     IT("can receive an initial value of a custom type, without wrapping with toVar()")
     {
         BehaviorSubject<Point<int>> subject(Point<int>(13, 556));
-        REQUIRE(subject.getLatestItem() == Point<int>(13, 556));
+        REQUIRE(subject.getValue() == Point<int>(13, 556));
     }
 }
 
@@ -84,33 +84,33 @@ TEST_CASE("PublishSubject",
     DisposeBag disposeBag;
 
     // Subscribe to the subject's Observable
-    Array<var> items;
-    varxCollectItems(subject, items);
+    Array<var> values;
+    varxCollectValues(subject, values);
 
-    IT("does not emit an item if nothing has been pushed")
+    IT("does not emit a value if nothing has been pushed")
     {
-        REQUIRE(items.isEmpty());
+        REQUIRE(values.isEmpty());
     }
 
-    IT("emits when pushing a new item")
+    IT("emits when pushing a new value")
     {
-        CHECK(items.isEmpty());
+        CHECK(values.isEmpty());
 
-        subject.onNext("First Item");
+        subject.onNext("First Value");
 
-        varxRequireItems(items, "First Item");
+        varxRequireValues(values, "First Value");
     }
 
-    IT("does not emit previous item(s) when subscribing")
+    IT("does not emit previous value(s) when subscribing")
     {
         subject.onNext(1);
         subject.onNext(2);
-        varxCheckItems(items, 1, 2);
+        varxCheckValues(values, 1, 2);
 
-        Array<var> laterItems;
-        varxCollectItems(subject, laterItems);
+        Array<var> laterValues;
+        varxCollectValues(subject, laterValues);
 
-        REQUIRE(laterItems.isEmpty());
+        REQUIRE(laterValues.isEmpty());
     }
 
     IT("changes value when changing the Observer")
@@ -118,19 +118,19 @@ TEST_CASE("PublishSubject",
         subject.onNext(32.51);
         subject.onNext(3.0);
 
-        varxRequireItems(items, 32.51, 3.0);
+        varxRequireValues(values, 32.51, 3.0);
     }
 
-    IT("emits after destruction, if there's still an Observer pushing items")
+    IT("emits after destruction, if there's still an Observer pushing values")
     {
         auto subject = std::make_shared<PublishSubject<int>>();
         Observer<int> observer = *subject;
 
-        varxCollectItems(*subject, items);
+        varxCollectValues(*subject, values);
         subject.reset();
         observer.onNext(12345);
 
-        varxRequireItems(items, 12345);
+        varxRequireValues(values, 12345);
     }
 
     IT("emits an error when calling onError")
@@ -181,36 +181,36 @@ TEST_CASE("ReplaySubject",
     DisposeBag disposeBag;
 
     // Subscribe to the subject's Observable
-    Array<var> items;
-    varxCollectItems(subject, items);
+    Array<var> values;
+    varxCollectValues(subject, values);
 
-    IT("does not emit an item if nothing has been pushed")
+    IT("does not emit a value if nothing has been pushed")
     {
-        REQUIRE(items.isEmpty());
+        REQUIRE(values.isEmpty());
     }
 
-    IT("emits when pushing a new item")
+    IT("emits when pushing a new value")
     {
-        CHECK(items.isEmpty());
+        CHECK(values.isEmpty());
 
-        subject.onNext("First Item");
+        subject.onNext("First Value");
 
-        varxRequireItems(items, "First Item");
+        varxRequireValues(values, "First Value");
     }
 
-    IT("emits previous items when subscribing")
+    IT("emits previous values when subscribing")
     {
         subject.onNext(1);
         subject.onNext(2);
-        varxCheckItems(items, 1, 2);
+        varxCheckValues(values, 1, 2);
 
-        Array<var> laterItems;
-        varxCollectItems(subject, laterItems);
+        Array<var> laterValues;
+        varxCollectValues(subject, laterValues);
 
-        varxRequireItems(laterItems, 1, 2);
+        varxRequireValues(laterValues, 1, 2);
     }
 
-    IT("emits previous items limited by the max. buffer size")
+    IT("emits previous values limited by the max. buffer size")
     {
         auto subject = std::make_shared<ReplaySubject<var>>(4);
 
@@ -224,10 +224,10 @@ TEST_CASE("ReplaySubject",
         subject->onNext(3);
         subject->onNext(6);
 
-        Array<var> items;
-        varxCollectItems(*subject, items);
+        Array<var> values;
+        varxCollectValues(*subject, values);
 
-        varxRequireItems(items, 7, 28, 3, 6);
+        varxRequireValues(values, 7, 28, 3, 6);
     }
 
     IT("changes value when changing the Observer")
@@ -235,19 +235,19 @@ TEST_CASE("ReplaySubject",
         subject.onNext(32.51);
         subject.onNext(3.0);
 
-        varxRequireItems(items, 32.51, 3.0);
+        varxRequireValues(values, 32.51, 3.0);
     }
 
-    IT("emits after destruction, if there's still an Observer pushing items")
+    IT("emits after destruction, if there's still an Observer pushing values")
     {
         auto subject = std::make_shared<ReplaySubject<int>>();
         Observer<int> observer = *subject;
 
-        varxCollectItems(*subject, items);
+        varxCollectValues(*subject, values);
         subject.reset();
         observer.onNext(12345);
 
-        varxRequireItems(items, 12345);
+        varxRequireValues(values, 12345);
     }
 
     IT("emits an error when calling onError")

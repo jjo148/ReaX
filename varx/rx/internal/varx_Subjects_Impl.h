@@ -7,7 +7,7 @@ struct SubjectImpl : public ObserverImpl, public ObservableImpl
     static SubjectImpl MakePublishSubjectImpl();
     static SubjectImpl MakeReplaySubjectImpl(size_t bufferSize);
 
-    any getLatestItem() const;
+    any getValue() const;
 
     explicit SubjectImpl(const any& subject, const any& observer, const any& observable);
     

@@ -4,32 +4,32 @@
 TEST_CASE("Subscription",
           "[Subscription]")
 {
-    // Create Observable which emits a single item asynchronously
+    // Create Observable which emits a single value asynchronously
     auto observable = std::make_shared<Observable<String>>(Observable<>::create<String>([](Observer<String> observer) {
         MessageManager::getInstance()->callAsync([observer]() {
-            observer.onNext("Item");
+            observer.onNext("Value");
         });
     }));
 
     // Subscribe to it
-    Array<String> items;
-    auto subscription = std::make_shared<Subscription>(observable->subscribe([&](String item) {
-        items.add(item);
+    Array<String> values;
+    auto subscription = std::make_shared<Subscription>(observable->subscribe([&](String value) {
+        values.add(value);
     }));
 
-    IT("received items while being subscribed")
+    IT("received values while being subscribed")
     {
-        varxRunDispatchLoopUntil(!items.isEmpty());
+        varxRunDispatchLoopUntil(!values.isEmpty());
 
-        varxRequireItems(items, "Item");
+        varxRequireValues(values, "Value");
     }
 
-    IT("does not receive items after disposing")
+    IT("does not receive values after disposing")
     {
         subscription->unsubscribe();
         varxRunDispatchLoop(20);
 
-        REQUIRE(items.isEmpty());
+        REQUIRE(values.isEmpty());
     }
 
     IT("takes ownership when move constructing")
@@ -38,26 +38,26 @@ TEST_CASE("Subscription",
         other.unsubscribe();
         varxRunDispatchLoop(20);
 
-        REQUIRE(items.isEmpty());
+        REQUIRE(values.isEmpty());
     }
 
     IT("does not unsubscribe when being destroyed")
     {
         subscription.reset();
-        varxRunDispatchLoopUntil(!items.isEmpty());
+        varxRunDispatchLoopUntil(!values.isEmpty());
 
-        varxRequireItems(items, "Item");
+        varxRequireValues(values, "Value");
     }
 
-    IT("continues to receive items after the Observable is gone")
+    IT("continues to receive values after the Observable is gone")
     {
         observable.reset();
-        varxRunDispatchLoopUntil(!items.isEmpty());
+        varxRunDispatchLoopUntil(!values.isEmpty());
 
-        varxRequireItems(items, "Item");
+        varxRequireValues(values, "Value");
     }
 
-    // Unsubscribe after each IT(), to prevent old subscriptions from filling the items array
+    // Unsubscribe after each IT(), to prevent old subscriptions from filling the values array
     if (subscription)
         subscription->unsubscribe();
 }
@@ -68,40 +68,40 @@ TEST_CASE("DisposeBag",
 {
     auto disposeBag = std::make_shared<DisposeBag>();
 
-    // Create Observable which emits a single item asynchronously
+    // Create Observable which emits a single value asynchronously
     auto observable = Observable<>::create<String>([](Observer<String> observer) {
         MessageManager::getInstance()->callAsync([observer]() {
-            observer.onNext("Item");
+            observer.onNext("Value");
         });
     });
 
     // Subscribe to it
-    Array<String> items;
-    observable.subscribe([&](String item) {
-                  items.add(item);
+    Array<String> values;
+    observable.subscribe([&](String value) {
+                  values.add(value);
               })
         .disposedBy(*disposeBag);
 
-    IT("received items while not destroyed")
+    IT("received values while not destroyed")
     {
-        varxRunDispatchLoopUntil(!items.isEmpty());
+        varxRunDispatchLoopUntil(!values.isEmpty());
 
-        varxRequireItems(items, "Item");
+        varxRequireValues(values, "Value");
     }
 
-    IT("does not receive items after being destroyed")
+    IT("does not receive values after being destroyed")
     {
         disposeBag.reset();
         varxRunDispatchLoop(20);
 
-        REQUIRE(items.isEmpty());
+        REQUIRE(values.isEmpty());
     }
 
     IT("can dispose multiple Subscriptions")
     {
         for (int i = 0; i < 5; ++i) {
-            observable.subscribe([&](String item) {
-                          items.add(item);
+            observable.subscribe([&](String value) {
+                          values.add(value);
                       })
                 .disposedBy(*disposeBag);
         }
@@ -109,6 +109,6 @@ TEST_CASE("DisposeBag",
         disposeBag.reset();
         varxRunDispatchLoop(20);
 
-        REQUIRE(items.isEmpty());
+        REQUIRE(values.isEmpty());
     }
 }
