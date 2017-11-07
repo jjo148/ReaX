@@ -1,18 +1,7 @@
-/*
-  ==============================================================================
-
-    TestPrefix.h
-    Created: 27 Apr 2017 7:55:11am
-    Author:  Martin Finke
-
-  ==============================================================================
-*/
-
 #pragma once
 
 #include "JuceHeader.h"
 #include "catch.hpp"
-#include "PrintFunctions.h"
 
 using namespace juce;
 using namespace varx;
@@ -20,25 +9,25 @@ using namespace varx;
 #define CONTEXT(desc) SECTION(std::string(" Context: ") + desc, "")
 #define IT(desc) SECTION(std::string("       It ") + desc, "")
 
-/** Subscribes to an Observable and collects all emitted items into a given Array. */
+/// Subscribes to an Observable and collects all emitted items into a given Array.
 #define varxCollectItems(__observable, __arrayName) \
     DisposeBag JUCE_JOIN_MACRO(__arrayName, JUCE_JOIN_MACRO(Subscription_, __LINE__)); \
     (__observable).subscribe([&__arrayName](const decltype(__arrayName.getFirst())& item) { __arrayName.add(item); }).disposedBy(JUCE_JOIN_MACRO(__arrayName, JUCE_JOIN_MACRO(Subscription_, __LINE__)));
 
-/** REQUIREs that a given Array is equal to the list of passed items. */
+/// REQUIREs that a given Array is equal to the list of passed items.
 #define varxRequireItems(__arrayName, ...) REQUIRE(__arrayName == decltype(__arrayName)({ __VA_ARGS__ }))
 
-/** CHECKs that a given Array is equal to the list of passed items. */
+/// CHECKs that a given Array is equal to the list of passed items.
 #define varxCheckItems(__arrayName, ...) CHECK(__arrayName == decltype(__arrayName)({ __VA_ARGS__ }))
 
 
-/** Runs the JUCE dispatch loop for a given time, to process async callbacks. */
+/// Runs the JUCE dispatch loop for a given time, to process async callbacks.
 inline void varxRunDispatchLoop(int millisecondsToRunFor = 0)
 {
     MessageManager::getInstance()->runDispatchLoopUntil(millisecondsToRunFor);
 }
 
-/** Runs the JUCE dispatch loop until a given condition is fulfilled. */
+/// Runs the JUCE dispatch loop until a given condition is fulfilled.
 #define varxRunDispatchLoopUntil(__condition) \
     { \
         const auto startTime = juce::Time::getMillisecondCounter(); \
@@ -48,7 +37,16 @@ inline void varxRunDispatchLoop(int millisecondsToRunFor = 0)
     } \
     REQUIRE(__condition);
 
-/** The app window for running the tests. */
+namespace juce {
+inline std::ostream& operator<<(std::ostream& os, const var& v)
+{
+    os << v.toString();
+    return os;
+}
+}
+
+
+/// The app window for running the tests.
 class TestWindow : public DocumentWindow, private DeletedAtShutdown
 {
 public:
@@ -116,7 +114,7 @@ struct CopyAndMoveConstructible
         counters->numCopyAssignments++;
         if (counters->printDebugMessages)
             std::cout << "CopyAndMoveConstructible copy assignment" << std::endl;
-        
+
         return *this;
     }
 
@@ -127,7 +125,7 @@ struct CopyAndMoveConstructible
         counters->numMoveAssignments++;
         if (counters->printDebugMessages)
             std::cout << "CopyAndMoveConstructible move assignment" << std::endl;
-        
+
         return *this;
     }
 
