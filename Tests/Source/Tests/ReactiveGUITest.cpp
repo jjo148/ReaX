@@ -78,13 +78,13 @@ TEST_CASE("Reactive<Button>",
         IT("emits void vars asynchronously when the Button is clicked")
         {
             button.triggerClick();
-            varxRunDispatchLoop();
+            varxRunDispatchLoopUntil(!items.isEmpty());
 
             varxCheckItems(items, Empty());
 
             button.triggerClick();
             button.triggerClick();
-            varxRunDispatchLoop();
+            varxRunDispatchLoopUntil(items.size() == 3);
 
             varxRequireItems(items, Empty(), Empty(), Empty());
         }
@@ -152,17 +152,15 @@ TEST_CASE("Reactive<Button>",
             button.setClickingTogglesState(true);
 
             button.triggerClick();
-            varxRunDispatchLoop();
-            CHECK(button.rx.toggleState.getLatestItem() == true);
+            varxRunDispatchLoopUntil(button.rx.toggleState.getLatestItem() == true);
 
             button.triggerClick();
             button.triggerClick();
-            varxRunDispatchLoop();
+            varxRunDispatchLoop(20);
             CHECK(button.rx.toggleState.getLatestItem() == true);
 
             button.triggerClick();
-            varxRunDispatchLoop();
-            CHECK(button.rx.toggleState.getLatestItem() == false);
+            varxRunDispatchLoopUntil(button.rx.toggleState.getLatestItem() == false);
 
             varxRequireItems(items, false, true, false, true, false);
         }
@@ -238,7 +236,7 @@ TEST_CASE("Reactive<Button> with custom TextButton subclass",
         varxCheckItems(items,
                        Button::ButtonState::buttonNormal,
                        Button::ButtonState::buttonOver);
-        varxRunDispatchLoop();
+        varxRunDispatchLoopUntil(items.size() == 3);
 
         varxRequireItems(items,
                          Button::ButtonState::buttonNormal,

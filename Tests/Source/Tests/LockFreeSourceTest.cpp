@@ -18,7 +18,7 @@ TEST_CASE("LockFreeSource",
             
             CHECK(items.isEmpty());
             
-            varxRunDispatchLoop();
+            varxRunDispatchLoopUntil(items.size() == 4);
             varxRequireItems(items, 4, 58, 18, -3);
         }
         
@@ -28,10 +28,8 @@ TEST_CASE("LockFreeSource",
             for (int i = 0; i < 100; ++i)
                 source.onNext(i * 17, congestionPolicy);
             
-            varxRunDispatchLoop();
-            
             // The ConcurrentQueue seems to round the capacity to 4
-            CHECK(items.size() == 4);
+            varxRunDispatchLoopUntil(items.size() == 4);
             varxRequireItems(items, 96 * 17, 97 * 17, 98 * 17, 99 * 17);
         }
         
@@ -45,7 +43,7 @@ TEST_CASE("LockFreeSource",
             // Add another item
             source.onNext(382, congestionPolicy);
             
-            varxRunDispatchLoop();
+            varxRunDispatchLoop(1);
             
             // The newest item should be discarded
             REQUIRE(items.getLast() != 382);

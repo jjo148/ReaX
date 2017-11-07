@@ -21,6 +21,11 @@ public:
         session.useConfigData(config);
         session.run();
 
+        // Keep debug output window open on exit (Visual Studio):
+#if JUCE_DEBUG && JUCE_WINDOWS
+		system("pause");
+#endif
+
         quit();
     }
 

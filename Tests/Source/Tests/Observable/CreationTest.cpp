@@ -33,7 +33,7 @@ TEST_CASE("Observable::create",
         CHECK(items.isEmpty());
 
         // The items should be there after running the dispatch loop
-        varxRunDispatchLoop();
+        varxRunDispatchLoopUntil(items.size() == 2);
         varxRequireItems(items, "First", "Second");
     }
 
@@ -50,7 +50,7 @@ TEST_CASE("Observable::create",
         {
             auto subscription = observable->subscribe([&](String next) { items.add(next); });
             observable.reset();
-            varxRunDispatchLoop();
+            varxRunDispatchLoopUntil(items.size() == 2);
 
             varxRequireItems(items, "First", "Second");
         }
@@ -60,7 +60,7 @@ TEST_CASE("Observable::create",
             auto subscription = observable->subscribe([&](String next) { items.add(next); });
             observable.reset();
             subscription.unsubscribe();
-            varxRunDispatchLoop();
+            varxRunDispatchLoop(20);
 
             REQUIRE(items.isEmpty());
         }
@@ -147,7 +147,7 @@ TEST_CASE("Observable::empty",
     IT("doesn't emit any items")
     {
         varxCollectItems(o, items);
-        varxRunDispatchLoop();
+        varxRunDispatchLoop(20);
 
         REQUIRE(items.isEmpty());
     }
@@ -173,7 +173,7 @@ TEST_CASE("Observable::error",
     IT("doesn't emit any items")
     {
         o.subscribe([&](var item) { items.add(item); }, [](std::exception_ptr) {}).disposedBy(disposeBag);
-        varxRunDispatchLoop();
+        varxRunDispatchLoop(20);
 
         REQUIRE(items.isEmpty());
     }
@@ -239,7 +239,7 @@ TEST_CASE("Observable::fromValue",
     {
         Value copy(value);
         copy.setValue("Set by copy");
-        varxRunDispatchLoop();
+        varxRunDispatchLoopUntil(items.size() == 2);
 
         varxRequireItems(items, "Initial Item", "Set by copy");
     }
@@ -249,7 +249,7 @@ TEST_CASE("Observable::fromValue",
         value = "2";
         value = "3";
         value = "4";
-        varxRunDispatchLoop();
+        varxRunDispatchLoopUntil(items.size() == 2);
 
         varxRequireItems(items, "Initial Item", "4");
     }
@@ -280,10 +280,10 @@ TEST_CASE("Observable::fromValue",
             .disposedBy(disposeBag);
 
         value = "Bar";
-        varxRunDispatchLoop();
+        varxRunDispatchLoopUntil(items.size() == 4);
 
         value = "Baz";
-        varxRunDispatchLoop();
+        varxRunDispatchLoopUntil(items.size() == 6);
 
         CHECK(items.size() == 6);
 
@@ -313,7 +313,7 @@ TEST_CASE("Observable::fromValue lifetime",
     IT("emits items when the source Observable is alive")
     {
         value.setValue("New Value");
-        varxRunDispatchLoop();
+        varxRunDispatchLoopUntil(items.size() == 2);
 
         varxRequireItems(items, "Initial", "New Value");
     }
@@ -323,7 +323,7 @@ TEST_CASE("Observable::fromValue lifetime",
         source.reset();
         value.setValue("Two");
         value.setValue("Three");
-        varxRunDispatchLoop();
+        varxRunDispatchLoop(20);
 
         varxRequireItems(items, "Initial");
     }
@@ -332,7 +332,7 @@ TEST_CASE("Observable::fromValue lifetime",
     {
         value.setValue("New Value");
         source.reset();
-        varxRunDispatchLoop();
+        varxRunDispatchLoop(20);
 
         varxRequireItems(items, "Initial");
     }
@@ -346,9 +346,9 @@ TEST_CASE("Observable::fromValue lifetime",
         varxCheckItems(copyItems, "Initial");
 
         source.reset();
-        varxRunDispatchLoop();
+        varxRunDispatchLoop(20);
         value.setValue("New");
-        varxRunDispatchLoop();
+        varxRunDispatchLoopUntil(items.size() == 2);
 
         varxRequireItems(copyItems, "Initial", "New");
     }
@@ -379,7 +379,7 @@ TEST_CASE("Observable::fromValue with a Slider",
     IT("emits once if the Slider is changed once")
     {
         slider.setValue(0.45);
-        varxRunDispatchLoop();
+        varxRunDispatchLoopUntil(items.size() == 2);
 
         varxRequireItems(items, 7.6, 0.45);
     }
@@ -389,7 +389,7 @@ TEST_CASE("Observable::fromValue with a Slider",
         for (double value : { 3.41, 9.54, 4.67, 3.56 })
             slider.setValue(value);
 
-        varxRunDispatchLoop();
+        varxRunDispatchLoopUntil(items.size() == 2);
 
         varxRequireItems(items, 7.6, 3.56);
     }
@@ -401,7 +401,7 @@ TEST_CASE("Observable::interval",
 {
     IT("can create an interval below one second")
     {
-        auto o = Observable<>::interval(RelativeTime::seconds(0.003)).take(3);
+        auto o = Observable<>::interval(RelativeTime::seconds(0.04)).take(3);
         auto lastTime = Time::getCurrentTime();
         Array<RelativeTime> intervals;
         Array<int> ints;
@@ -413,9 +413,9 @@ TEST_CASE("Observable::interval",
         });
 
         CHECK(intervals.size() == 3);
-        REQUIRE(intervals[0].inSeconds() == Approx(0).epsilon(0.01));
-        REQUIRE(intervals[1].inSeconds() == Approx(0.003).epsilon(0.001));
-        REQUIRE(intervals[2].inSeconds() == Approx(0.003).epsilon(0.001));
+        REQUIRE(intervals[0].inSeconds() == Approx(0).epsilon(0.03));
+        REQUIRE(intervals[1].inSeconds() == Approx(0.04).epsilon(0.03));
+        REQUIRE(intervals[2].inSeconds() == Approx(0.04).epsilon(0.03));
 
         varxRequireItems(ints, 1, 2, 3);
     }
@@ -461,7 +461,7 @@ TEST_CASE("Observable::never",
                     [&]() { onCompletedCalled = true; })
             .disposedBy(disposeBag);
 
-        varxRunDispatchLoop();
+        varxRunDispatchLoop(20);
 
         REQUIRE(!onNextCalled);
         REQUIRE(!onErrorCalled);
