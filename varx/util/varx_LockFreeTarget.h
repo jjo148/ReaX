@@ -42,7 +42,7 @@ public:
      May be called from any thread, including the thread on which the `Observer` retrieves values.
      */
     template<typename U>
-    inline bool tryDequeue(U& value)
+    bool tryDequeue(U& value)
     {
         return detail::LockFreeTargetBase<T>::queue.try_dequeue(value);
     }
@@ -57,7 +57,7 @@ public:
      May be called from any thread, including the thread on which the `Observer` retrieves values.
      */
     template<typename U>
-    inline bool tryDequeueAll(U& value)
+    bool tryDequeueAll(U& value)
     {
         bool hadValues = false;
         while (tryDequeue(value))

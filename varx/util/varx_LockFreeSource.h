@@ -55,12 +55,12 @@ public:
      
      The congestionPolicy determines what to do if the queue is full. @see CongestionPolicy
      */
-    inline void onNext(const T& value, CongestionPolicy congestionPolicy)
+    void onNext(const T& value, CongestionPolicy congestionPolicy)
     {
         _onNext(value, congestionPolicy);
     }
 
-    inline void onNext(T&& value, CongestionPolicy congestionPolicy)
+    void onNext(T&& value, CongestionPolicy congestionPolicy)
     {
         _onNext(std::move(value), congestionPolicy);
     }

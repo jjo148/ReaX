@@ -46,6 +46,7 @@ inline void varxRunDispatchLoop(int millisecondsToRunFor = 0)
     REQUIRE(__condition);
 
 namespace juce {
+/// Output stream operator<< for juce::var
 inline std::ostream& operator<<(std::ostream& os, const var& v)
 {
     os << v.toString();
