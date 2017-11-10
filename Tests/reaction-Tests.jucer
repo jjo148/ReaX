@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="ggJgza" name="varx-Tests" projectType="guiapp" version="1.0.0"
-              bundleIdentifier="de.martin-finke.varx-Tests" includeBinaryInAppConfig="1"
+<JUCERPROJECT id="ggJgza" name="Reaction-Tests" projectType="guiapp" version="1.0.0"
+              bundleIdentifier="de.martin-finke.Reaction-Tests" includeBinaryInAppConfig="1"
               jucerVersion="5.2.0" companyName="Martin Finke" companyWebsite="http://www.martin-finke.de"
               displaySplashScreen="0" reportAppUsage="0" splashScreenColour="Dark"
               cppLanguageStandard="11" companyCopyright="Martin Finke">
-  <MAINGROUP id="J6yVM5" name="varx-Tests">
+  <MAINGROUP id="J6yVM5" name="Reaction-Tests">
     <GROUP id="{3E021249-15C8-F098-B5C0-2A3DBD19388C}" name="Source">
       <GROUP id="{BBCE1761-6AF0-DAE7-65CD-AE0365C41BE7}" name="Other">
         <FILE id="Ct7vkg" name="catch.hpp" compile="0" resource="0" file="Source/Other/catch.hpp"/>
@@ -45,10 +45,10 @@
     <XCODE_MAC targetFolder="Builds/MacOSX" keepCustomXcodeSchemes="1" extraCompilerFlags=""
                extraDefs="">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="varx-Tests"
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="Reaction-Tests"
                        osxCompatibility="10.9 SDK" cppLanguageStandard="c++11" cppLibType="libc++"
                        enablePluginBinaryCopyStep="1"/>
-        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="varx-Tests"
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="Reaction-Tests"
                        cppLanguageStandard="c++11" cppLibType="libc++" osxCompatibility="10.9 SDK"
                        enablePluginBinaryCopyStep="1"/>
       </CONFIGURATIONS>
@@ -58,25 +58,24 @@
         <MODULEPATH id="juce_events" path="../JUCE/modules"/>
         <MODULEPATH id="juce_graphics" path="../JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../JUCE/modules"/>
-        <MODULEPATH id="varx" path="../"/>
         <MODULEPATH id="juce_audio_processors" path="../JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../JUCE/modules"/>
         <MODULEPATH id="juce_audio_basics" path="../JUCE/modules"/>
+        <MODULEPATH id="reaction" path="../"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2017 targetFolder="Builds/VisualStudio2017" extraCompilerFlags="/bigobj"
             windowsTargetPlatformVersion="8.1">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
-                       isDebug="1" optimisation="1" targetName="varx-Tests" headerPath="../../Source/Other"
+                       isDebug="1" optimisation="1" targetName="Reaction-Tests" headerPath="../../Source/Other"
                        debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"/>
         <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="x64"
-                       isDebug="0" optimisation="3" targetName="varx-Tests" headerPath="../../Source/Other"
+                       isDebug="0" optimisation="3" targetName="Reaction-Tests" headerPath="../../Source/Other"
                        debugInformationFormat="ProgramDatabase" enablePluginBinaryCopyStep="0"
                        linkTimeOptimisation="1"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="varx" path="../"/>
         <MODULEPATH id="juce_gui_extra" path="../JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../JUCE/modules"/>
         <MODULEPATH id="juce_graphics" path="../JUCE/modules"/>
@@ -85,6 +84,7 @@
         <MODULEPATH id="juce_core" path="../JUCE/modules"/>
         <MODULEPATH id="juce_audio_processors" path="../JUCE/modules"/>
         <MODULEPATH id="juce_audio_basics" path="../JUCE/modules"/>
+        <MODULEPATH id="reaction" path="../"/>
       </MODULEPATHS>
     </VS2017>
   </EXPORTFORMATS>
@@ -97,7 +97,7 @@
     <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0"/>
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0"/>
     <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
-    <MODULE id="varx" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="reaction" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
   </MODULES>
   <JUCEOPTIONS JUCE_ASIO="disabled" JUCE_WASAPI="disabled" JUCE_WASAPI_EXCLUSIVE="disabled"
                JUCE_DIRECTSOUND="disabled" JUCE_ALSA="disabled" JUCE_JACK="disabled"

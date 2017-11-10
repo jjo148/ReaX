@@ -19,15 +19,15 @@ TEST_CASE("Subscription",
 
     IT("received values while being subscribed")
     {
-        varxRunDispatchLoopUntil(!values.isEmpty());
+        Reaction_RunDispatchLoopUntil(!values.isEmpty());
 
-        varxRequireValues(values, "Value");
+        Reaction_RequireValues(values, "Value");
     }
 
     IT("does not receive values after disposing")
     {
         subscription->unsubscribe();
-        varxRunDispatchLoop(20);
+        Reaction_RunDispatchLoop(20);
 
         REQUIRE(values.isEmpty());
     }
@@ -36,7 +36,7 @@ TEST_CASE("Subscription",
     {
         Subscription other = std::move(*subscription);
         other.unsubscribe();
-        varxRunDispatchLoop(20);
+        Reaction_RunDispatchLoop(20);
 
         REQUIRE(values.isEmpty());
     }
@@ -44,17 +44,17 @@ TEST_CASE("Subscription",
     IT("does not unsubscribe when being destroyed")
     {
         subscription.reset();
-        varxRunDispatchLoopUntil(!values.isEmpty());
+        Reaction_RunDispatchLoopUntil(!values.isEmpty());
 
-        varxRequireValues(values, "Value");
+        Reaction_RequireValues(values, "Value");
     }
 
     IT("continues to receive values after the Observable is gone")
     {
         observable.reset();
-        varxRunDispatchLoopUntil(!values.isEmpty());
+        Reaction_RunDispatchLoopUntil(!values.isEmpty());
 
-        varxRequireValues(values, "Value");
+        Reaction_RequireValues(values, "Value");
     }
 
     // Unsubscribe after each IT(), to prevent old subscriptions from filling the values array
@@ -84,15 +84,15 @@ TEST_CASE("DisposeBag",
 
     IT("received values while not destroyed")
     {
-        varxRunDispatchLoopUntil(!values.isEmpty());
+        Reaction_RunDispatchLoopUntil(!values.isEmpty());
 
-        varxRequireValues(values, "Value");
+        Reaction_RequireValues(values, "Value");
     }
 
     IT("does not receive values after being destroyed")
     {
         disposeBag.reset();
-        varxRunDispatchLoop(20);
+        Reaction_RunDispatchLoop(20);
 
         REQUIRE(values.isEmpty());
     }
@@ -107,7 +107,7 @@ TEST_CASE("DisposeBag",
         }
 
         disposeBag.reset();
-        varxRunDispatchLoop(20);
+        Reaction_RunDispatchLoop(20);
 
         REQUIRE(values.isEmpty());
     }

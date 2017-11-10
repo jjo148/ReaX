@@ -8,7 +8,7 @@ namespace detail {
  
  Two `any` instances are equality-comparable. If an instance `a` is compared to an instance `b` as in `a == b`, and both hold a scalar value (e.g. int, float, bool), the scalar values are converted and compared. So `var(1.f) == var(1)`. If both hold an object, it casts `b` to the type of `a`. If that succeeds, it compares them using `a`'s `operator==`. If `a` is not equality-comparable, it checks if the addresses of the wrapped values in `a` and `b` are equal. This may be false if both `a` and `b` were contructed from the same value, because the value may have been copied when constructing. Otherwise, `a` and `b` are considered to be non-equal.
  
- This class is used to create a dynamic layer between the type-safe varx::Observable and the type-safe rxcpp::observable.
+ This class is used to create a dynamic layer between the type-safe `reaction::Observable` and the type-safe `rxcpp::observable`.
 */
 ///@cond INTERNAL
 class any
@@ -43,17 +43,15 @@ public:
 
     template<typename T>
     explicit any(T&& value, typename std::enable_if<is_enum<T>::value>::type* = 0)
-    : type(Type::Enum)
-    {
-        this->value.enumValue = static_cast<juce::int64>(value);
-    }
+    : type(Type::Enum),
+      enumValue(static_cast<juce::int64>(value))
+    {}
 
     template<typename T>
     explicit any(T&& value, typename std::enable_if<is_pointer<T>::value>::type* = 0)
-    : type(Type::RawPointer)
-    {
-        this->value.rawPointerValue = value;
-    }
+    : type(Type::RawPointer),
+      rawPointerValue(value)
+    {}
 
     /**
      Creates a new instance, wrapping an arbitrary copy- or move-constructible type.
@@ -63,7 +61,6 @@ public:
     template<typename T>
     explicit any(T&& value, typename std::enable_if<is_class<T>::value && !is_any<T>::value>::type* = 0)
     : type(Type::Object),
-      value({}),
       objectValue(std::make_shared<EquatableTypedObject<typename std::decay<T>::type>>(std::forward<T>(value)))
     {}
 
@@ -88,7 +85,7 @@ public:
         if (!is<T>())
             throw typeMismatchError<T>();
 
-        return static_cast<T>(value.enumValue);
+        return static_cast<T>(enumValue);
     }
 
     template<typename T>
@@ -97,7 +94,7 @@ public:
         if (!is<T>())
             throw typeMismatchError<T>();
 
-        return static_cast<T>(value.rawPointerValue);
+        return static_cast<T>(rawPointerValue);
     }
 
     template<typename T>
@@ -108,16 +105,17 @@ public:
 
         switch (type) {
             case Type::Int:
-                return static_cast<T>(value.intValue);
+                return static_cast<T>(intValue);
             case Type::Int64:
                 // int64 can be converted to int
-                return static_cast<T>(value.int64Value);
+                return static_cast<T>(int64Value);
             case Type::Bool:
-                return static_cast<T>(value.boolValue);
+                return static_cast<T>(boolValue);
             case Type::Float:
-                return static_cast<T>(value.floatValue);
+                return static_cast<T>(floatValue);
             case Type::Double:
-                return static_cast<T>(value.doubleValue);
+                // double can be converted to float
+                return static_cast<T>(doubleValue);
 
             default:
                 // Type mismatch
@@ -254,7 +252,7 @@ private:
         double doubleValue;
         void* rawPointerValue;
         juce::int64 enumValue;
-    } value;
+    };
 
     // The held value, if it's non-scalar.
     std::shared_ptr<Object> objectValue;

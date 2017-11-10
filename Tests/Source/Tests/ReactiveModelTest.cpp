@@ -37,27 +37,27 @@ TEST_CASE("Reactive<Value> Observable",
 {
     auto value = std::make_shared<Reactive<Value>>("Initial");
     Array<var> values;
-    varxCollectValues(value->rx.subject, values);
+    Reaction_CollectValues(value->rx.subject, values);
 
     IT("emits values asynchronously when the Value changes")
     {
         value->setValue("Second");
-        varxCheckValues(values, "Initial");
-        varxRunDispatchLoopUntil(values.size() == 2);
-        varxCheckValues(values, "Initial", "Second");
+        Reaction_CheckValues(values, "Initial");
+        Reaction_RunDispatchLoopUntil(values.size() == 2);
+        Reaction_CheckValues(values, "Initial", "Second");
         value->setValue("Third");
-        varxRunDispatchLoopUntil(values.size() == 3)
+        Reaction_RunDispatchLoopUntil(values.size() == 3)
 
-        varxRequireValues(values, "Initial", "Second", "Third");
+        Reaction_RequireValues(values, "Initial", "Second", "Third");
     }
 
     IT("stops emitting values immediately when being destroyed")
     {
         value->setValue("Should not arrive");
         value.reset();
-        varxRunDispatchLoop(15);
+        Reaction_RunDispatchLoop(15);
 
-        varxRequireValues(values, "Initial");
+        Reaction_RequireValues(values, "Initial");
     }
 }
 
@@ -91,7 +91,7 @@ TEST_CASE("Reactive<AudioProcessor>",
     DummyAudioProcessor processor;
     Array<Empty> values;
     
-    varxCollectValues(processor.rx.processorChanged, values);
+    Reaction_CollectValues(processor.rx.processorChanged, values);
     
     IT("does not emit initially")
     {
@@ -102,18 +102,18 @@ TEST_CASE("Reactive<AudioProcessor>",
     {
         processor.setLatencySamples(256);
         CHECK(values.isEmpty());
-        varxRunDispatchLoopUntil(!values.isEmpty());
-        varxRequireValues(values, Empty());
+        Reaction_RunDispatchLoopUntil(!values.isEmpty());
+        Reaction_RequireValues(values, Empty());
         
         // Set to same value as before, shouldn't emit
         processor.setLatencySamples(256);
-        varxRunDispatchLoop(20);
-        varxRequireValues(values, Empty());
+        Reaction_RunDispatchLoop(20);
+        Reaction_RequireValues(values, Empty());
         
         // Set to different value, should emit
         processor.setLatencySamples(512);
-        varxRunDispatchLoopUntil(values.size() == 2);
-        varxRequireValues(values, Empty(), Empty());
+        Reaction_RunDispatchLoopUntil(values.size() == 2);
+        Reaction_RequireValues(values, Empty(), Empty());
     }
 }
 
@@ -129,53 +129,53 @@ TEST_CASE("Reactive<AudioProcessorValueTreeState>",
     valueTreeState.state = ValueTree("Test");
     
     Array<var> fooValues;
-    varxCollectValues(valueTreeState.rx.parameterValue("foo"), fooValues);
+    Reaction_CollectValues(valueTreeState.rx.parameterValue("foo"), fooValues);
     
     IT("emits an empty var() first")
     {
         Value fooValue = valueTreeState.getParameterAsValue("foo");
         CHECK(fooValue.getValue() == var());
-        varxRequireValues(fooValues, var());
+        Reaction_RequireValues(fooValues, var());
         
         IT("emits the default value after a delay")
         {
             // JUCE updates the value tree state asynchronously. Wait for the first update:
-            varxRunDispatchLoopUntil(fooValue.getValue() != var());
+            Reaction_RunDispatchLoopUntil(fooValue.getValue() != var());
             
             CHECK(fooValue.getValue() == var(2.74f));
-            varxRequireValues(fooValues, var(), var(2.74f));
+            Reaction_RequireValues(fooValues, var(), var(2.74f));
             
             IT("emits synchronously when setting a new value on the subject")
             {
                 valueTreeState.rx.parameterValue("foo").onNext(7.429f);
-                varxRequireValues(fooValues, var(), var(2.74f), var(7.429f));
+                Reaction_RequireValues(fooValues, var(), var(2.74f), var(7.429f));
             }
             
             IT("emits after a delay, when setting a new value on the ValueTree")
             {
                 valueTreeState.getParameterAsValue("foo").setValue(0.471f);
-                varxRunDispatchLoopUntil(fooValues.size() == 4);
+                Reaction_RunDispatchLoopUntil(fooValues.size() == 4);
                 
                 // For some reason, JUCE sets the parameter not just to 0.471f, but afterwards to some float value nearby
-                varxRequireValues(fooValues, var(), var(2.74f), var(0.471f), var(0.4710000157356262207));
+                Reaction_RequireValues(fooValues, var(), var(2.74f), var(0.471f), var(0.4710000157356262207));
             }
             
             IT("emits after a delay, when setting a new value on the AudioProcessorParameter")
             {
                 // setValue expects a value in the range [0..1]
                 valueTreeState.getParameter("foo")->setValue(0.98f);
-                varxRunDispatchLoopUntil(fooValues.size() == 3);
+                Reaction_RunDispatchLoopUntil(fooValues.size() == 3);
                 
-                varxRequireValues(fooValues, var(), var(2.74f), var(9.8f));
+                Reaction_RequireValues(fooValues, var(), var(2.74f), var(9.8f));
             }
             
             IT("does not emit when setting the value of a different parameter")
             {
                 valueTreeState.getParameterAsValue("bar").setValue(2.987f);
-                varxRunDispatchLoopUntil(fooValues.size() == 2);
+                Reaction_RunDispatchLoopUntil(fooValues.size() == 2);
                 
                 CHECK(valueTreeState.rx.parameterValue("bar").getValue() == var(2.987f));
-                varxRequireValues(fooValues, var(), var(2.74f));
+                Reaction_RequireValues(fooValues, var(), var(2.74f));
             }
             
             IT("sets the parameter synchronously when setting a new value on the subject")

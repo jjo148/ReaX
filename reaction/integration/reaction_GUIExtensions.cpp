@@ -69,6 +69,7 @@ ButtonExtension::ButtonExtension(Button& parent)
 
 ButtonExtension::~ButtonExtension()
 {
+    // The constructor has initialized ComponentExtension() with a Button& parent.
     static_cast<Button&>(parent).removeListener(this);
 }
 
@@ -171,6 +172,7 @@ LabelExtension::LabelExtension(Label& parent)
 
 LabelExtension::~LabelExtension()
 {
+    // The constructor has initialized ComponentExtension() with a Label& parent.
     static_cast<Label&>(parent).removeListener(this);
 }
 
@@ -270,6 +272,7 @@ SliderExtension::SliderExtension(juce::Slider& parent,
 
 SliderExtension::~SliderExtension()
 {
+    // The constructor has initialized ComponentExtension() with a Slider& parent.
     static_cast<Slider&>(parent).removeListener(this);
 }
 

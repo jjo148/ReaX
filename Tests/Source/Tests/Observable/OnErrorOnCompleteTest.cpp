@@ -36,7 +36,7 @@ TEST_CASE("Observable onError",
         asyncThrow.subscribe([](int) {}, [&](std::exception_ptr) { called = true; });
 
         CHECK_FALSE(called);
-        varxRunDispatchLoopUntil(called);
+        Reaction_RunDispatchLoopUntil(called);
         REQUIRE(called);
     }
 }

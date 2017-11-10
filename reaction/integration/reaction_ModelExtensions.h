@@ -8,10 +8,10 @@
 class ValueExtension : private juce::Value::Listener
 {
 public:
-    /// Creates a new instance with a given Value. The subject will refers to the **`ValueSource`** of `inputValue`.
+    /// Creates a new instance for a given `Value`. The subject will refers to the **`ValueSource`** of `inputValue`.
     ValueExtension(const juce::Value& inputValue);
     
-    /// The subject that's connected to the Value's `ValueSource`. This changes whenever the Value changes, and vice versa.
+    /// The subject that's connected to the `Value`'s `ValueSource`. This changes whenever the `Value` changes, and vice versa.
     const BehaviorSubject<juce::var> subject;
     
 private:
@@ -33,7 +33,7 @@ class AudioProcessorExtension : private juce::AudioProcessorListener
     juce::AudioProcessor& parent;
     LockFreeSource<Empty> _processorChanged;
 public:
-    /// Creates a new instance for a given AudioProcessor. 
+    /// Creates a new instance for a given `AudioProcessor`.
     AudioProcessorExtension(juce::AudioProcessor& parent);
     
     ~AudioProcessorExtension();
@@ -61,7 +61,7 @@ private:
  */
 class AudioProcessorValueTreeStateExtension {
 public:
-    /// Creates a new instance for a given AudioProcessorValueTreeState. 
+    /// Creates a new instance for a given `AudioProcessorValueTreeState`.
     AudioProcessorValueTreeStateExtension(juce::AudioProcessorValueTreeState& parent);
     
     ~AudioProcessorValueTreeStateExtension();
@@ -69,9 +69,9 @@ public:
     /**
      Returns a subject to control the value of the parameter with the given ID.
      
-     If this is called early in the app lifecycle, the subject contains `var()` for a short amount of time, and not the parameter's default value. This is because JUCE updates the ValueTree asynchronously.
+     If this is called early in the app lifecycle, the subject contains `var()` for a short amount of time, and not the parameter's default value. This is because JUCE updates the `ValueTree` asynchronously.
      
-     Parameter values can be changed from the audio thread; in this case the subject's Observable side emits asynchronously.
+     Parameter values can be changed from the audio thread; in this case the subject's `Observable` side emits asynchronously.
      */
     BehaviorSubject<juce::var> parameterValue(const juce::String& parameterID) const;
     

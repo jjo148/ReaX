@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- Adds reactive extensions to a juce::Component.
+ Adds reactive extensions to a `juce::Component`.
  
  If you use this directly (instead of `Reactive<Component>`), you **must** ensure that the `Component` has a longer lifetime than this `ComponentExtension`!
  */
@@ -13,16 +13,16 @@ protected:
     juce::Component& parent;
 
 public:
-    /// Creates a new instance for a given juce::Component
+    /// Creates a new instance for a given `Component`.
     ComponentExtension(juce::Component& parent);
     
     ~ComponentExtension();
     
 #pragma message("Add tests")
-    /// Controls the bounds of the Component, and emits a value whenever they change (relative to the Component's parent).
+    /// Controls the bounds of the `Component`, and emits a value whenever they change (relative to the `Component`'s parent).
     const BehaviorSubject<juce::Rectangle<int>> bounds;
 
-    /// Controls the visibility of the Component, and emits a value whenever it changes.
+    /// Controls the visibility of the `Component`, and emits a value whenever it changes.
     const BehaviorSubject<bool> visible;
 
     /// Returns an Observer that controls the colour for the given colourId.
@@ -39,7 +39,7 @@ private:
 };
 
 /**
- Adds reactive extensions to a juce::Button.
+ Adds reactive extensions to a `juce::Button`.
  
  If you use this directly (instead of `Reactive<Button>`), you **must** ensure that the `Button` has a longer lifetime than this `ButtonExtension`!
  */
@@ -50,18 +50,18 @@ class ButtonExtension : public ComponentExtension, private juce::Button::Listene
     const PublishSubject<juce::String> _tooltip;
 
 public:
-    /// Creates a new instance for a given Button.
+    /// Creates a new instance for a given `Button`.
     ButtonExtension(juce::Button& parent);
     
     ~ButtonExtension();
 
-    /// Emits a value whenever the Button is clicked.
+    /// Emits a value whenever the `Button` is clicked.
     const Observable<Empty> clicked;
 
-    /// Controls the ButtonState.
+    /// The `ButtonState` of the `Button`.
     const BehaviorSubject<juce::Button::ButtonState> buttonState;
 
-    /// Controls the toggle state.
+    /// The toggle state of the `Button`.
     const BehaviorSubject<bool> toggleState;
 
     /// Controls the button text.
@@ -80,7 +80,7 @@ private:
 };
 
 /**
-    Adds reactive extensions to a juce::ImageComponent.
+    Adds reactive extensions to an `ImageComponent`.
  
  If you use this directly (instead of `Reactive<ImageComponent>`), you **must** ensure that the `ImageComponent` has a longer lifetime than this `ImageComponentExtension`!
  */
@@ -90,7 +90,7 @@ class ImageComponentExtension : public ComponentExtension
     const PublishSubject<juce::RectanglePlacement> _imagePlacement;
 
 public:
-    /// Creates a new instance for a given ImageComponent.
+    /// Creates a new instance for a given `ImageComponent`.
     ImageComponentExtension(juce::ImageComponent& parent);
 
     /// Controls the displayed image.
@@ -106,7 +106,7 @@ private:
 };
 
 /**
- Adds reactive extensions to a juce::Label.
+ Adds reactive extensions to a `Label`.
  
  If you use this directly (instead of `Reactive<Label>`), you **must** ensure that the `Label` has a longer lifetime than this `LabelExtension`!
  */
@@ -126,51 +126,51 @@ class LabelExtension : public ComponentExtension, private juce::Label::Listener
     const BehaviorSubject<juce::WeakReference<juce::Component>> _textEditor;
 
 public:
-    /// Creates a new instance for a given Label.
+    /// Creates a new instance for a given `Label`.
     LabelExtension(juce::Label& parent);
     
     ~LabelExtension();
 
-    /// Controls the Label's text. Setting a new string notifies all Label::Listeners.
+    /// Controls the `Label` text. Setting a new string notifies all `Label::Listener`s.
     const BehaviorSubject<juce::String> text;
 
-    /// Controls whether the Label is showing a TextEditor.​ **Type: bool**
+    /// Controls whether the `Label` is showing a `TextEditor`.
     const BehaviorSubject<bool> showEditor;
 
-    /// Controls whether changes are discarded when hiding the TextEditor. The default is false.
+    /// Controls whether changes are discarded when hiding the `TextEditor`. The default is false.
     const Observer<bool> discardChangesWhenHidingEditor;
 
-    /// Controls the Label's font.
+    /// Controls the `Label` font.
     const Observer<juce::Font> font;
 
-    /// Controls the Label's justification.​ **Type: Justification**
+    /// Controls the `Label` justification.
     const Observer<juce::Justification> justificationType;
 
-    /// Controls the Label's border size.​ **Type: BorderSize<int>**
+    /// Controls the `Label` border size.
     const Observer<juce::BorderSize<int>> borderSize;
 
-    /// Attaches the Label to another Component.
+    /// Attaches the `Label` to another Component. Pass `nullptr` to detach it.
     const Observer<juce::WeakReference<juce::Component>> attachedComponent;
 
-    /// Controls whether the attachedComponent should be attached on the left.
+    /// Controls whether the `attachedComponent` should be attached on the left.
     const Observer<bool> attachedOnLeft;
 
-    /// Controls the minimum amount that the Label font can be squashed horizontally before it starts using ellipsis.
+    /// Controls the minimum amount that the `Label` font can be squashed horizontally before it starts using ellipsis.
     const Observer<float> minimumHorizontalScale;
 
-    /// Controls the keyboard type to use in the TextEditor. If the editor is currently open, the type is changed for the open editor.
+    /// Controls the keyboard type to use in the `TextEditor`. If the editor is currently open, the type is changed for the open editor.
     const Observer<juce::TextInputTarget::VirtualKeyboardType> keyboardType;
 
-    /// Controls whether clicking the Label opens a TextEditor.
+    /// Controls whether clicking the `Label` opens a `TextEditor`.
     const Observer<bool> editableOnSingleClick;
 
-    /// Controls whether double-clicking the Label opens a TextEditor.
+    /// Controls whether double-clicking the `Label` opens a `TextEditor`.
     const Observer<bool> editableOnDoubleClick;
 
-    /// Controls whether unfocussing the TextEditor discards changes.
+    /// Controls whether unfocussing the `TextEditor` discards changes.
     const Observer<bool> lossOfFocusDiscardsChanges;
 
-    /// The currently visible TextEditor, or nullptr if no editor is showing.
+    /// The currently visible `TextEditor`, or `nullptr` if no editor is showing.
     const Observable<juce::WeakReference<juce::Component>> textEditor;
 
 private:
@@ -185,7 +185,7 @@ private:
 
 
 /**
- Adds reactive extensions to a juce::Slider.
+ Adds reactive extensions to a `Slider`.
  
  If you use this directly (instead of `Reactive<Slider>`), you **must** ensure that the `Slider` has a longer lifetime than this `SliderExtension`!
  */
@@ -202,38 +202,38 @@ class SliderExtension : public ComponentExtension, private juce::Slider::Listene
     PublishSubject<bool> _textBoxIsEditable;
 
 public:
-    /// Creates a new instance for a given Slider.
+    /// Creates a new instance for a given `Slider`.
     SliderExtension(juce::Slider& parent,
                     const Observer<std::function<double(const juce::String&)>>& getValueFromText,
                     const Observer<std::function<juce::String(double)>>& getTextFromValue);
     
     ~SliderExtension();
 
-    /// Controls the Slider value.
+    /// Controls the `Slider` value.
     const BehaviorSubject<double> value;
 
-    /// Controls the minimum Slider value.
+    /// Controls the minimum `Slider` value.
     const Observer<double> minimum;
 
-    /// Controls the maximum Slider value.
+    /// Controls the maximum `Slider` value.
     const Observer<double> maximum;
 
-    /// Control the lowest value in a Slider with multiple thumbs. **Do not push values if the Slider has just one thumb.**
+    /// Control the lowest value in a `Slider` with multiple thumbs. **Do not push values if the `Slider` has just one thumb.**
     const BehaviorSubject<double> minValue;
 
-    /// Control the highest value in a Slider with multiple thumbs.​ **Do not push values if the Slider has just one thumb.**
+    /// Control the highest value in a `Slider` with multiple thumbs.​ **Do not push values if the `Slider` has just one thumb.**
     const BehaviorSubject<double> maxValue;
 
-    /// Controls the default value of the slider.​ Call onNext(DBL_MAX) to prevent double-clicking from resetting the slider.
+    /// Controls the default value of the `Slider`.​ Pass `DBL_MAX` to prevent double-clicking from resetting the slider.
     const Observer<double> doubleClickReturnValue;
 
     /// Controls the step size for values.
     const Observer<double> interval;
 
-    /// Sets the mid point for the Slider's skew factor.
+    /// Sets the mid point for the `Slider` skew factor.
     const Observer<double> skewFactorMidPoint;
 
-    /// Whether the Slider is currently being dragged.
+    /// Whether the `Slider` is currently being dragged.
     const Observable<bool> dragging;
 
     /// The thumb that is currently being dragged.​ 0 is the main thumb, 1 is the minValue thumb, 2 is the maxValue thumb. Emits -1 if no thumb is being dragged.
@@ -245,13 +245,13 @@ public:
     /// Controls whether the text-box is editable.
     const Observer<bool> textBoxIsEditable;
 
-    /// Controls whether changes are discarded when hiding the text-box. The default is false.
+    /// Controls whether changes are discarded when hiding the text-box. The default is `false`.
     const Observer<bool> discardChangesWhenHidingTextBox;
 
-    /// Controls how a String that has been entered into the text-box is converted to a Slider value.​ If you don't use this, the slider will use its getValueFromText member function.
+    /// Controls how a String that has been entered into the text-box is converted to a `Slider` value.​ If you don't use this, the `Slider` will use its `getValueFromText` member function.
     const Observer<std::function<double(const juce::String&)>> getValueFromText;
 
-    /// Controls how a Slider value is displayed as a String.​ If you don't use this, the slider will use its getTextFromValue member function.
+    /// Controls how a `Slider` value is displayed as a `String`.​ If you don't use this, the slider will use its `getTextFromValue` member function.
     const Observer<std::function<juce::String(double)>> getTextFromValue;
 
 private:

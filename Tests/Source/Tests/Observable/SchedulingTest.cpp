@@ -46,7 +46,7 @@ TEST_CASE("Observable::observeOn",
         threadIDs.add(nullptr);
 
         REQUIRE(threadIDs.size() == 5);
-        varxRequireValues(values, 24, 48, 72);
+        Reaction_RequireValues(values, 24, 48, 72);
     }
 
     IT("can schedule to the message thread")
@@ -54,14 +54,14 @@ TEST_CASE("Observable::observeOn",
         auto onMessageThread = observable.observeOn(Scheduler::messageThread()).map([](int i) {
             return i * 2;
         });
-        varxCollectValues(onMessageThread, values);
+        Reaction_CollectValues(onMessageThread, values);
 
         // There shouldn't be any values yet, because observeOn is asynchronous
         CHECK(values.isEmpty());
 
         // Wait for values to be emitted asynchronously
-        varxRunDispatchLoopUntil(values.size() == 3);
+        Reaction_RunDispatchLoopUntil(values.size() == 3);
 
-        varxRequireValues(values, 2, 4, 6);
+        Reaction_RequireValues(values, 2, 4, 6);
     }
 }

@@ -4,7 +4,7 @@ template<typename T>
 class Observer;
 
 /**
- An Observable emits values of a given type.
+ An Observable emits values over time.
  
  Observers can subscribe to Observable​s, to be notified whenever the Observable emits a value.
  
@@ -21,7 +21,7 @@ public:
     typedef detail::any any;
 
     ///@{
-    /// Determines whether a given type is an Observable. 
+    /// Determines whether a given type is an Observable.
     template<typename U>
     struct IsObservable : std::false_type
     {
@@ -33,11 +33,11 @@ public:
     };
     ///@}
 
-    /// The return type of calling a function of type Function with parameters of types Args.
+    /// The return type of calling a function of type `Function` with parameters of types Args.
     template<typename Function, typename... Args>
     using CallResult = typename std::result_of<Function(Args...)>::type;
 
-    
+
 #pragma mark - Creation
     /**
      Creates an Observable that doesn't emit any values and notifies onComplete immediately.
@@ -48,30 +48,30 @@ public:
     : impl(Impl::empty())
     {}
 
-    
+
 #pragma mark - Subscription
     ///@{
     /**
      Subscribes to an Observable, to receive values it emits.
      
-     The **onNext** function is called whenever the Observable emits a new value. It may be called synchronously before subscribe() returns.
+     The **onNext** function is called whenever the Observable emits a new value. It may be called synchronously before `subscribe()` returns.
      
-     The **onError** function is called when the Observable has failed to generate the expected data, or has encountered some other error. If onError is called, the Observable will not make any more calls. **If you don't pass an onError handler, an exception inside the Observable will terminate your app.**
+     The **onError** function is called when the Observable has failed to generate the expected data, or has encountered some other error. If `onError` is called, the Observable will not make any more calls. **If you don't pass an onError handler, an exception inside the Observable will terminate your app.**
      
      The **onCompleted** function is called exactly once to notify that the Observable has generated all data and will not emit any more values.
      
-     The returned Subscription can be used to unsubscribe from the Observable, to stop receiving values from it. **You will keep receiving values until you call Subscription::dispose, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
+     The returned Subscription can be used to `unsubscribe()` from the Observable, to stop receiving values from it. **You will keep receiving values until you call Subscription::unsubscribe, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
      
      Example:
      
          DisposeBag disposeBag;
          Observable::from<int>({4, 17}).subscribe([](int i) {
              std::cout << i << " ";
-         }).disposedBy(disposeBag); // Output: 4 17
+         }).disposedBy(disposeBag);
      */
     Subscription subscribe(const std::function<void(const T&)>& onNext,
-                         const std::function<void(std::exception_ptr)>& onError = Impl::TerminateOnError,
-                         const std::function<void()>& onCompleted = Impl::EmptyOnCompleted) const
+                           const std::function<void(std::exception_ptr)>& onError = Impl::TerminateOnError,
+                           const std::function<void()>& onCompleted = Impl::EmptyOnCompleted) const
     {
         return impl.subscribe([onNext](const any& next) {
             onNext(next.get<T>());
@@ -81,29 +81,29 @@ public:
     }
 
     /**
-     Subscribes an Observer to an Observable. The Observer is notified whenever the Observable emits a value, or notifies an onError / onCompleted.
+     Subscribes an Observer to an Observable. The Observer is notified whenever the Observable emits a value, or notifies `onError` / `onCompleted`.
      
-     The returned Subscription can be used to unsubscribe the Observer, so it stops being notified by this Observable. **The Observer keeps receiving values until you call Subscription::dispose, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
+     The returned Subscription can be used to `unsubscribe()` the Observer, so it stops being notified by this Observable. **The Observer keeps receiving values until you call Subscription::unsubscribe, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
      */
     template<typename U>
     typename std::enable_if<std::is_convertible<T, U>::value, Subscription>::type subscribe(const Observer<U>& observer) const
     {
-        // Convert values from T to U, using implicit conversion, constructors, whatever works
-        auto converted = impl.map([](const any& t) {
+        // Converts values from T to U
+        static auto convert = [](const any& t) {
             return toAny<U>(t.get<T>());
-        });
+        };
 
-        return converted.subscribe(observer.impl);
+        return impl.map(convert).subscribe(observer.impl);
     }
     ///@}
 
-    
+
 #pragma mark - Operators
     ///@{
     /**
-     Returns an Observable that emits **whenever** a value is emitted by either this Observable **or** one of the  `others`. It combines the **latest** value from each Observable via the given function and emits the result of this function.
+     Returns an Observable that emits **whenever** a value is emitted by either this Observable **or** one of the `others`. It combines the **latest** value from each Observable via the given function and emits what was returned by the function.
      
-     This is different from Observable::withLatestFrom because it emits whenever this Observable or one of the  `others` emits a value.
+     This is different from Observable::withLatestFrom because it emits whenever this Observable or one of the `others` emits a value.
      
      @see Observable::withLatestFrom
      */
@@ -461,7 +461,7 @@ public:
         return values;
     }
 
-    /// Covariant constructor: If U is convertible to T, an Observable<U> is convertible to an Observable<T>. 
+    /// Covariant constructor: If U is convertible to T, an Observable<U> is convertible to an Observable<T>.
     template<typename U>
     Observable(const Observable<U>& other, typename std::enable_if<std::is_convertible<U, T>::value>::type* = 0)
     : Observable(other.impl.map([](const any& u) { return toAny(static_cast<T>(u.get<U>())); }))
@@ -507,10 +507,10 @@ class Observable<void>
 public:
     typedef detail::ObservableImpl Impl;
     typedef detail::any any;
-    
-    
+
+
 #pragma mark - Creation
-    
+
     /**
      Creates an Observable which emits values from an Observer on each subscription.
      
@@ -523,7 +523,7 @@ public:
             onSubscribe(Observer<T>(std::move(impl)));
         });
     }
-    
+
     /**
      Creates a new Observable for each subscriber, by calling the `factory` function on each new subscription.
      */
@@ -534,7 +534,7 @@ public:
             return factory().impl;
         });
     }
-    
+
     /**
      Creates an Observable that doesn't emit any values and notifies onComplete immediately.
      */
@@ -543,7 +543,7 @@ public:
     {
         return Impl::empty();
     }
-    
+
     /**
      Creates an Observable which doesn't emit any values, and immediately notifies onError.
      */
@@ -552,7 +552,7 @@ public:
     {
         return Impl::error(error);
     }
-    
+
     /**
      Creates an Observable that immediately emits the values from the given Array.
      
@@ -566,13 +566,13 @@ public:
     static Observable<T> from(const juce::Array<T>& array)
     {
         juce::Array<any> values;
-        
+
         for (auto& value : array)
             values.add(Observable<T>::toAny(value));
-        
+
         return Impl::from(std::move(values));
     }
-    
+
     /**
      Creates an Observable from a given JUCE Value. The returned Observable **only emits values until it is destroyed**, so you are responsible for managing its lifetime. Or use Reactive<Value>, which will handle this.
      
@@ -584,7 +584,7 @@ public:
     {
         return Impl::fromValue(value);
     }
-    
+
     /**
      Returns an Observable that emits one value every `interval`, starting at the time of subscription (where the first value is emitted). The emitted values are `1`, `2`, `3`, and so on.
      
@@ -596,7 +596,7 @@ public:
     {
         return Impl::interval(interval);
     }
-    
+
     /**
      Creates an Observable which emits a single value.
      
@@ -607,7 +607,7 @@ public:
     {
         return Impl::just(Observable<T>::toAny(value));
     }
-    
+
     /**
      Creates an Observable that never emits any events and never terminates.
      */
@@ -616,7 +616,7 @@ public:
     {
         return Impl::never();
     }
-    
+
     /**
      Creates an Observable which emits a range of values, starting at `first` to (and including) `last`. It completes after emitting the `last` value.
      
@@ -633,7 +633,7 @@ public:
         static_assert(std::is_integral<T>::value, "first and last must be integral or floating-point.");
         return Impl::integralRange(first, last, step);
     }
-    
+
     /**
      Creates an Observable which emits a given value repeatedly.
      
@@ -644,7 +644,7 @@ public:
     {
         return Impl::repeat(Observable<T>::toAny(value));
     }
-    /// \overload 
+    /// \overload
     template<typename T>
     static Observable<T> repeat(const T& value, unsigned int times)
     {

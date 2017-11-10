@@ -18,13 +18,13 @@ using IsSlider = typename std::enable_if<std::is_base_of<juce::Slider, T>::value
 }
 
 /**
-    Adds reactive extensions to a juce::Component (or subclass).
+    Adds reactive extensions to a `Component` (or subclass).
  */
 template<typename ComponentType>
 class Reactive<ComponentType, detail::IsSimpleComponent<ComponentType>> : public ComponentType
 {
 public:
-    /// Creates a new instance. @see juce::Component::Component. 
+    /// Creates a new instance. @see `juce::Component::Component`.
     template<typename... Args>
     Reactive(Args&&... args)
     : ComponentType(std::forward<Args>(args)...),
@@ -36,13 +36,13 @@ public:
 };
 
 /**
-    Adds reactive extensions to a juce::ImageComponent (or subclass).
+    Adds reactive extensions to an `ImageComponent` (or subclass).
  */
 template<typename ImageComponentType>
 class Reactive<ImageComponentType, detail::IsImageComponent<ImageComponentType>> : public ImageComponentType
 {
 public:
-    /// Creates a new instance. @see juce::ImageComponent::ImageComponent. 
+    /// Creates a new instance. @see `juce::ImageComponent::ImageComponent`.
     template<typename... Args>
     Reactive(Args&&... args)
     : ImageComponentType(std::forward<Args>(args)...),
@@ -54,13 +54,13 @@ public:
 };
 
 /**
-    Adds reactive extensions to a juce::Button (or subclass).
+    Adds reactive extensions to a `Button` (or subclass).
  */
 template<typename ButtonType>
 class Reactive<ButtonType, detail::IsButton<ButtonType>> : public ButtonType
 {
 public:
-    /// Creates a new instance. @see juce::Button::Button. 
+    /// Creates a new instance. @see `juce::Button::Button`.
     template<typename... Args>
     Reactive(Args&&... args)
     : ButtonType(std::forward<Args>(args)...),
@@ -72,13 +72,13 @@ public:
 };
 
 /**
-    Adds reactive extensions to a juce::Label (or subclass).
+    Adds reactive extensions to a `Label` (or subclass).
  */
 template<typename LabelType>
 class Reactive<LabelType, detail::IsLabel<LabelType>> : public LabelType
 {
 public:
-    /// Creates a new instance. @see juce::Label::Label. 
+    /// Creates a new instance. @see `juce::Label::Label`.
     template<typename... Args>
     Reactive(Args&&... args)
     : LabelType(std::forward<Args>(args)...),
@@ -90,7 +90,7 @@ public:
 };
 
 /**
-    Adds reactive extensions to a juce::Slider (or subclass).
+    Adds reactive extensions to a `Slider` (or subclass).
  */
 template<typename SliderType>
 class Reactive<SliderType, detail::IsSlider<SliderType>> : public SliderType
@@ -105,7 +105,7 @@ class Reactive<SliderType, detail::IsSlider<SliderType>> : public SliderType
     PublishSubject<GetTextFromValue_Function> getTextFromValue_Subject;
 
 public:
-    /// Creates a new instance. @see juce::Slider::Slider. 
+    /// Creates a new instance. @see `juce::Slider::Slider`. 
     template<typename... Args>
     Reactive(Args&&... args)
     : SliderType(std::forward<Args>(args)...),

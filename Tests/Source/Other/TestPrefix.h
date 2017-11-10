@@ -5,12 +5,12 @@
 #define DONT_SET_USING_JUCE_NAMESPACE 1
 #include "JuceHeader.h"
 
-VARX_ENABLE_EXTRA_WARNINGS
+REACTION_ENABLE_EXTRA_WARNINGS
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wheader-hygiene"
 using namespace juce;
-using namespace varx;
+using namespace reaction;
 #pragma clang diagnostic pop
 
 
@@ -18,29 +18,29 @@ using namespace varx;
 #define IT(desc) SECTION(std::string("       It ") + desc, "")
 
 /// Subscribes to an Observable and collects all emitted values into a given Array.
-#define varxCollectValues(__observable, __arrayName) \
+#define Reaction_CollectValues(__observable, __arrayName) \
     DisposeBag JUCE_JOIN_MACRO(__arrayName, JUCE_JOIN_MACRO(Subscription_, __LINE__)); \
     (__observable).subscribe([&__arrayName](const decltype(__arrayName.getFirst())& value) { __arrayName.add(value); }).disposedBy(JUCE_JOIN_MACRO(__arrayName, JUCE_JOIN_MACRO(Subscription_, __LINE__)));
 
 /// REQUIREs that a given Array is equal to the given list of values.
-#define varxRequireValues(__arrayName, ...) REQUIRE(__arrayName == decltype(__arrayName)({ __VA_ARGS__ }))
+#define Reaction_RequireValues(__arrayName, ...) REQUIRE(__arrayName == decltype(__arrayName)({ __VA_ARGS__ }))
 
 /// CHECKs that a given Array is equal to the given list of values.
-#define varxCheckValues(__arrayName, ...) CHECK(__arrayName == decltype(__arrayName)({ __VA_ARGS__ }))
+#define Reaction_CheckValues(__arrayName, ...) CHECK(__arrayName == decltype(__arrayName)({ __VA_ARGS__ }))
 
 
 /// Runs the JUCE dispatch loop for a given time, to process async callbacks.
-inline void varxRunDispatchLoop(int millisecondsToRunFor = 0)
+inline void Reaction_RunDispatchLoop(int millisecondsToRunFor = 0)
 {
     MessageManager::getInstance()->runDispatchLoopUntil(millisecondsToRunFor);
 }
 
 /// Runs the JUCE dispatch loop until a given condition is fulfilled.
-#define varxRunDispatchLoopUntil(__condition) \
+#define Reaction_RunDispatchLoopUntil(__condition) \
     { \
         const auto startTime = juce::Time::getMillisecondCounter(); \
         while (!(__condition) && Time::getMillisecondCounter() < startTime + 5 * 1000) { \
-            varxRunDispatchLoop(5); \
+            Reaction_RunDispatchLoop(5); \
         } \
     } \
     REQUIRE(__condition);
@@ -72,7 +72,7 @@ public:
 
 private:
     TestWindow()
-    : DocumentWindow("varx-Tests", Colours::white, DocumentWindow::TitleBarButtons::closeButton, true)
+    : DocumentWindow("Reaction-Tests", Colours::white, DocumentWindow::TitleBarButtons::closeButton, true)
     {
         ScopedPointer<Component> component(new Component());
         component->setSize(1, 1);

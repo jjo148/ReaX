@@ -1,39 +1,34 @@
 namespace detail {
 any::any(int value)
-: type(Type::Int)
-{
-    this->value.intValue = value;
-}
+: type(Type::Int),
+  intValue(value)
+{}
 
 any::any(int64 value)
-: type(Type::Int64)
-{
-    this->value.int64Value = value;
-}
+: type(Type::Int64),
+  int64Value(value)
+{}
 
 any::any(bool value)
-: type(Type::Bool)
-{
-    this->value.boolValue = value;
-}
+: type(Type::Bool),
+  boolValue(value)
+{}
 
 any::any(float value)
-: type(Type::Float)
-{
-    this->value.floatValue = value;
-}
+: type(Type::Float),
+  floatValue(value)
+{}
 
 any::any(double value)
-: type(Type::Double)
-{
-    this->value.doubleValue = value;
-}
+: type(Type::Double),
+  doubleValue(value)
+{}
 
 bool any::equals(const any& other) const
 {
     if (isArithmetic() != other.isArithmetic())
         return false;
-    
+
     switch (type) {
         case Type::Int:
             return (get<int>() == other.get<int>());
@@ -46,9 +41,9 @@ bool any::equals(const any& other) const
         case Type::Double:
             return (get<double>() == other.get<double>());
         case Type::Enum:
-            return (other.type == Type::Enum && value.enumValue == other.value.enumValue);
+            return (other.type == Type::Enum && enumValue == other.enumValue);
         case Type::RawPointer:
-            return (other.type == Type::RawPointer && value.rawPointerValue == other.value.rawPointerValue);
+            return (other.type == Type::RawPointer && rawPointerValue == other.rawPointerValue);
         case Type::Object:
             return objectValue->equals(*other.objectValue);
     }
