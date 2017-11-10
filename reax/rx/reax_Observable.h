@@ -10,36 +10,26 @@ class Observer;
  
  For an introduction to Observables, please refer to http://reactivex.io/documentation/observable.html.
  */
-template<typename T = void>
+template<typename T>
 class Observable
 {
 public:
 #pragma mark - Helpers
     /// The type of values emitted by this Observable.
     typedef T ValueType;
-
-    /// \internal
-    typedef detail::ObservableImpl Impl;
-    /// \internal
-    typedef detail::any any;
     
-    ///@{
-    /// Determines whether a given type is an Observable.
+    /// \cond internal
     template<typename U>
     struct IsObservable : std::false_type
     {
     };
-
     template<typename U>
     struct IsObservable<Observable<U>> : std::true_type
     {
     };
-    ///@}
-
-    /// The return type of calling a function of type `Function` with parameters of types Args.
     template<typename Function, typename... Args>
     using CallResult = typename std::result_of<Function(Args...)>::type;
-
+    /// \endcond
 
 #pragma mark - Creation
     /**
@@ -232,7 +222,7 @@ public:
      The returned Subscription can be used to `unsubscribe()` the Observer, so it stops being notified by this Observable. **The Observer keeps receiving values until you call Subscription::unsubscribe, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
      */
     template<typename U>
-    typename std::enable_if<std::is_convertible<T, U>::value, Subscription>::type subscribe(const Observer<U>& observer) const
+    Subscription subscribe(const Observer<U>& observer, typename std::enable_if<std::is_convertible<T, U>::value>::type* = 0) const
     {
         // Converts values from T to U
         static auto convert = [](const any& t) {
@@ -440,8 +430,8 @@ public:
     /**
      Returns an Observable which suppresses emitting values from this Observable until the `other` Observable sequence emits a value.
      */
-    template<typename T1>
-    Observable<T> skipUntil(const Observable<T1>& other) const
+    template<typename U>
+    Observable<T> skipUntil(const Observable<U>& other) const
     {
         return impl.skipUntil(other.impl);
     }
@@ -618,6 +608,9 @@ private:
     friend class Observable;
     template<typename U>
     friend class Subject;
+    
+    typedef detail::ObservableImpl Impl;
+    typedef detail::any any;
 
     Impl impl;
 

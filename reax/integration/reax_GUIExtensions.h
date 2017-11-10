@@ -10,8 +10,9 @@ class ComponentExtension : private juce::ComponentListener, private juce::MouseL
     const std::unique_ptr<std::map<int, PublishSubject<juce::Colour>>> colourSubjects;
     
 protected:
-    /// The Component this extension is bound to.
+    /// \cond internal
     juce::Component& parent;
+    /// \endcond
 
 public:
     /// Creates a new instance for a given `Component`.
