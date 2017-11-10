@@ -15,11 +15,14 @@ class Observable
 {
 public:
 #pragma mark - Helpers
+    /// The type of values emitted by this Observable.
     typedef T ValueType;
 
+    /// \internal
     typedef detail::ObservableImpl Impl;
+    /// \internal
     typedef detail::any any;
-
+    
     ///@{
     /// Determines whether a given type is an Observable.
     template<typename U>

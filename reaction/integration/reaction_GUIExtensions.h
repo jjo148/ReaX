@@ -10,6 +10,7 @@ class ComponentExtension : private juce::ComponentListener, private juce::MouseL
     const std::unique_ptr<std::map<int, PublishSubject<juce::Colour>>> colourSubjects;
     
 protected:
+    /// The Component this extension is bound to.
     juce::Component& parent;
 
 public:

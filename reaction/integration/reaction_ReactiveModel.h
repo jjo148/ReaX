@@ -40,7 +40,7 @@ public:
     /// Sets a new value.
     void setValue(const juce::var& newValue);
 
-    /// Sets a new value. This is the same as calling `Reactive<Value>::setValue`.
+    /// Sets a new value. This is the same as calling `setValue`.
     Reactive& operator=(const juce::var& newValue);
 
     /// The reactive extension object.
