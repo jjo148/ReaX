@@ -215,7 +215,7 @@ Subscription ObservableImpl::subscribe(const ObserverImpl& observer) const
 
 #pragma mark - Operators
 
-#define REACTION_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION(__functionName, __list) \
+#define REAX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION(__functionName, __list) \
     const auto it = __list.begin(); \
     switch (__list.size()) { \
         case 1: \
@@ -239,7 +239,7 @@ Subscription ObservableImpl::subscribe(const ObserverImpl& observer) const
             return any(0); \
     }
 
-#define REACTION_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_FUNCTION(__functionName, __list, __function) \
+#define REAX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_FUNCTION(__functionName, __list, __function) \
     const auto it = __list.begin(); \
     switch (__list.size()) { \
         case 1: \
@@ -264,12 +264,12 @@ Subscription ObservableImpl::subscribe(const ObserverImpl& observer) const
     }
 
 ObservableImpl ObservableImpl::combineLatest(std::initializer_list<ObservableImpl> others, const any& function) const {
-    REACTION_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_FUNCTION(combineLatest, others, function)
+    REAX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_FUNCTION(combineLatest, others, function)
 }
 
 ObservableImpl ObservableImpl::concat(const Array<ObservableImpl>& others) const
 {
-    REACTION_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION(concat, others);
+    REAX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION(concat, others);
 }
 
 ObservableImpl ObservableImpl::debounce(const juce::RelativeTime& period) const
@@ -306,7 +306,7 @@ ObservableImpl ObservableImpl::map(const std::function<any(const any&)>& functio
 }
 
 ObservableImpl ObservableImpl::merge(const juce::Array<ObservableImpl>& others) const {
-    REACTION_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION(merge, others)
+    REAX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION(merge, others)
 }
 
 ObservableImpl ObservableImpl::reduce(const any& startValue, const std::function<any(const any&, const any&)>& f) const
@@ -336,7 +336,7 @@ ObservableImpl ObservableImpl::skipUntil(const ObservableImpl& other) const
 
 ObservableImpl ObservableImpl::startWith(juce::Array<any>&& values) const
 {
-    REACTION_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION(startWith, values);
+    REAX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION(startWith, values);
 }
 
 ObservableImpl ObservableImpl::switchOnNext() const
@@ -370,12 +370,12 @@ ObservableImpl ObservableImpl::takeWhile(const std::function<bool(const any&)>& 
 }
 
 ObservableImpl ObservableImpl::withLatestFrom(std::initializer_list<ObservableImpl> others, const any& function) const {
-    REACTION_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_FUNCTION(withLatestFrom, others, function)
+    REAX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_FUNCTION(withLatestFrom, others, function)
 }
 
 ObservableImpl ObservableImpl::zip(std::initializer_list<ObservableImpl> others, const any& function) const
 {
-    REACTION_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_FUNCTION(zip, others, function)
+    REAX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_FUNCTION(zip, others, function)
 }
 
 

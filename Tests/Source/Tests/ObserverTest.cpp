@@ -12,9 +12,9 @@ TEST_CASE("Observer",
         });
 
         Array<var> values;
-        Reaction_CollectValues(o, values);
+        ReaX_CollectValues(o, values);
 
-        Reaction_RequireValues(values, var(3), var("Hello"));
+        ReaX_RequireValues(values, var(3), var("Hello"));
     }
 
     IT("emits an error when calling onError")
@@ -50,14 +50,14 @@ TEST_CASE("Observer",
 
         // Collect values from subject
         Array<var> values;
-        Reaction_CollectValues(subject, values);
+        ReaX_CollectValues(subject, values);
 
         // Subscribe observer to some observable
         Observer<var> observer = subject;
         Observable<var>::from({ 3, 4, 5 }).subscribe(observer).disposedBy(disposeBag);
 
         // Subject should have received values from Observable
-        Reaction_RequireValues(values, var("Initial Value"), var(3), var(4), var(5));
+        ReaX_RequireValues(values, var("Initial Value"), var(3), var(4), var(5));
         REQUIRE(subject.getValue() == var(5));
     }
 }
@@ -76,40 +76,40 @@ TEST_CASE("Observer contravariance",
         {
             Array<var> values;
             Observer<float> o = vars;
-            Reaction_CollectValues(vars, values);
+            ReaX_CollectValues(vars, values);
             o.onNext(14.57f);
             
-            Reaction_RequireValues(values, 14.57f);
+            ReaX_RequireValues(values, 14.57f);
         }
         
         IT("can convert from float to var")
         {
             Array<float> values;
             Observer<var> o = floats;
-            Reaction_CollectValues(floats, values);
+            ReaX_CollectValues(floats, values);
             o.onNext(var(85.2f));
             
-            Reaction_RequireValues(values, 85.2f);
+            ReaX_RequireValues(values, 85.2f);
         }
         
         IT("can convert from var to String")
         {
             Array<var> values;
             Observer<String> o = vars;
-            Reaction_CollectValues(vars, values);
+            ReaX_CollectValues(vars, values);
             o.onNext("Hello world!");
             
-            Reaction_RequireValues(values, "Hello world!");
+            ReaX_RequireValues(values, "Hello world!");
         }
         
         IT("can convert from float to int")
         {
             Array<int> values;
             Observer<float> o = ints;
-            Reaction_CollectValues(ints, values);
+            ReaX_CollectValues(ints, values);
             o.onNext(15.67f);
             
-            Reaction_RequireValues(values, 15);
+            ReaX_RequireValues(values, 15);
         }
     }
     
@@ -138,10 +138,10 @@ TEST_CASE("Observer contravariance",
         {
             Array<Base> values;
             Observer<Derived> o = bases;
-            Reaction_CollectValues(bases, values);
+            ReaX_CollectValues(bases, values);
             o.onNext(Derived(205, 1002));
             
-            Reaction_RequireValues(values, Base(205));
+            ReaX_RequireValues(values, Base(205));
         }
     }
 }

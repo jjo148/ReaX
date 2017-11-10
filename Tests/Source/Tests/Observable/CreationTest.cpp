@@ -14,9 +14,9 @@ TEST_CASE("Observable::create",
             observer.onNext("First");
             observer.onNext("Second");
         });
-        Reaction_CollectValues(observable, values);
+        ReaX_CollectValues(observable, values);
 
-        Reaction_RequireValues(values, "First", "Second");
+        ReaX_RequireValues(values, "First", "Second");
     }
 
     IT("emits values when pushing values asynchronously")
@@ -27,14 +27,14 @@ TEST_CASE("Observable::create",
                 observer.onNext("Second");
             });
         });
-        Reaction_CollectValues(observable, values);
+        ReaX_CollectValues(observable, values);
 
         // There shouldn't be any values until the async callback is executed
         CHECK(values.isEmpty());
 
         // The values should be there after running the dispatch loop
-        Reaction_RunDispatchLoopUntil(values.size() == 2);
-        Reaction_RequireValues(values, "First", "Second");
+        ReaX_RunDispatchLoopUntil(values.size() == 2);
+        ReaX_RequireValues(values, "First", "Second");
     }
 
     IT("emits can emit values asynchronously after being destroyed")
@@ -50,9 +50,9 @@ TEST_CASE("Observable::create",
         {
             auto subscription = observable->subscribe([&](String next) { values.add(next); });
             observable.reset();
-            Reaction_RunDispatchLoopUntil(values.size() == 2);
+            ReaX_RunDispatchLoopUntil(values.size() == 2);
 
-            Reaction_RequireValues(values, "First", "Second");
+            ReaX_RequireValues(values, "First", "Second");
         }
 
         IT("doesn't emit when the subscription has unsubscribed")
@@ -60,7 +60,7 @@ TEST_CASE("Observable::create",
             auto subscription = observable->subscribe([&](String next) { values.add(next); });
             observable.reset();
             subscription.unsubscribe();
-            Reaction_RunDispatchLoop(20);
+            ReaX_RunDispatchLoop(20);
 
             REQUIRE(values.isEmpty());
         }
@@ -71,11 +71,11 @@ TEST_CASE("Observable::create",
         auto observable = Observable<String>::create([](Observer<String> observer) {
             observer.onNext("onSubscribe called");
         });
-        Reaction_CollectValues(observable, values);
-        Reaction_CollectValues(observable, values);
-        Reaction_CollectValues(observable, values);
+        ReaX_CollectValues(observable, values);
+        ReaX_CollectValues(observable, values);
+        ReaX_CollectValues(observable, values);
 
-        Reaction_RequireValues(values, "onSubscribe called", "onSubscribe called", "onSubscribe called");
+        ReaX_RequireValues(values, "onSubscribe called", "onSubscribe called", "onSubscribe called");
     }
 
     IT("captures an object until the Observable is destroyed")
@@ -128,11 +128,11 @@ TEST_CASE("Observable::defer",
             return Observable<int>::from({ 3, 4 });
         });
 
-        Reaction_CollectValues(observable, values);
-        Reaction_CollectValues(observable, values);
-        Reaction_CollectValues(observable, values);
+        ReaX_CollectValues(observable, values);
+        ReaX_CollectValues(observable, values);
+        ReaX_CollectValues(observable, values);
 
-        Reaction_RequireValues(values, 3, 4, 3, 4, 3, 4);
+        ReaX_RequireValues(values, 3, 4, 3, 4, 3, 4);
         REQUIRE(numCalls == 3);
     }
 }
@@ -146,8 +146,8 @@ TEST_CASE("Observable::empty",
 
     IT("doesn't emit any values")
     {
-        Reaction_CollectValues(o, values);
-        Reaction_RunDispatchLoop(20);
+        ReaX_CollectValues(o, values);
+        ReaX_RunDispatchLoop(20);
 
         REQUIRE(values.isEmpty());
     }
@@ -173,7 +173,7 @@ TEST_CASE("Observable::error",
     IT("doesn't emit any values")
     {
         o.subscribe([&](var value) { values.add(value); }, [](std::exception_ptr) {}).disposedBy(disposeBag);
-        Reaction_RunDispatchLoop(20);
+        ReaX_RunDispatchLoop(20);
 
         REQUIRE(values.isEmpty());
     }
@@ -194,33 +194,33 @@ TEST_CASE("Observable::from",
     IT("can be created from an Array<int>")
     {
         Array<long> values;
-        Reaction_CollectValues(Observable<int>::from(Array<int>({ 3, 6, 8 })), values);
+        ReaX_CollectValues(Observable<int>::from(Array<int>({ 3, 6, 8 })), values);
 
-        Reaction_RequireValues(values, 3, 6, 8);
+        ReaX_RequireValues(values, 3, 6, 8);
     }
 
     IT("can be created from a std::initializer_list<var>")
     {
         Array<var> values;
-        Reaction_CollectValues(Observable<var>::from({ var("Hello"), var(15.5) }), values);
+        ReaX_CollectValues(Observable<var>::from({ var("Hello"), var(15.5) }), values);
 
-        Reaction_RequireValues(values, var("Hello"), var(15.5));
+        ReaX_RequireValues(values, var("Hello"), var(15.5));
     }
 
     IT("can be created from a std::initializer_list<int>")
     {
         Array<double> values;
-        Reaction_CollectValues(Observable<int>::from({ 1, 4 }), values);
+        ReaX_CollectValues(Observable<int>::from({ 1, 4 }), values);
 
-        Reaction_RequireValues(values, 1, 4);
+        ReaX_RequireValues(values, 1, 4);
     }
 
     IT("can be created from a std::initializer_list<const char*>")
     {
         Array<String> values;
-        Reaction_CollectValues(Observable<String>::from({ "Hello", "Test" }), values);
+        ReaX_CollectValues(Observable<String>::from({ "Hello", "Test" }), values);
 
-        Reaction_RequireValues(values, "Hello", "Test");
+        ReaX_RequireValues(values, "Hello", "Test");
     }
 }
 
@@ -231,17 +231,17 @@ TEST_CASE("Observable::fromValue",
     Value value(String("Initial Value"));
     const auto observable = Observable<var>::fromValue(value);
     Array<String> values;
-    Reaction_CollectValues(observable, values);
+    ReaX_CollectValues(observable, values);
 
-    Reaction_CheckValues(values, "Initial Value");
+    ReaX_CheckValues(values, "Initial Value");
 
     IT("emits if a copy of the Value sets a new value")
     {
         Value copy(value);
         copy.setValue("Set by copy");
-        Reaction_RunDispatchLoopUntil(values.size() == 2);
+        ReaX_RunDispatchLoopUntil(values.size() == 2);
 
-        Reaction_RequireValues(values, "Initial Value", "Set by copy");
+        ReaX_RequireValues(values, "Initial Value", "Set by copy");
     }
 
     IT("emites only one value if the Value is set multiple times synchronously")
@@ -249,26 +249,26 @@ TEST_CASE("Observable::fromValue",
         value = "2";
         value = "3";
         value = "4";
-        Reaction_RunDispatchLoopUntil(values.size() == 2);
+        ReaX_RunDispatchLoopUntil(values.size() == 2);
 
-        Reaction_RequireValues(values, "Initial Value", "4");
+        ReaX_RequireValues(values, "Initial Value", "4");
     }
 
     IT("notifies multiple Subscriptions on subscribe")
     {
         auto another = Observable<var>::fromValue(value);
-        Reaction_CollectValues(another, values);
+        ReaX_CollectValues(another, values);
 
-        Reaction_RequireValues(values, "Initial Value", "Initial Value");
+        ReaX_RequireValues(values, "Initial Value", "Initial Value");
     }
 
     IT("notifies multiple Values referring to the same ValueSource")
     {
         Value anotherValue(value);
         auto anotherObservable = Observable<var>::fromValue(anotherValue);
-        Reaction_CollectValues(anotherObservable, values);
+        ReaX_CollectValues(anotherObservable, values);
 
-        Reaction_RequireValues(values, "Initial Value", "Initial Value");
+        ReaX_RequireValues(values, "Initial Value", "Initial Value");
     }
 
     IT("notifies multiple Subscriptions if a Value is set multiple times")
@@ -280,10 +280,10 @@ TEST_CASE("Observable::fromValue",
             .disposedBy(disposeBag);
 
         value = "Bar";
-        Reaction_RunDispatchLoopUntil(values.size() == 4);
+        ReaX_RunDispatchLoopUntil(values.size() == 4);
 
         value = "Baz";
-        Reaction_RunDispatchLoopUntil(values.size() == 6);
+        ReaX_RunDispatchLoopUntil(values.size() == 6);
 
         CHECK(values.size() == 6);
 
@@ -306,16 +306,16 @@ TEST_CASE("Observable::fromValue lifetime",
 
     // Collect values from the mapped Observable
     Array<var> values;
-    Reaction_CollectValues(mapped, values);
+    ReaX_CollectValues(mapped, values);
 
-    Reaction_CheckValues(values, "Initial");
+    ReaX_CheckValues(values, "Initial");
 
     IT("emits values when the source Observable is alive")
     {
         value.setValue("New Value");
-        Reaction_RunDispatchLoopUntil(values.size() == 2);
+        ReaX_RunDispatchLoopUntil(values.size() == 2);
 
-        Reaction_RequireValues(values, "Initial", "New Value");
+        ReaX_RequireValues(values, "Initial", "New Value");
     }
 
     IT("stops emitting values as soon as the source Observable is destroyed")
@@ -323,34 +323,34 @@ TEST_CASE("Observable::fromValue lifetime",
         source.reset();
         value.setValue("Two");
         value.setValue("Three");
-        Reaction_RunDispatchLoop(20);
+        ReaX_RunDispatchLoop(20);
 
-        Reaction_RequireValues(values, "Initial");
+        ReaX_RequireValues(values, "Initial");
     }
 
     IT("does not emit a value if the Observable is destroyed immediately after calling setValue")
     {
         value.setValue("New Value");
         source.reset();
-        Reaction_RunDispatchLoop(20);
+        ReaX_RunDispatchLoop(20);
 
-        Reaction_RequireValues(values, "Initial");
+        ReaX_RequireValues(values, "Initial");
     }
 
     IT("continues to emit values if the source Observable is copied and then destroyed")
     {
         auto copy = std::make_shared<Observable<var>>(*source);
         Array<var> copyValues;
-        Reaction_CollectValues(*copy, copyValues);
+        ReaX_CollectValues(*copy, copyValues);
 
-        Reaction_CheckValues(copyValues, "Initial");
+        ReaX_CheckValues(copyValues, "Initial");
 
         source.reset();
-        Reaction_RunDispatchLoop(20);
+        ReaX_RunDispatchLoop(20);
         value.setValue("New");
-        Reaction_RunDispatchLoopUntil(values.size() == 2);
+        ReaX_RunDispatchLoopUntil(values.size() == 2);
 
-        Reaction_RequireValues(copyValues, "Initial", "New");
+        ReaX_RequireValues(copyValues, "Initial", "New");
     }
 
     IT("notified onComplete when the Observable is destroyed")
@@ -373,15 +373,15 @@ TEST_CASE("Observable::fromValue with a Slider",
     slider.setValue(7.6);
     auto o = Observable<var>::fromValue(slider.getValueObject());
     Array<var> values;
-    Reaction_CollectValues(o, values);
-    Reaction_CheckValues(values, 7.6);
+    ReaX_CollectValues(o, values);
+    ReaX_CheckValues(values, 7.6);
 
     IT("emits once if the Slider is changed once")
     {
         slider.setValue(0.45);
-        Reaction_RunDispatchLoopUntil(values.size() == 2);
+        ReaX_RunDispatchLoopUntil(values.size() == 2);
 
-        Reaction_RequireValues(values, 7.6, 0.45);
+        ReaX_RequireValues(values, 7.6, 0.45);
     }
 
     IT("emits just once if the Slider value changes rapidly")
@@ -389,9 +389,9 @@ TEST_CASE("Observable::fromValue with a Slider",
         for (double value : { 3.41, 9.54, 4.67, 3.56 })
             slider.setValue(value);
 
-        Reaction_RunDispatchLoopUntil(values.size() == 2);
+        ReaX_RunDispatchLoopUntil(values.size() == 2);
 
-        Reaction_RequireValues(values, 7.6, 3.56);
+        ReaX_RequireValues(values, 7.6, 3.56);
     }
 }
 
@@ -417,7 +417,7 @@ TEST_CASE("Observable::interval",
         REQUIRE(intervals[1].inSeconds() == Approx(0.04).epsilon(0.03));
         REQUIRE(intervals[2].inSeconds() == Approx(0.04).epsilon(0.03));
 
-        Reaction_RequireValues(ints, 1, 2, 3);
+        ReaX_RequireValues(ints, 1, 2, 3);
     }
 }
 
@@ -428,19 +428,19 @@ TEST_CASE("Observable::just",
     IT("emits a single value on subscribe")
     {
         Array<float> values;
-        Reaction_CollectValues(Observable<double>::just(18.3), values);
+        ReaX_CollectValues(Observable<double>::just(18.3), values);
 
-        Reaction_RequireValues(values, 18.3);
+        ReaX_RequireValues(values, 18.3);
     }
 
     IT("notifies multiple subscriptions")
     {
         Array<String> values;
         auto o = Observable<String>::just("Hello");
-        Reaction_CollectValues(o, values);
-        Reaction_CollectValues(o, values);
+        ReaX_CollectValues(o, values);
+        ReaX_CollectValues(o, values);
 
-        Reaction_RequireValues(values, "Hello", "Hello");
+        ReaX_RequireValues(values, "Hello", "Hello");
     }
 }
 
@@ -461,7 +461,7 @@ TEST_CASE("Observable::never",
                     [&]() { onCompletedCalled = true; })
             .disposedBy(disposeBag);
 
-        Reaction_RunDispatchLoop(20);
+        ReaX_RunDispatchLoop(20);
 
         REQUIRE(!onNextCalled);
         REQUIRE(!onErrorCalled);
@@ -477,20 +477,20 @@ TEST_CASE("Observable::range",
 
     IT("emits integer numbers with an integer range")
     {
-        Reaction_CollectValues(Observable<int>::range(3, 7, 3), values);
-        Reaction_RequireValues(values, 3, 6, 7);
+        ReaX_CollectValues(Observable<int>::range(3, 7, 3), values);
+        ReaX_RequireValues(values, 3, 6, 7);
     }
 
     IT("emits double numbers with a double range")
     {
-        Reaction_CollectValues(Observable<double>::range(17.5, 22.8, 2), values);
-        Reaction_RequireValues(values, 17.5, 19.5, 21.5, 22.8);
+        ReaX_CollectValues(Observable<double>::range(17.5, 22.8, 2), values);
+        ReaX_RequireValues(values, 17.5, 19.5, 21.5, 22.8);
     }
 
     IT("emits just start if start == end")
     {
-        Reaction_CollectValues(Observable<int>::range(10, 10), values);
-        Reaction_RequireValues(values, 10);
+        ReaX_CollectValues(Observable<int>::range(10, 10), values);
+        ReaX_RequireValues(values, 10);
     }
 
     IT("throws if start > end")
@@ -507,16 +507,16 @@ TEST_CASE("Observable::repeat",
 
     IT("repeats a value indefinitely")
     {
-        Reaction_CollectValues(Observable<int>::repeat(8).take(9), values);
+        ReaX_CollectValues(Observable<int>::repeat(8).take(9), values);
 
-        Reaction_RequireValues(values, 8, 8, 8, 8, 8, 8, 8, 8, 8);
+        ReaX_RequireValues(values, 8, 8, 8, 8, 8, 8, 8, 8, 8);
     }
 
     IT("repeats a values a limited number of times")
     {
-        Reaction_CollectValues(Observable<String>::repeat("4", 7), values);
+        ReaX_CollectValues(Observable<String>::repeat("4", 7), values);
 
-        Reaction_RequireValues(values, "4", "4", "4", "4", "4", "4", "4");
+        ReaX_RequireValues(values, "4", "4", "4", "4", "4", "4", "4");
     }
 }
 
@@ -534,36 +534,36 @@ TEST_CASE("Observable covariance",
         {
             Array<float> values;
             floats = vars;
-            Reaction_CollectValues(floats, values);
+            ReaX_CollectValues(floats, values);
             
-            Reaction_RequireValues(values, 51);
+            ReaX_RequireValues(values, 51);
         }
         
         IT("can convert from float to var")
         {
             Array<var> values;
             vars = floats;
-            Reaction_CollectValues(vars, values);
+            ReaX_CollectValues(vars, values);
             
-            Reaction_RequireValues(values, 17);
+            ReaX_RequireValues(values, 17);
         }
         
         IT("can convert from String to var")
         {
             Array<var> values;
             vars = strings;
-            Reaction_CollectValues(vars, values);
+            ReaX_CollectValues(vars, values);
             
-            Reaction_RequireValues(values, "Hello");
+            ReaX_RequireValues(values, "Hello");
         }
         
         IT("can convert from float to double")
         {
             Array<double> values;
             doubles = floats;
-            Reaction_CollectValues(doubles, values);
+            ReaX_CollectValues(doubles, values);
             
-            Reaction_RequireValues(values, 17);
+            ReaX_RequireValues(values, 17);
         }
     }
     
@@ -593,9 +593,9 @@ TEST_CASE("Observable covariance",
         {
             Array<Base> values;
             bases = deriveds;
-            Reaction_CollectValues(bases, values);
+            ReaX_CollectValues(bases, values);
             
-            Reaction_RequireValues(values, Base(200));
+            ReaX_RequireValues(values, Base(200));
         }
     }
 }

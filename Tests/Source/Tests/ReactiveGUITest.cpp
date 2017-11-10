@@ -8,8 +8,8 @@ TEST_CASE("Reactive<Component>",
     CONTEXT("visibility")
     {
         Array<bool> values;
-        Reaction_CollectValues(component.rx.visible, values);
-        Reaction_RequireValues(values, false);
+        ReaX_CollectValues(component.rx.visible, values);
+        ReaX_RequireValues(values, false);
 
         IT("initially has the same value as the getter")
         {
@@ -21,7 +21,7 @@ TEST_CASE("Reactive<Component>",
             for (bool visible : { false, false, true, true, false })
                 component.setVisible(visible);
 
-            Reaction_RequireValues(values, false, true, false);
+            ReaX_RequireValues(values, false, true, false);
         }
 
         IT("changes when pushing values")
@@ -37,8 +37,8 @@ TEST_CASE("Reactive<Component>",
     CONTEXT("bounds")
     {
         Array<Rectangle<int>> values;
-        Reaction_CollectValues(component.rx.bounds, values);
-        Reaction_RequireValues(values, Rectangle<int>(0, 0, 0, 0));
+        ReaX_CollectValues(component.rx.bounds, values);
+        ReaX_RequireValues(values, Rectangle<int>(0, 0, 0, 0));
 
         auto rects = {
             Rectangle<int>(3, -14, 5, 1031),
@@ -58,7 +58,7 @@ TEST_CASE("Reactive<Component>",
             for (const auto &rect : rects)
                 component.setBounds(rect);
 
-            Reaction_RequireValues(values,
+            ReaX_RequireValues(values,
                                    Rectangle<int>(0, 0, 0, 0),
                                    Rectangle<int>(3, -14, 5, 1031),
                                    Rectangle<int>(13, 1411, 25, 2),
@@ -114,7 +114,7 @@ TEST_CASE("Reactive<Button>",
     CONTEXT("clicked")
     {
         Array<Empty> values;
-        Reaction_CollectValues(button.rx.clicked, values);
+        ReaX_CollectValues(button.rx.clicked, values);
 
         IT("doesn't emit a value on subscribe")
         {
@@ -124,40 +124,40 @@ TEST_CASE("Reactive<Button>",
         IT("emits void vars asynchronously when the Button is clicked")
         {
             button.triggerClick();
-            Reaction_RunDispatchLoopUntil(!values.isEmpty());
+            ReaX_RunDispatchLoopUntil(!values.isEmpty());
 
-            Reaction_CheckValues(values, Empty());
+            ReaX_CheckValues(values, Empty());
 
             button.triggerClick();
             button.triggerClick();
-            Reaction_RunDispatchLoopUntil(values.size() == 3);
+            ReaX_RunDispatchLoopUntil(values.size() == 3);
 
-            Reaction_RequireValues(values, Empty(), Empty(), Empty());
+            ReaX_RequireValues(values, Empty(), Empty(), Empty());
         }
     }
 
     CONTEXT("buttonState")
     {
         Array<Button::ButtonState> values;
-        Reaction_CollectValues(button.rx.buttonState, values);
+        ReaX_CollectValues(button.rx.buttonState, values);
 
         IT("emits the normal state on subscribe")
         {
-            Reaction_RequireValues(values, Button::ButtonState::buttonNormal);
+            ReaX_RequireValues(values, Button::ButtonState::buttonNormal);
         }
 
         IT("emits values synchronously when the Button state changes")
         {
             button.setState(Button::ButtonState::buttonDown);
 
-            Reaction_CheckValues(values,
+            ReaX_CheckValues(values,
                                  Button::ButtonState::buttonNormal,
                                  Button::ButtonState::buttonDown);
 
             button.setState(Button::ButtonState::buttonNormal);
             button.setState(Button::ButtonState::buttonOver);
 
-            Reaction_RequireValues(values,
+            ReaX_RequireValues(values,
                                    Button::ButtonState::buttonNormal,
                                    Button::ButtonState::buttonDown,
                                    Button::ButtonState::buttonNormal,
@@ -168,11 +168,11 @@ TEST_CASE("Reactive<Button>",
     CONTEXT("toggleState")
     {
         Array<bool> values;
-        Reaction_CollectValues(button.rx.toggleState, values);
+        ReaX_CollectValues(button.rx.toggleState, values);
 
         IT("emits false on subscribe")
         {
-            Reaction_RequireValues(values, false);
+            ReaX_RequireValues(values, false);
         }
 
         IT("emits values when calling the JUCE setter")
@@ -182,7 +182,7 @@ TEST_CASE("Reactive<Button>",
             button.setToggleState(false, sendNotificationSync);
             button.setToggleState(true, sendNotificationSync);
 
-            Reaction_RequireValues(values, false, true, false, true);
+            ReaX_RequireValues(values, false, true, false, true);
         }
 
         IT("sets the value when pushing values")
@@ -198,17 +198,17 @@ TEST_CASE("Reactive<Button>",
             button.setClickingTogglesState(true);
 
             button.triggerClick();
-            Reaction_RunDispatchLoopUntil(button.rx.toggleState.getValue() == true);
+            ReaX_RunDispatchLoopUntil(button.rx.toggleState.getValue() == true);
 
             button.triggerClick();
             button.triggerClick();
-            Reaction_RunDispatchLoop(20);
+            ReaX_RunDispatchLoop(20);
             CHECK(button.rx.toggleState.getValue() == true);
 
             button.triggerClick();
-            Reaction_RunDispatchLoopUntil(button.rx.toggleState.getValue() == false);
+            ReaX_RunDispatchLoopUntil(button.rx.toggleState.getValue() == false);
 
-            Reaction_RequireValues(values, false, true, false, true, false);
+            ReaX_RequireValues(values, false, true, false, true, false);
         }
     }
 
@@ -269,22 +269,22 @@ TEST_CASE("Reactive<Button> with custom TextButton subclass",
 
     Reactive<MyButton> button;
     Array<Button::ButtonState> values;
-    Reaction_CollectValues(button.rx.buttonState, values);
+    ReaX_CollectValues(button.rx.buttonState, values);
 
     IT("initially has the normal state")
     {
-        Reaction_RequireValues(values, Button::ButtonState::buttonNormal);
+        ReaX_RequireValues(values, Button::ButtonState::buttonNormal);
     }
 
     IT("changes states when calling the method in the custom subclass")
     {
         button.hoverAcrossButton();
-        Reaction_CheckValues(values,
+        ReaX_CheckValues(values,
                              Button::ButtonState::buttonNormal,
                              Button::ButtonState::buttonOver);
-        Reaction_RunDispatchLoopUntil(values.size() == 3);
+        ReaX_RunDispatchLoopUntil(values.size() == 3);
 
-        Reaction_RequireValues(values,
+        ReaX_RequireValues(values,
                                Button::ButtonState::buttonNormal,
                                Button::ButtonState::buttonOver,
                                Button::ButtonState::buttonNormal);
@@ -300,13 +300,13 @@ TEST_CASE("Reactive<Label>",
     CONTEXT("text")
     {
         Array<String> values;
-        Reaction_CollectValues(label.rx.text, values);
+        ReaX_CollectValues(label.rx.text, values);
 
         IT("initially emits the empty String")
         {
             CHECK(label.getText().isEmpty());
 
-            Reaction_RequireValues(values, label.getText());
+            ReaX_RequireValues(values, label.getText());
         }
 
         IT("emits values when the Label changes its text")
@@ -314,7 +314,7 @@ TEST_CASE("Reactive<Label>",
             label.setText("Foo", sendNotificationSync);
             label.setText("Bar", sendNotificationSync);
 
-            Reaction_RequireValues(values, "", "Foo", "Bar");
+            ReaX_RequireValues(values, "", "Foo", "Bar");
         }
 
         IT("changes the Label text synchronously when calling onNext")
@@ -324,7 +324,7 @@ TEST_CASE("Reactive<Label>",
                 REQUIRE(label.getText() == text);
             }
 
-            Reaction_RequireValues(values, "", "Hello", "World!");
+            ReaX_RequireValues(values, "", "Hello", "World!");
         }
     }
 
@@ -332,7 +332,7 @@ TEST_CASE("Reactive<Label>",
     {
         Array<bool> values;
         DisposeBag disposeBag;
-        Reaction_CollectValues(label.rx.showEditor, values);
+        ReaX_CollectValues(label.rx.showEditor, values);
 
         Array<Component *> editors;
         label.rx.textEditor.subscribe([&](WeakReference<Component> editor) { editors.add(editor); }).disposedBy(disposeBag);
@@ -345,21 +345,21 @@ TEST_CASE("Reactive<Label>",
             CHECK(label.getCurrentTextEditor() == nullptr);
             CHECK(editors == Array<Component *>({ nullptr }));
 
-            Reaction_RequireValues(values, false);
+            ReaX_RequireValues(values, false);
         }
 
         IT("remains false if the discard setting is changed")
         {
             label.rx.discardChangesWhenHidingEditor.onNext(true);
             CHECK(label.getCurrentTextEditor() == nullptr);
-            Reaction_CheckValues(values, false);
+            ReaX_CheckValues(values, false);
             CHECK(editors == Array<Component *>({ nullptr }));
 
             label.rx.discardChangesWhenHidingEditor.onNext(false);
             REQUIRE(label.getCurrentTextEditor() == nullptr);
             CHECK(editors == Array<Component *>({ nullptr }));
 
-            Reaction_RequireValues(values, false);
+            ReaX_RequireValues(values, false);
         }
 
         IT("becomes true/non-null when calling Label::showEditor")
@@ -369,7 +369,7 @@ TEST_CASE("Reactive<Label>",
             CHECK(editors.size() == 2);
             CHECK(editors.getLast() != nullptr);
 
-            Reaction_RequireValues(values, false, true);
+            ReaX_RequireValues(values, false, true);
 
             IT("becomes false/nullptr when calling Label::hideEditor")
             {
@@ -378,14 +378,14 @@ TEST_CASE("Reactive<Label>",
                 CHECK(editors.size() == 3);
                 CHECK(editors.getLast() == nullptr);
 
-                Reaction_RequireValues(values, false, true, false);
+                ReaX_RequireValues(values, false, true, false);
             }
         }
 
         IT("shows the editor when pushing true")
         {
             label.rx.showEditor.onNext(true);
-            Reaction_CheckValues(values, false, true);
+            ReaX_CheckValues(values, false, true);
             CHECK(editors.size() == 2);
             CHECK(editors.getLast() != nullptr);
 
@@ -395,7 +395,7 @@ TEST_CASE("Reactive<Label>",
             {
                 label.rx.discardChangesWhenHidingEditor.onNext(false);
                 label.rx.discardChangesWhenHidingEditor.onNext(true);
-                Reaction_CheckValues(values, false, true);
+                ReaX_CheckValues(values, false, true);
                 CHECK(editors.size() == 2);
                 CHECK(editors.getLast() != nullptr);
 
@@ -405,7 +405,7 @@ TEST_CASE("Reactive<Label>",
             IT("hides the editor when pushing false")
             {
                 label.rx.showEditor.onNext(false);
-                Reaction_CheckValues(values, false, true, false);
+                ReaX_CheckValues(values, false, true, false);
                 CHECK(editors.size() == 3);
                 CHECK(editors.getLast() == nullptr);
 
@@ -608,11 +608,11 @@ TEST_CASE("Reactive<Slider>",
     CONTEXT("value")
     {
         Array<double> values;
-        Reaction_CollectValues(slider.rx.value, values);
+        ReaX_CollectValues(slider.rx.value, values);
 
         IT("initially has the Slider value")
         {
-            Reaction_RequireValues(values, 10);
+            ReaX_RequireValues(values, 10);
         }
 
         IT("emits values when the Slider value changes")
@@ -620,18 +620,18 @@ TEST_CASE("Reactive<Slider>",
             slider.setValue(3, sendNotificationSync);
             slider.setValue(7.45, sendNotificationSync);
 
-            Reaction_RequireValues(values, 10.0, 3.0, 7.45);
+            ReaX_RequireValues(values, 10.0, 3.0, 7.45);
         }
     }
 
     CONTEXT("dragging")
     {
         Array<bool> values;
-        Reaction_CollectValues(slider.rx.dragging, values);
+        ReaX_CollectValues(slider.rx.dragging, values);
 
         IT("is initially false")
         {
-            Reaction_RequireValues(values, false);
+            ReaX_RequireValues(values, false);
         }
     }
 
@@ -685,9 +685,9 @@ TEST_CASE("Reactive<Slider>",
         slider.setMaxValue(8.45, sendNotificationSync);
 
         Array<double> minValues;
-        Reaction_CollectValues(slider.rx.minValue, minValues);
+        ReaX_CollectValues(slider.rx.minValue, minValues);
         Array<double> maxValues;
-        Reaction_CollectValues(slider.rx.maxValue, maxValues);
+        ReaX_CollectValues(slider.rx.maxValue, maxValues);
 
         IT("initially has the values set on the slider")
         {
@@ -702,8 +702,8 @@ TEST_CASE("Reactive<Slider>",
             slider.setMaxValue(8, sendNotificationSync);
             slider.setValue(6, sendNotificationSync);
 
-            Reaction_RequireValues(minValues, 1.0, 0.3, 1.344);
-            Reaction_RequireValues(maxValues, 8.45, 6.77, 8.0);
+            ReaX_RequireValues(minValues, 1.0, 0.3, 1.344);
+            ReaX_RequireValues(maxValues, 8.45, 6.77, 8.0);
         }
 
         IT("calls setMinValue when pushing min values")

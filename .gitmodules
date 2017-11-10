@@ -1,3 +1,0 @@
-[submodule "reaction/RxCpp"]
-	path = reaction/RxCpp
-	url = https://github.com/Reactive-Extensions/RxCpp

@@ -1,18 +1,18 @@
-# *Reaction* – Reactive Extensions (Rx) for JUCE
+# ReaX – Reactive Extensions (Rx) for JUCE
 
-*Reaction* brings [Reactive Extensions (Rx)](http://reactivex.io/intro.html) to [JUCE](https://www.juce.com). It helps to connect our app's user interface, parameters and audio processing in a simple, flexible and consistent way. It reduces boilerplate and lowers chance of error.
+ReaX brings [Reactive Extensions (Rx)](http://reactivex.io/intro.html) to [JUCE](https://www.juce.com). It helps to connect our app's user interface, parameters and audio processing in a simple, flexible and consistent way. It reduces boilerplate and lowers chance of error.
 
-*Reaction* uses the great [RxCpp](https://github.com/Reactive-Extensions/RxCpp) under the hood.
+ReaX uses the great [RxCpp](https://github.com/Reactive-Extensions/RxCpp) under the hood.
 
 
 
-**[Download Latest Version](https://github.com/martinfinke/reaction/releases/latest)**
+**[Download Latest Version](https://github.com/martinfinke/reax/releases/latest)**
 
 
 
 #### Table of Contents
 
-1. [Why Use *Reaction*?](#why-use-reaction)
+1. [Why Use ReaX?](#why-use-reax)
 2. [Installation](#installation)
 3. [Getting Started](#getting-started)
 4. [API Reference](#api-reference)
@@ -23,18 +23,18 @@
 
 
 
-<a name="why-use-reaction"/>
+<a name="why-use-reax"/>
 
-## Why Use *Reaction*?
+## Why Use ReaX?
 
-Let's see how *Reaction* can **reduce boilerplate code and errors** in our apps.
+Let's see how ReaX can **reduce boilerplate code and errors** in our apps.
 
 Say we have a distortion plug-in with a `Slider` for the distortion amount. We want to show this amount in words in a `Label`. This is our main `Component`:
 
 ```cpp
 class MainComponent : public Component {
 public:
-  MainComponent() { /*call addAndMakeVisible(), etc. */ }
+  MainComponent() { /* call addAndMakeVisible(), etc. */ }
 
 private:
   Slider distortionSlider;
@@ -48,7 +48,7 @@ private:
 
 The `textForDistortion` function creates the text for a given distortion value.
 
-Now, let's update the `Label` when the `Slider` changes. First we'll do it using plain JUCE, but feel free to skip to the [solution using *Reaction*](#reaction-solution).
+Now, let's update the `Label` when the `Slider` changes. First we'll do it using plain JUCE, but feel free to skip to the [solution using ReaX](#reax-solution).
 
 ### Using Plain JUCE
 
@@ -94,11 +94,11 @@ if (slider == &distortionSlider) {
 }
 ```
 
-Now, let's see what *Reaction* can do for us.
+Now, let's see what ReaX can do for us.
 
-<a name="reaction-solution"/>
+<a name="reax-solution"/>
 
-### Using *Reaction*
+### Using ReaX
 
 Instead of just `Slider` and `Label`, we define the members like this:
 
@@ -126,19 +126,19 @@ To find out what `Observable`, `rx` and `map` is all about, continue with [Getti
 
 ## Installation
 
-[Download](https://github.com/martinfinke/reaction/releases/latest) *Reaction* and un-zip it. In Projucer, expand the *Modules* section, click the `+` button and choose *“Add a module from a specified folder…”*:
+[Download](https://github.com/martinfinke/reax/releases/latest) ReaX and un-zip it. In Projucer, expand the *Modules* section, click the `+` button and choose *“Add a module from a specified folder…”*:
 
 <img src="img/projucer-add-module.png" width="600" height="500">
 
-Now find the *reaction* folder you just unzipped. It will then appear in the list of modules:
+Now find the *reax* folder you just unzipped. It will then appear in the list of modules:
 
-<img src="img/projucer-reaction-module.png" width="243" height="186">
+<img src="img/projucer-reax-module.png" width="243" height="185">
 
 If you're using Visual Studio, expand the *Exporters* section and highlight *Visual Studio*. On the right side, under *Extra compiler flags*, add `/bigobj` (as shown below).
 
 <img src="img/projucer-bigobj.png" width="783" height="208">
 
-Done! You can now use all the *Reaction* beauty in your code.
+Done! You can now use all the ReaX beauty in your code.
 
 
 
@@ -150,7 +150,7 @@ Done! You can now use all the *Reaction* beauty in your code.
 
 This section explains the basics of connecting GUI components, so they update automatically.
 
-In the [above example](#reaction-solution), instead of using plain `Slider` and `Label`, we wrote:
+In the [above example](#reax-solution), instead of using plain `Slider` and `Label`, we wrote:
 
 ```cpp
 Reactive<Slider> distortionSlider;
@@ -161,7 +161,7 @@ A `Reactive<Slider>` is the same as a normal JUCE `Slider`, except that it has o
 
 This member is different depending on whether it's a `Reactive<Slider>` or a `Reactive<Label>`. For `Reactive<Slider>`, the `rx` object has members such as `value`, `maximum`, `dragging`, and so on. For `Reactive<Label>`, it has members like `text` and `font`.
 
-Now, consider this line we wrote [above](#reaction-solution):
+Now, consider this line we wrote [above](#reax-solution):
 
 ```cpp
 Observable<String> text = distortionSlider.rx.value.map(textForDistortion);
@@ -185,7 +185,7 @@ Finally, the `text.subscribe(...)` means: Whenever `text` changes its value, not
 
 So to recap, **an Observable emits values, an Observer receives them**. Here we've used this to update a `Label` depending on a `Slider` value, by turning each new value into a `String`.
 
-There's also `Reactive<Button>` which gives you Observables like `clicked` and `buttonState`. And `Reactive<ImageComponent>`, which gives you an `image` observer. But *Reaction* is not just for GUI components: **You can use Observables and Observers to propagate any change or event in your app.**
+There's also `Reactive<Button>` which gives you Observables like `clicked` and `buttonState`. And `Reactive<ImageComponent>`, which gives you an `image` observer. But ReaX is not just for GUI components: **You can use Observables and Observers to propagate any change or event in your app.**
 
 ### Combining Observables
 
@@ -236,7 +236,7 @@ We've just scratched the surface of how Rx can help build great apps. If you wou
 
 ## API Reference
 
-[The complete API reference is available here](http://martin-finke.de/reaction/api).
+[The complete API reference is available here](http://martin-finke.de/reax/api).
 
 <a name="tests"/>
 
@@ -244,7 +244,7 @@ We've just scratched the surface of how Rx can help build great apps. If you wou
 
 ## Tests
 
-*Reaction* is well-tested. To run the tests, please clone this repo and open `Tests/Reaction-Tests.jucer` in Projucer. Modify it to point to your local JUCE folder, and open the project in Xcode or Visual Studio. If you run it, you should see the output: `All tests passed`.
+ReaX is well-tested. To run the tests, please clone this repo and open `Tests/ReaX-Tests.jucer` in Projucer. Modify it to point to your local JUCE folder, and open the project in Xcode or Visual Studio. If you run it, you should see the output: `All tests passed`.
 
 <a name="credits"/>
 
@@ -252,8 +252,8 @@ We've just scratched the surface of how Rx can help build great apps. If you wou
 
 ## Credits
 
-- *Reaction* uses the great [RxCpp](https://github.com/Reactive-Extensions/RxCpp) under the hood. It would not be possible without it.
-- *Reaction* uses the great [ConcurrentQueue](https://github.com/cameron314/concurrentqueue) library by Cameron Desrochers.
+- ReaX uses the great [RxCpp](https://github.com/Reactive-Extensions/RxCpp) under the hood. It would not be possible without it.
+- ReaX uses the great [ConcurrentQueue](https://github.com/cameron314/concurrentqueue) library by Cameron Desrochers.
 - Documentation from [ReactiveX.io](http://reactivex.io) is used in the source code, under the terms of the [Creative Commons Attribution 3.0 License](https://creativecommons.org/licenses/by/3.0/). Documentation has been adopted and changed for the purpose of this project.
 
 
@@ -271,4 +271,4 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-*Reaction* uses the [ConcurrentQueue](https://github.com/cameron314/concurrentqueue) library by Cameron Desrochers. It is dual-licensed under a Simplified BSD license and the Boost Software License. See [concurrentqueue.h](reaction/util/internal/concurrentqueue.h) for details.
+ReaX uses the [ConcurrentQueue](https://github.com/cameron314/concurrentqueue) library by Cameron Desrochers. It is dual-licensed under a Simplified BSD license and the Boost Software License. See [concurrentqueue.h](reax/util/internal/concurrentqueue.h) for details.

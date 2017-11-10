@@ -1,13 +1,13 @@
 #if 0
 /*
 BEGIN_JUCE_MODULE_DECLARATION
-ID: reaction
+ID: reax
 vendor: martin-finke
 version: 0.7.0
-name: Reaction
+name: ReaX
 description: Reactive Extensions (Rx) for JUCE.
 dependencies: juce_core, juce_data_structures, juce_events, juce_graphics, juce_gui_basics
-website: http://github.com/martinfinke/reaction
+website: http://github.com/martinfinke/reax
 license: MIT
 minimumCppStandard: 11
 END_JUCE_MODULE_DECLARATION
@@ -38,33 +38,33 @@ END_JUCE_MODULE_DECLARATION
 #include <vector>
 
 // Enable stricter warnings
-#include "util/internal/reaction_ExtraWarnings.h"
+#include "util/internal/reax_ExtraWarnings.h"
 #pragma clang diagnostic push
-REACTION_ENABLE_EXTRA_WARNINGS
+REAX_ENABLE_EXTRA_WARNINGS
 
-namespace reaction {
+namespace reax {
 /// Used for Observables that don't emit a meaningful value, and just notify that something has changed.
 typedef std::tuple<> Empty;
 
-#include "util/internal/reaction_any.h"
-#include "rx/reaction_Subscription.h"
-#include "rx/reaction_DisposeBag.h"
-#include "rx/internal/reaction_Observer_Impl.h"
-#include "rx/reaction_Observer.h"
-#include "rx/reaction_Scheduler.h"
-#include "rx/internal/reaction_Observable_Impl.h"
-#include "rx/reaction_Observable.h"
-#include "rx/internal/reaction_Subjects_Impl.h"
-#include "rx/reaction_Subjects.h"
+#include "util/internal/reax_any.h"
+#include "rx/reax_Subscription.h"
+#include "rx/reax_DisposeBag.h"
+#include "rx/internal/reax_Observer_Impl.h"
+#include "rx/reax_Observer.h"
+#include "rx/reax_Scheduler.h"
+#include "rx/internal/reax_Observable_Impl.h"
+#include "rx/reax_Observable.h"
+#include "rx/internal/reax_Subjects_Impl.h"
+#include "rx/reax_Subjects.h"
 
-#include "util/reaction_LockFreeSource.h"
-#include "util/reaction_LockFreeTarget.h"
+#include "util/reax_LockFreeSource.h"
+#include "util/reax_LockFreeTarget.h"
 
-#include "integration/reaction_GUIExtensions.h"
-#include "integration/reaction_ModelExtensions.h"
-#include "integration/reaction_Reactive.h"
-#include "integration/reaction_ReactiveGUI.h"
-#include "integration/reaction_ReactiveModel.h"
+#include "integration/reax_GUIExtensions.h"
+#include "integration/reax_ModelExtensions.h"
+#include "integration/reax_Reactive.h"
+#include "integration/reax_ReactiveGUI.h"
+#include "integration/reax_ReactiveModel.h"
 }
 
 #pragma clang diagnostic pop

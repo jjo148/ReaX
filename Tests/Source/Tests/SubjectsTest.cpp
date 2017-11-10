@@ -8,7 +8,7 @@ TEST_CASE("BehaviorSubject",
 
     // Subscribe to the subject's Observable
     Array<var> values;
-    Reaction_CollectValues(subject, values);
+    ReaX_CollectValues(subject, values);
 
     IT("changes value when changing the Observer")
     {
@@ -21,17 +21,17 @@ TEST_CASE("BehaviorSubject",
     IT("has the initial value after being created")
     {
         CHECK(subject.getValue() == "Initial Value");
-        Reaction_RequireValues(values, "Initial Value");
+        ReaX_RequireValues(values, "Initial Value");
     }
 
     IT("emits when pushing a new value")
     {
-        Reaction_CheckValues(values, "Initial Value");
+        ReaX_CheckValues(values, "Initial Value");
 
         subject.onNext("New Value");
 
         CHECK(subject.getValue() == "New Value");
-        Reaction_RequireValues(values, "Initial Value", "New Value");
+        ReaX_RequireValues(values, "Initial Value", "New Value");
     }
 
     IT("emits an error when calling onError")
@@ -85,7 +85,7 @@ TEST_CASE("PublishSubject",
 
     // Subscribe to the subject's Observable
     Array<var> values;
-    Reaction_CollectValues(subject, values);
+    ReaX_CollectValues(subject, values);
 
     IT("does not emit a value if nothing has been pushed")
     {
@@ -98,17 +98,17 @@ TEST_CASE("PublishSubject",
 
         subject.onNext("First Value");
 
-        Reaction_RequireValues(values, "First Value");
+        ReaX_RequireValues(values, "First Value");
     }
 
     IT("does not emit previous value(s) when subscribing")
     {
         subject.onNext(1);
         subject.onNext(2);
-        Reaction_CheckValues(values, 1, 2);
+        ReaX_CheckValues(values, 1, 2);
 
         Array<var> laterValues;
-        Reaction_CollectValues(subject, laterValues);
+        ReaX_CollectValues(subject, laterValues);
 
         REQUIRE(laterValues.isEmpty());
     }
@@ -118,7 +118,7 @@ TEST_CASE("PublishSubject",
         subject.onNext(32.51);
         subject.onNext(3.0);
 
-        Reaction_RequireValues(values, 32.51, 3.0);
+        ReaX_RequireValues(values, 32.51, 3.0);
     }
 
     IT("emits after destruction, if there's still an Observer pushing values")
@@ -126,11 +126,11 @@ TEST_CASE("PublishSubject",
         auto subject = std::make_shared<PublishSubject<int>>();
         Observer<int> observer = *subject;
 
-        Reaction_CollectValues(*subject, values);
+        ReaX_CollectValues(*subject, values);
         subject.reset();
         observer.onNext(12345);
 
-        Reaction_RequireValues(values, 12345);
+        ReaX_RequireValues(values, 12345);
     }
 
     IT("emits an error when calling onError")
@@ -182,7 +182,7 @@ TEST_CASE("ReplaySubject",
 
     // Subscribe to the subject's Observable
     Array<var> values;
-    Reaction_CollectValues(subject, values);
+    ReaX_CollectValues(subject, values);
 
     IT("does not emit a value if nothing has been pushed")
     {
@@ -195,19 +195,19 @@ TEST_CASE("ReplaySubject",
 
         subject.onNext("First Value");
 
-        Reaction_RequireValues(values, "First Value");
+        ReaX_RequireValues(values, "First Value");
     }
 
     IT("emits previous values when subscribing")
     {
         subject.onNext(1);
         subject.onNext(2);
-        Reaction_CheckValues(values, 1, 2);
+        ReaX_CheckValues(values, 1, 2);
 
         Array<var> laterValues;
-        Reaction_CollectValues(subject, laterValues);
+        ReaX_CollectValues(subject, laterValues);
 
-        Reaction_RequireValues(laterValues, 1, 2);
+        ReaX_RequireValues(laterValues, 1, 2);
     }
 
     IT("emits previous values limited by the max. buffer size")
@@ -225,9 +225,9 @@ TEST_CASE("ReplaySubject",
         subject->onNext(6);
 
         Array<var> values;
-        Reaction_CollectValues(*subject, values);
+        ReaX_CollectValues(*subject, values);
 
-        Reaction_RequireValues(values, 7, 28, 3, 6);
+        ReaX_RequireValues(values, 7, 28, 3, 6);
     }
 
     IT("changes value when changing the Observer")
@@ -235,7 +235,7 @@ TEST_CASE("ReplaySubject",
         subject.onNext(32.51);
         subject.onNext(3.0);
 
-        Reaction_RequireValues(values, 32.51, 3.0);
+        ReaX_RequireValues(values, 32.51, 3.0);
     }
 
     IT("emits after destruction, if there's still an Observer pushing values")
@@ -243,11 +243,11 @@ TEST_CASE("ReplaySubject",
         auto subject = std::make_shared<ReplaySubject<int>>();
         Observer<int> observer = *subject;
 
-        Reaction_CollectValues(*subject, values);
+        ReaX_CollectValues(*subject, values);
         subject.reset();
         observer.onNext(12345);
 
-        Reaction_RequireValues(values, 12345);
+        ReaX_RequireValues(values, 12345);
     }
 
     IT("emits an error when calling onError")

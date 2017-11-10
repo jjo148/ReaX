@@ -8,7 +8,7 @@ namespace detail {
  
  Two `any` instances are equality-comparable. If an instance `a` is compared to an instance `b` as in `a == b`, and both hold a scalar value (e.g. int, float, bool), the scalar values are converted and compared. So `var(1.f) == var(1)`. If both hold an object, it casts `b` to the type of `a`. If that succeeds, it compares them using `a`'s `operator==`. If `a` is not equality-comparable, it checks if the addresses of the wrapped values in `a` and `b` are equal. This may be false if both `a` and `b` were contructed from the same value, because the value may have been copied when constructing. Otherwise, `a` and `b` are considered to be non-equal.
  
- This class is used to create a dynamic layer between the type-safe `reaction::Observable` and the type-safe `rxcpp::observable`.
+ This class is used to create a dynamic layer between the type-safe `reax::Observable` and the type-safe `rxcpp::observable`.
 */
 ///@cond INTERNAL
 class any
