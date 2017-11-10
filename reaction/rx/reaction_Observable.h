@@ -48,6 +48,149 @@ public:
     : impl(Impl::empty())
     {}
 
+    /**
+     Creates an Observable which emits values from an Observer on each subscription.
+     
+     In the onSubscribe function, you get an Observer. You can call Observer::onNext on it to emit values from the Observable.
+     */
+    static Observable<T> create(const std::function<void(const Observer<T>&)>& onSubscribe)
+    {
+        return Impl::create([onSubscribe](detail::ObserverImpl&& impl) {
+            onSubscribe(Observer<T>(std::move(impl)));
+        });
+    }
+
+    /**
+     Creates a new Observable for each subscriber, by calling the `factory` function on each new subscription.
+     */
+    static Observable<T> defer(const std::function<Observable<T>()>& factory)
+    {
+        return Impl::defer([factory]() {
+            return factory().impl;
+        });
+    }
+
+    /**
+     Creates an Observable that doesn't emit any values and notifies onComplete immediately.
+     */
+    static Observable<T> empty()
+    {
+        return Impl::empty();
+    }
+
+    /**
+     Creates an Observable which doesn't emit any values, and immediately notifies onError.
+     */
+    static Observable<T> error(const std::exception& error)
+    {
+        return Impl::error(error);
+    }
+
+    /**
+     Creates an Observable that immediately emits the values from the given Array.
+     
+     Note that you can also pass an initializer list, like this:
+     
+         Observable::from<String>({"Hello", "Test"})
+         Observable::from<var>({var(3), var("four")})
+     */
+    static Observable<T> from(const juce::Array<T>& array)
+    {
+        juce::Array<any> values;
+
+        for (auto& value : array)
+            values.add(Observable<T>::toAny(value));
+
+        return Impl::from(std::move(values));
+    }
+
+    /**
+     Creates an Observable from a given JUCE Value. The returned Observable **only emits values until it is destroyed**, so you are responsible for managing its lifetime. Or use Reactive<Value>, which will handle this.
+     
+     The returned Observable notifies the onComplete handler when it's destroyed. @see Observable::subscribe
+     
+     When calling Value::setValue, it notifies asynchronously. So **the returned Observable emits the new value asynchronously.** If you call setValue immediately before destroying the returned Observable, the new value will not be emitted.
+     */
+    template<typename U = T>
+    static Observable<T> fromValue(juce::Value value, typename std::enable_if<std::is_same<U, T>::value && std::is_base_of<juce::var, U>::value>::type* = 0)
+    {
+        return Impl::fromValue(value);
+    }
+
+    /**
+     Returns an Observable that emits one value every `interval`, starting at the time of subscription (where the first value is emitted). The emitted values are `1`, `2`, `3`, and so on.
+     
+     The Observable emits endlessly, but you can use Observable::take to get a finite number of values (for example).
+     
+     The interval has millisecond resolution.
+     */
+    template<typename U = T>
+    static Observable<T> interval(const juce::RelativeTime& interval, typename std::enable_if<std::is_same<U, T>::value && std::is_same<int, T>::value>::type* = 0)
+    {
+        return Impl::interval(interval);
+    }
+
+    /**
+     Creates an Observable which emits a single value.
+     
+     The value is emitted immediately on each new subscription.
+     */
+    static Observable<T> just(const T& value)
+    {
+        return Impl::just(Observable<T>::toAny(value));
+    }
+
+    /**
+     Creates an Observable that never emits any events and never terminates.
+     */
+    static Observable<T> never()
+    {
+        return Impl::never();
+    }
+
+    /**
+     Creates an Observable which emits a range of values, starting at `first` to (and including) `last`. It completes after emitting the `last` value.
+     
+     ​ **Throws an exception if first > last.**
+     
+     For example:
+     
+         Observable::range(3, 7, 3) // {3, 6, 7}
+         Observable::range(17.5, 22.8, 2) // {17.5, 19.5, 21.5, 22.8}
+     */
+    template<typename U = T>
+    static Observable<T> range(T first, T last, unsigned int step = 1, typename std::enable_if<std::is_same<U, T>::value && std::is_integral<U>::value>::type* = 0)
+    {
+        return Impl::integralRange(first, last, step);
+    }
+    /// \overload
+    template<typename U = T>
+    static Observable<T> range(float first, float last, unsigned int step = 1, typename std::enable_if<std::is_same<U, T>::value && std::is_same<U, float>::value>::type* = 0)
+    {
+        return Impl::floatRange(first, last, step);
+    }
+    /// \overload
+    template<typename U = T>
+    static Observable<T> range(double first, double last, unsigned int step = 1, typename std::enable_if<std::is_same<U, T>::value && std::is_same<U, double>::value>::type* = 0)
+    {
+        return Impl::doubleRange(first, last, step);
+    }
+
+    /**
+     Creates an Observable which emits a given value repeatedly.
+     
+     An optional `times` parameter specifies how often the value should be repeated. If omitted, the value will is repeated indefinitely.
+     */
+    static Observable<T> repeat(const T& value)
+    {
+        return Impl::repeat(Observable<T>::toAny(value));
+    }
+    /// \overload
+    static Observable<T> repeat(const T& value, unsigned int times)
+    {
+        return Impl::repeat(Observable<T>::toAny(value), times);
+    }
+
 
 #pragma mark - Subscription
     ///@{
@@ -65,7 +208,7 @@ public:
      Example:
      
          DisposeBag disposeBag;
-         Observable::from<int>({4, 17}).subscribe([](int i) {
+         Observable<int>::from({4, 17}).subscribe([](int i) {
              std::cout << i << " ";
          }).disposedBy(disposeBag);
      */
@@ -95,7 +238,7 @@ public:
 
         return impl.map(convert).subscribe(observer.impl);
     }
-    ///@}
+        ///@}
 
 
 #pragma mark - Operators
@@ -112,7 +255,7 @@ public:
     {
         return combineLatest(std::make_tuple<const T&, const Ts&...>, others...);
     }
-
+    /// \overload
     template<typename... Ts, typename Function>
     Observable<CallResult<Function, T, Ts...>> combineLatest(Function&& function, const Observable<Ts>&... others) const
     {
@@ -150,9 +293,9 @@ public:
     /**
      Returns an Observable which emits if `interval` has passed without this Observable emitting a value. The returned Observable emits the latest value from this Observable.
      
-     It's like the instant search in a search engine: Search suggestions are only loaded if the user hasn't pressed a key for a short period of time.
+     For example, think of the instant search in a search engine: Search suggestions are only loaded if the user hasn't pressed a key for a short period of time.
      
-     The interval has millisecond resolution.
+     The `interval` has millisecond resolution.
      */
     Observable<T> debounce(const juce::RelativeTime& interval) const
     {
@@ -164,7 +307,7 @@ public:
      
      For example:
      
-         Observable::from<int>({1, 2, 2, 2, 3, 4, 4, 6}).distinctUntilChanged(); // Emits: 1, 2, 3, 4, 6
+         Observable<int>::from({1, 2, 2, 2, 3, 4, 4, 6}).distinctUntilChanged(); // Emits: 1, 2, 3, 4, 6
      
      If T is comparable using ==, this is used to determine whether two values are equal. Otherwise, the values are compared by their addresses.
      
@@ -200,7 +343,7 @@ public:
      
      This Observable:
      
-         Observable::from<String>({"Hello", "World"}).flatMap([](String s) {
+         Observable<String>::from({"Hello", "World"}).flatMap([](String s) {
              return Observable::from<String>({s.toLowerCase(), s.toUpperCase() + "!"});
          });
      
@@ -209,7 +352,7 @@ public:
      @see Observable::merge, Observable::switchOnNext.
      */
     template<typename Function>
-    typename std::enable_if<IsObservable<CallResult<Function, T>>::value, Observable<typename CallResult<Function, T>::ValueType>>::type flatMap(Function&& function) const
+    Observable<typename CallResult<Function, T>::ValueType> flatMap(Function&& function, typename std::enable_if<IsObservable<CallResult<Function, T>>::value>::type* = 0) const
     {
         return impl.flatMap([function](const any& value) {
             return function(value.get<T>()).impl;
@@ -324,7 +467,7 @@ public:
      Therefore, it can only be used when this Observable emits Observables.
      */
     template<typename U = T>
-    typename std::enable_if<IsObservable<U>::value, U>::type switchOnNext() const
+    Observable<typename U::ValueType> switchOnNext(typename std::enable_if<std::is_same<U, T>::value && IsObservable<U>::value>::type* = 0) const
     {
         return impl.switchOnNext();
     }
@@ -368,16 +511,16 @@ public:
 
     ///@{
     /**
-     Returns an Observable that emits whenever a value is emitted by this Observable. It combines the latest value from each Observable via the given function and emits the result of this function.
+     Returns an Observable that emits whenever a value is emitted by **this Observable**. It combines the latest value from each Observable via the given function and emits the result of this function.
      
-     This is different from Observable::combineLatest because it only emits when this Observable emits a value (not when o1, o2, … emit values).
+     This is different from Observable::combineLatest because it only emits when this Observable emits a value (not when one of the `others` emits a value).
      */
     template<typename... Ts>
     Observable<std::tuple<T, Ts...>> withLatestFrom(const Observable<Ts>&... others) const
     {
         return withLatestFrom(std::make_tuple<const T&, const Ts&...>, others...);
     }
-
+    /// \overload
     template<typename... Ts, typename Function>
     Observable<CallResult<Function, T, Ts...>> withLatestFrom(Function&& function, const Observable<Ts>&... others) const
     {
@@ -394,7 +537,7 @@ public:
 
     ///@{
     /**
-     Returns an Observable that emits **whenever** a value is emitted by either this Observable **or** o1, o2, …. It combines the **latest** value from each Observable via the given function and emits the result of this function.
+     Returns an Observable that emits whenever each of the Observables have emitted a new value. It combines the **latest** value from each Observable via the given function and emits the result of this function.
      
      It applies this function in strict sequence, so the first value emitted by the returned Observable is the result of `f` applied to the first value emitted by this Observable and the first value emitted by `o1`; the second value emitted by the returned Observable is the result of `f` applied to the second value emitted by this Observable and the second value emitted by `o1`; and so on.
      
@@ -405,7 +548,7 @@ public:
     {
         return zip(std::make_tuple<const T&, const Ts&...>, others...);
     }
-
+    /// \overload
     template<typename... Ts, typename Function>
     Observable<CallResult<Function, T, Ts...>> zip(Function&& function, const Observable<Ts>&... others) const
     {
@@ -429,11 +572,11 @@ public:
      
      For example:
      
-     Observable::range(Range<double>(1, 1000), 1)
-     .observeOn(Scheduler::newThread())
-     .map([](double d){ return std::sqrt(d); }) // The lambda will be called on a new thread
-     .observeOn(Scheduler::messageThread())
-     .subscribe([&](double squareRoot) { }); // The lambda will be called on the message thread
+         Observable::range(1, 1000, 1)
+             .observeOn(Scheduler::newThread())
+             .map([](double d){ return std::sqrt(d); }) // This lambda is called on a new thread
+             .observeOn(Scheduler::messageThread())
+             .subscribe([&](double squareRoot) { }); // This lambda is called on the message thread
      
      @see Scheduler::messageThread, Scheduler::backgroundThread and Scheduler::newThread
      */
@@ -449,7 +592,7 @@ public:
      
      Be careful when you use this on the message thread: If the Observable needs to process something *asynchronously* on the message thread, calling this will deadlock.
      
-     ​ **If you don't pass an onError handler, an exception inside the Observable will terminate your app.**
+     ​ **If you don't pass an `onError` handler, an exception inside the Observable will terminate your app.**
      */
     juce::Array<T> toArray(const std::function<void(std::exception_ptr)>& onError = Impl::TerminateOnError) const
     {
@@ -461,7 +604,7 @@ public:
         return values;
     }
 
-    /// Covariant constructor: If U is convertible to T, an Observable<U> is convertible to an Observable<T>.
+    /// Covariant constructor: If `U` is convertible to `T`, then an `Observable<U>` is convertible to an `Observable<T>`.
     template<typename U>
     Observable(const Observable<U>& other, typename std::enable_if<std::is_convertible<U, T>::value>::type* = 0)
     : Observable(other.impl.map([](const any& u) { return toAny(static_cast<T>(u.get<U>())); }))
@@ -481,12 +624,12 @@ private:
 
     // Calls the any() constructor, but for Observable<T> it stores the ObservableImpl
     template<typename U>
-    static typename std::enable_if<!IsObservable<U>::value, any>::type toAny(const U& u)
+    static any toAny(const U& u, typename std::enable_if<!IsObservable<U>::value>::type* = 0)
     {
         return any(u);
     }
     template<typename U>
-    static typename std::enable_if<IsObservable<U>::value, any>::type toAny(const U& u)
+    static any toAny(const U& u, typename std::enable_if<IsObservable<U>::value>::type* = 0)
     {
         return any(u.impl);
     }
@@ -500,167 +643,3 @@ private:
 
     JUCE_LEAK_DETECTOR(Observable)
 };
-
-template<>
-class Observable<void>
-{
-public:
-    typedef detail::ObservableImpl Impl;
-    typedef detail::any any;
-
-
-#pragma mark - Creation
-
-    /**
-     Creates an Observable which emits values from an Observer on each subscription.
-     
-     In the onSubscribe function, you get an Observer. You can call Observer::onNext on it to emit values from the Observable.
-     */
-    template<typename T>
-    static Observable<T> create(const std::function<void(const Observer<T>&)>& onSubscribe)
-    {
-        return Impl::create([onSubscribe](detail::ObserverImpl&& impl) {
-            onSubscribe(Observer<T>(std::move(impl)));
-        });
-    }
-
-    /**
-     Creates a new Observable for each subscriber, by calling the `factory` function on each new subscription.
-     */
-    template<typename T>
-    static Observable<T> defer(const std::function<Observable<T>()>& factory)
-    {
-        return Impl::defer([factory]() {
-            return factory().impl;
-        });
-    }
-
-    /**
-     Creates an Observable that doesn't emit any values and notifies onComplete immediately.
-     */
-    template<typename T>
-    static Observable<T> empty()
-    {
-        return Impl::empty();
-    }
-
-    /**
-     Creates an Observable which doesn't emit any values, and immediately notifies onError.
-     */
-    template<typename T>
-    static Observable<T> error(const std::exception& error)
-    {
-        return Impl::error(error);
-    }
-
-    /**
-     Creates an Observable that immediately emits the values from the given Array.
-     
-     Note that you can also pass an initializer list, like this:
-     
-     Observable::from({"Hello", "Test"})
-     
-     Observable::from({var(3), var("four")})
-     */
-    template<typename T>
-    static Observable<T> from(const juce::Array<T>& array)
-    {
-        juce::Array<any> values;
-
-        for (auto& value : array)
-            values.add(Observable<T>::toAny(value));
-
-        return Impl::from(std::move(values));
-    }
-
-    /**
-     Creates an Observable from a given JUCE Value. The returned Observable **only emits values until it is destroyed**, so you are responsible for managing its lifetime. Or use Reactive<Value>, which will handle this.
-     
-     The returned Observable notifies the onComplete handler when it's destroyed. @see Observable::subscribe
-     
-     When calling Value::setValue, it notifies asynchronously. So **the returned Observable emits the new value asynchronously.** If you call setValue immediately before destroying the returned Observable, the new value will not be emitted.
-     */
-    static Observable<juce::var> fromValue(juce::Value value)
-    {
-        return Impl::fromValue(value);
-    }
-
-    /**
-     Returns an Observable that emits one value every `interval`, starting at the time of subscription (where the first value is emitted). The emitted values are `1`, `2`, `3`, and so on.
-     
-     The Observable emits endlessly, but you can use Observable::take to get a finite number of values (for example).
-     
-     The interval has millisecond resolution.
-     */
-    static Observable<int> interval(const juce::RelativeTime& interval)
-    {
-        return Impl::interval(interval);
-    }
-
-    /**
-     Creates an Observable which emits a single value.
-     
-     The value is emitted immediately on each new subscription.
-     */
-    template<typename T>
-    static Observable<T> just(const T& value)
-    {
-        return Impl::just(Observable<T>::toAny(value));
-    }
-
-    /**
-     Creates an Observable that never emits any events and never terminates.
-     */
-    template<typename T>
-    static Observable<T> never()
-    {
-        return Impl::never();
-    }
-
-    /**
-     Creates an Observable which emits a range of values, starting at `first` to (and including) `last`. It completes after emitting the `last` value.
-     
-     ​ **Throws an exception if first > last.**
-     
-     For example:
-     
-     Observable::range(3, 7, 3) // {3, 6, 7}
-     Observable::range(17.5, 22.8, 2) // {17.5, 19.5, 21.5, 22.8}
-     */
-    template<typename T>
-    static Observable<T> range(T first, T last, unsigned int step = 1)
-    {
-        static_assert(std::is_integral<T>::value, "first and last must be integral or floating-point.");
-        return Impl::integralRange(first, last, step);
-    }
-
-    /**
-     Creates an Observable which emits a given value repeatedly.
-     
-     An optional `times` parameter specifies how often the value should be repeated. If omitted, the value will is repeated indefinitely.
-     */
-    template<typename T>
-    static Observable<T> repeat(const T& value)
-    {
-        return Impl::repeat(Observable<T>::toAny(value));
-    }
-    /// \overload
-    template<typename T>
-    static Observable<T> repeat(const T& value, unsigned int times)
-    {
-        return Impl::repeat(Observable<T>::toAny(value), times);
-    }
-};
-
-
-template<>
-inline Observable<float> Observable<void>::range(float first, float last, unsigned int step)
-{
-    return Impl::floatRange(first, last, step);
-}
-
-template<>
-inline Observable<double> Observable<void>::range(double first, double last, unsigned int step)
-{
-    return Impl::doubleRange(first, last, step);
-}

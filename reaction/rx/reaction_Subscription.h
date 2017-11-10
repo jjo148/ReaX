@@ -15,16 +15,12 @@ class Subscription
 {
 public:
     ///@{
-    /**
-        Transfers ownership from an existing Subscription.
-     */
+    /// Transfers ownership from an existing Subscription.
     Subscription(Subscription&&) = default;
     Subscription& operator=(Subscription&&) = default;
     ///@}
 
-    /**
-        Unsubscribes from the Observable.
-     */
+    /// Unsubscribes from the Observable.
     void unsubscribe() const;
 
     /**

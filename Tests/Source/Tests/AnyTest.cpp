@@ -334,4 +334,25 @@ TEST_CASE("any",
             }
         }
     }
+    
+    CONTEXT("move-only type")
+    {
+        IT("can hold a move-only (non-copyable) type")
+        {
+            // Create a unique_ptr
+            auto ptr = std::unique_ptr<int>(new int());
+            *ptr = 17;
+            int* const address = ptr.get();
+            
+            // Construct using rvalue
+            any anyPtr(std::move(ptr));
+            
+            // Get by const reference
+            const std::unique_ptr<int>& ptrRef = anyPtr.get<std::unique_ptr<int>>();
+            
+            // Check address and value
+            REQUIRE(ptrRef.get() == address);
+            REQUIRE(*ptrRef == 17);
+        }
+    }
 }

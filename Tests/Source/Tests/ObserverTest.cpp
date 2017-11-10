@@ -6,7 +6,7 @@ TEST_CASE("Observer",
 {
     IT("Emits values pushed to onNext")
     {
-        auto o = Observable<>::create<var>([](Observer<var> observer) {
+        auto o = Observable<var>::create([](Observer<var> observer) {
             observer.onNext(3);
             observer.onNext("Hello");
         });
@@ -19,7 +19,7 @@ TEST_CASE("Observer",
 
     IT("emits an error when calling onError")
     {
-        auto o = Observable<>::create<int>([](Observer<int> observer) {
+        auto o = Observable<int>::create([](Observer<int> observer) {
             observer.onError(std::exception_ptr());
         });
 
@@ -30,7 +30,7 @@ TEST_CASE("Observer",
 
     IT("notifies onCompleted")
     {
-        auto o = Observable<>::create<float>([](Observer<float> observer) {
+        auto o = Observable<float>::create([](Observer<float> observer) {
             observer.onCompleted();
         });
 
@@ -54,7 +54,7 @@ TEST_CASE("Observer",
 
         // Subscribe observer to some observable
         Observer<var> observer = subject;
-        Observable<>::from<var>({ 3, 4, 5 }).subscribe(observer).disposedBy(disposeBag);
+        Observable<var>::from({ 3, 4, 5 }).subscribe(observer).disposedBy(disposeBag);
 
         // Subject should have received values from Observable
         Reaction_RequireValues(values, var("Initial Value"), var(3), var(4), var(5));

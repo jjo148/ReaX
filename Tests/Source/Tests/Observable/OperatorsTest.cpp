@@ -19,7 +19,7 @@ TEST_CASE("Observable::combineLatest",
     Array<String> values;
     OwnedArray<Observable<String>> os;
     for (int i = 0; i < 8; i++)
-        os.add(new Observable<String>(Observable<>::just(String(i) + " ")));
+        os.add(new Observable<String>(Observable<String>::just(String(i) + " ")));
 
     IT("works with arity 1")
     {
@@ -72,11 +72,11 @@ TEST_CASE("Observable::combineLatest",
 
     IT("combines elements into a tuple when no function is given")
     {
-        auto o1 = Observable<>::just(true);
-        auto o2 = Observable<>::from<String>({ "Hello", "World" });
-        auto o3 = Observable<>::range(4, 6);
+        auto o1 = Observable<bool>::just(true);
+        auto o2 = Observable<String>::from({ "Hello", "World" });
+        auto o3 = Observable<long long>::range(4, 6);
         auto combined = o1.combineLatest(o2, o3);
-        static_assert(std::is_same<decltype(combined), Observable<std::tuple<bool, String, int>>>::value, "Combined Observable has wrong type.");
+        static_assert(std::is_same<decltype(combined), Observable<std::tuple<bool, String, long long>>>::value, "Combined Observable has wrong type.");
 
         Array<std::tuple<bool, String, int>> values;
         Reaction_CollectValues(combined, values);
@@ -98,8 +98,8 @@ TEST_CASE("Observable::concat",
 
     IT("concatenates the values emitted by the source Observables")
     {
-        auto observable = Observable<>::from<var>({ "Hello", "World" });
-        auto another = Observable<>::from<var>({ 1.5, 2.32, 5.6 });
+        auto observable = Observable<var>::from({ "Hello", "World" });
+        auto another = Observable<var>::from({ 1.5, 2.32, 5.6 });
         Reaction_CollectValues(observable.concat({another}), values);
 
         Reaction_RequireValues(values, var("Hello"), var("World"), var(1.5), var(2.32), var(5.6));
@@ -151,7 +151,7 @@ TEST_CASE("Observable::distinctUntilChanged",
 TEST_CASE("Observable::elementAt",
           "[Observable][Observable::elementAt]")
 {
-    auto observable = Observable<>::from<float>({ 17.4, 3.0, 1.5, 6.77 });
+    auto observable = Observable<float>::from({ 17.4, 3.0, 1.5, 6.77 });
     Array<double> values;
 
     IT("emits only the value at the given index")
@@ -169,7 +169,7 @@ TEST_CASE("Observable::filter",
     IT("filters ints")
     {
         Array<int> values;
-        auto source = Observable<>::range(4, 9, 1);
+        auto source = Observable<int>::range(4, 9, 1);
         auto filtered = source.filter([](int i) {
             return (i % 2 == 0);
         });
@@ -181,7 +181,7 @@ TEST_CASE("Observable::filter",
     IT("filters Strings")
     {
         Array<String> values;
-        auto source = Observable<>::from<String>({ "Hello", "Great", "World", "Hey" });
+        auto source = Observable<String>::from({ "Hello", "Great", "World", "Hey" });
         auto filtered = source.filter([](String s) {
             return s[0] == 'H';
         });
@@ -193,7 +193,7 @@ TEST_CASE("Observable::filter",
     IT("filters an Observable which emits different types")
     {
         Array<var> values;
-        auto source = Observable<>::from<var>({ var(3), var("Hello"), var(5.43) });
+        auto source = Observable<var>::from({ 3, "Hello", 5.43 });
         auto filtered = source.filter([](var v) {
             return v.isDouble();
         });
@@ -205,7 +205,7 @@ TEST_CASE("Observable::filter",
     IT("works with std::bind")
     {
         Array<int> values;
-        auto source = Observable<>::range(14, 19);
+        auto source = Observable<int>::range(14, 19);
 
         struct Test
         {
@@ -229,8 +229,8 @@ TEST_CASE("Observable::flatMap",
 
     IT("merges the values emitted by the returned Observables")
     {
-        auto o = Observable<>::from<String>({ "Hello", "World" }).flatMap([](String s) {
-            return Observable<>::from<String>({ s.toLowerCase(), s.toUpperCase() + "!" });
+        auto o = Observable<String>::from({ "Hello", "World" }).flatMap([](String s) {
+            return Observable<String>::from({ s.toLowerCase(), s.toUpperCase() + "!" });
         });
         Reaction_CollectValues(o, values);
 
@@ -242,12 +242,12 @@ TEST_CASE("Observable::flatMap",
 TEST_CASE("Observable::map",
           "[Observable][Observable::map]")
 {
-    Array<int> values;
-    auto source = Observable<>::range(4, 7, 2);
+    Array<long long> values;
+    auto source = Observable<long>::range(4, 7, 2);
 
     IT("emits values synchronously")
     {
-        auto mapped = source.map([](int i) { return i * 1.5; });
+        auto mapped = source.map([](long l) { return l * 1.5; });
         Reaction_CollectValues(mapped, values);
 
         Reaction_RequireValues(values, 6.0, 9.0, 10.5);
@@ -261,10 +261,10 @@ TEST_CASE("Interaction between Observable::map and Observable::switchOnNext",
     IT("supports returning Observables in map, even nested twice")
     {
         Array<String> values;
-        auto source = Observable<>::just(1);
+        auto source = Observable<int>::just(1);
         auto nested = source.map([](int i) {
-            return Observable<>::just<String>("Hello").map([i](String s) {
-                return Observable<>::just<var>(String(i) + " " + s);
+            return Observable<String>::just("Hello").map([i](String s) {
+                return Observable<var>::just(String(i) + " " + s);
             });
         });
 
@@ -278,9 +278,9 @@ TEST_CASE("Interaction between Observable::map and Observable::switchOnNext",
     IT("continues to emit values after the source Observable is gone")
     {
         Array<int> values;
-        auto source = std::make_shared<Observable<int>>(Observable<>::just(17));
+        auto source = std::make_shared<Observable<int>>(Observable<int>::just(17));
         auto mapped = source->map([](int next) {
-            return Observable<>::create<int>([next](Observer<int> observer) {
+            return Observable<int>::create([next](Observer<int> observer) {
                 MessageManager::getInstance()->callAsync([observer, next]() {
                     observer.onNext(next * 3);
                 });
@@ -311,7 +311,7 @@ TEST_CASE("Observable::merge",
         Array<Observable<int>> os;
         
         for (int i = 0; i < 8; ++i)
-            os.add(Observable<>::range(-i, 1));
+            os.add(Observable<int>::range(-i, 1));
         
         auto merged = os[0].merge({os[1], os[2], os[3], os[4], os[5], os[6], os[7]});
         Reaction_CollectValues(merged, values);
@@ -329,7 +329,7 @@ TEST_CASE("Observable::reduce",
 
     IT("reduces emitted values")
     {
-        auto observable = Observable<>::from<int>({ 10, 100, 1000 }).reduce(2, [](int accum, int next) {
+        auto observable = Observable<int>::from({ 10, 100, 1000 }).reduce(2, [](int accum, int next) {
             return accum + next;
         });
 
@@ -347,7 +347,7 @@ TEST_CASE("Observable::scan",
 
     IT("applies the function to the inputs")
     {
-        auto o = Observable<>::range(1, 5).scan(10, [](int accum, int currentValue) {
+        auto o = Observable<int>::range(1, 5).scan(10, [](int accum, int currentValue) {
             return accum + currentValue;
         });
         Reaction_CollectValues(o, values);
@@ -364,7 +364,7 @@ TEST_CASE("Observable::skip",
 
     IT("skips the first 4 values")
     {
-        auto o = Observable<>::from<int>({ 4, 7, 2, 1, 19, 1, 33, 4 }).skip(4);
+        auto o = Observable<int>::from({ 4, 7, 2, 1, 19, 1, 33, 4 }).skip(4);
         Reaction_CollectValues(o, values);
 
         Reaction_RequireValues(values, 19, 1, 33, 4);
@@ -406,7 +406,7 @@ TEST_CASE("Observable::startWith",
           "[Observable][Observable::startWith]")
 {
     Array<int> values;
-    auto observable = Observable<>::from<int>({ 17, 3 });
+    auto observable = Observable<int>::from({ 17, 3 });
 
     IT("prepends values to an existing Observable")
     {
@@ -421,7 +421,7 @@ TEST_CASE("Observable::takeLast",
           "[Observable][Observable::takeLast]")
 {
     Array<String> values;
-    auto observable = Observable<>::from<String>({ "First", "Another", "And one more", "Last value" });
+    auto observable = Observable<String>::from({ "First", "Another", "And one more", "Last value" });
 
     IT("takes the last 2 emitted values")
     {

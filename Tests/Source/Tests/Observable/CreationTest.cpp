@@ -10,7 +10,7 @@ TEST_CASE("Observable::create",
 
     IT("emits values when pushing values synchronously")
     {
-        auto observable = Observable<>::create<String>([](Observer<String> observer) {
+        auto observable = Observable<String>::create([](Observer<String> observer) {
             observer.onNext("First");
             observer.onNext("Second");
         });
@@ -21,7 +21,7 @@ TEST_CASE("Observable::create",
 
     IT("emits values when pushing values asynchronously")
     {
-        auto observable = Observable<>::create<String>([](Observer<String> observer) {
+        auto observable = Observable<String>::create([](Observer<String> observer) {
             MessageManager::getInstance()->callAsync([observer]() {
                 observer.onNext("First");
                 observer.onNext("Second");
@@ -39,7 +39,7 @@ TEST_CASE("Observable::create",
 
     IT("emits can emit values asynchronously after being destroyed")
     {
-        auto observable = std::make_shared<Observable<String>>(Observable<>::create<String>([](Observer<String> observer) {
+        auto observable = std::make_shared<Observable<String>>(Observable<String>::create([](Observer<String> observer) {
             MessageManager::getInstance()->callAsync([observer]() {
                 observer.onNext("First");
                 observer.onNext("Second");
@@ -68,7 +68,7 @@ TEST_CASE("Observable::create",
 
     IT("calls onSubscribe again for each new subscription")
     {
-        auto observable = Observable<>::create<String>([](Observer<String> observer) {
+        auto observable = Observable<String>::create([](Observer<String> observer) {
             observer.onNext("onSubscribe called");
         });
         Reaction_CollectValues(observable, values);
@@ -90,7 +90,7 @@ TEST_CASE("Observable::create",
         ReferenceCountedObjectPtr<ReferenceCountedObject> pointer(new Dummy());
 
         // Capture it in the Observable
-        auto observable = std::make_shared<Observable<String>>(Observable<>::create<String>([pointer](Observer<String>) {}));
+        auto observable = std::make_shared<Observable<String>>(Observable<String>::create([pointer](Observer<String>) {}));
 
         // There should be 2 references: From pointer and from the Observable
         CHECK(pointer->getReferenceCount() == 2);
@@ -123,9 +123,9 @@ TEST_CASE("Observable::defer",
     IT("calls the factory function on every new subscription")
     {
         int numCalls = 0;
-        auto observable = Observable<>::defer<int>([&]() {
+        auto observable = Observable<int>::defer([&]() {
             numCalls++;
-            return Observable<>::from<int>({ 3, 4 });
+            return Observable<int>::from({ 3, 4 });
         });
 
         Reaction_CollectValues(observable, values);
@@ -142,7 +142,7 @@ TEST_CASE("Observable::empty",
           "[Observable][Observable::empty]")
 {
     Array<int> values;
-    auto o = Observable<>::empty<int>();
+    auto o = Observable<int>::empty();
 
     IT("doesn't emit any values")
     {
@@ -167,7 +167,7 @@ TEST_CASE("Observable::error",
           "[Observable][Observable::error]")
 {
     Array<int> values;
-    auto o = Observable<>::error<int>(std::runtime_error("Error!!111!"));
+    auto o = Observable<int>::error(std::runtime_error("Error!!111!"));
     DisposeBag disposeBag;
 
     IT("doesn't emit any values")
@@ -194,7 +194,7 @@ TEST_CASE("Observable::from",
     IT("can be created from an Array<int>")
     {
         Array<long> values;
-        Reaction_CollectValues(Observable<>::from<int>(Array<int>({ 3, 6, 8 })), values);
+        Reaction_CollectValues(Observable<int>::from(Array<int>({ 3, 6, 8 })), values);
 
         Reaction_RequireValues(values, 3, 6, 8);
     }
@@ -202,7 +202,7 @@ TEST_CASE("Observable::from",
     IT("can be created from a std::initializer_list<var>")
     {
         Array<var> values;
-        Reaction_CollectValues(Observable<>::from<var>({ var("Hello"), var(15.5) }), values);
+        Reaction_CollectValues(Observable<var>::from({ var("Hello"), var(15.5) }), values);
 
         Reaction_RequireValues(values, var("Hello"), var(15.5));
     }
@@ -210,15 +210,15 @@ TEST_CASE("Observable::from",
     IT("can be created from a std::initializer_list<int>")
     {
         Array<double> values;
-        Reaction_CollectValues(Observable<>::from<int>({ 1, 4 }), values);
+        Reaction_CollectValues(Observable<int>::from({ 1, 4 }), values);
 
         Reaction_RequireValues(values, 1, 4);
     }
 
-    IT("can be created from a std::initializer_list<String>")
+    IT("can be created from a std::initializer_list<const char*>")
     {
         Array<String> values;
-        Reaction_CollectValues(Observable<>::from<String>({ "Hello", "Test" }), values);
+        Reaction_CollectValues(Observable<String>::from({ "Hello", "Test" }), values);
 
         Reaction_RequireValues(values, "Hello", "Test");
     }
@@ -229,7 +229,7 @@ TEST_CASE("Observable::fromValue",
           "[Observable][Observable::fromValue]")
 {
     Value value(String("Initial Value"));
-    const auto observable = Observable<>::fromValue(value);
+    const auto observable = Observable<var>::fromValue(value);
     Array<String> values;
     Reaction_CollectValues(observable, values);
 
@@ -256,7 +256,7 @@ TEST_CASE("Observable::fromValue",
 
     IT("notifies multiple Subscriptions on subscribe")
     {
-        auto another = Observable<>::fromValue(value);
+        auto another = Observable<var>::fromValue(value);
         Reaction_CollectValues(another, values);
 
         Reaction_RequireValues(values, "Initial Value", "Initial Value");
@@ -265,7 +265,7 @@ TEST_CASE("Observable::fromValue",
     IT("notifies multiple Values referring to the same ValueSource")
     {
         Value anotherValue(value);
-        auto anotherObservable = Observable<>::fromValue(anotherValue);
+        auto anotherObservable = Observable<var>::fromValue(anotherValue);
         Reaction_CollectValues(anotherObservable, values);
 
         Reaction_RequireValues(values, "Initial Value", "Initial Value");
@@ -299,7 +299,7 @@ TEST_CASE("Observable::fromValue lifetime",
 {
     // Create an Observable from a Value
     Value value(String("Initial"));
-    auto source = std::make_shared<Observable<var>>(Observable<>::fromValue(value));
+    auto source = std::make_shared<Observable<var>>(Observable<var>::fromValue(value));
 
     // Create another Observable from the source Observable
     auto mapped = source->map([](String s) { return s; });
@@ -371,7 +371,7 @@ TEST_CASE("Observable::fromValue with a Slider",
 {
     Slider slider;
     slider.setValue(7.6);
-    auto o = Observable<>::fromValue(slider.getValueObject());
+    auto o = Observable<var>::fromValue(slider.getValueObject());
     Array<var> values;
     Reaction_CollectValues(o, values);
     Reaction_CheckValues(values, 7.6);
@@ -401,7 +401,7 @@ TEST_CASE("Observable::interval",
 {
     IT("can create an interval below one second")
     {
-        auto o = Observable<>::interval(RelativeTime::seconds(0.04)).take(3);
+        auto o = Observable<int>::interval(RelativeTime::seconds(0.04)).take(3);
         auto lastTime = Time::getCurrentTime();
         Array<RelativeTime> intervals;
         Array<int> ints;
@@ -428,7 +428,7 @@ TEST_CASE("Observable::just",
     IT("emits a single value on subscribe")
     {
         Array<float> values;
-        Reaction_CollectValues(Observable<>::just(18.3), values);
+        Reaction_CollectValues(Observable<double>::just(18.3), values);
 
         Reaction_RequireValues(values, 18.3);
     }
@@ -436,7 +436,7 @@ TEST_CASE("Observable::just",
     IT("notifies multiple subscriptions")
     {
         Array<String> values;
-        auto o = Observable<>::just<String>("Hello");
+        auto o = Observable<String>::just("Hello");
         Reaction_CollectValues(o, values);
         Reaction_CollectValues(o, values);
 
@@ -448,7 +448,7 @@ TEST_CASE("Observable::just",
 TEST_CASE("Observable::never",
           "[Observable][Observable::never]")
 {
-    auto o = Observable<>::never<int64>();
+    auto o = Observable<int64>::never();
     DisposeBag disposeBag;
 
     IT("doesn't terminate and doesn't emit")
@@ -477,25 +477,25 @@ TEST_CASE("Observable::range",
 
     IT("emits integer numbers with an integer range")
     {
-        Reaction_CollectValues(Observable<>::range(3, 7, 3), values);
+        Reaction_CollectValues(Observable<int>::range(3, 7, 3), values);
         Reaction_RequireValues(values, 3, 6, 7);
     }
 
     IT("emits double numbers with a double range")
     {
-        Reaction_CollectValues(Observable<>::range(17.5, 22.8, 2), values);
+        Reaction_CollectValues(Observable<double>::range(17.5, 22.8, 2), values);
         Reaction_RequireValues(values, 17.5, 19.5, 21.5, 22.8);
     }
 
     IT("emits just start if start == end")
     {
-        Reaction_CollectValues(Observable<>::range(10, 10), values);
+        Reaction_CollectValues(Observable<int>::range(10, 10), values);
         Reaction_RequireValues(values, 10);
     }
 
     IT("throws if start > end")
     {
-        REQUIRE_THROWS_WITH(Observable<>::range(10, 9), Contains("Invalid range"));
+        REQUIRE_THROWS_WITH(Observable<int>::range(10, 9), Contains("Invalid range"));
     }
 }
 
@@ -507,14 +507,14 @@ TEST_CASE("Observable::repeat",
 
     IT("repeats a value indefinitely")
     {
-        Reaction_CollectValues(Observable<>::repeat(8).take(9), values);
+        Reaction_CollectValues(Observable<int>::repeat(8).take(9), values);
 
         Reaction_RequireValues(values, 8, 8, 8, 8, 8, 8, 8, 8, 8);
     }
 
     IT("repeats a values a limited number of times")
     {
-        Reaction_CollectValues(Observable<>::repeat<String>("4", 7), values);
+        Reaction_CollectValues(Observable<String>::repeat("4", 7), values);
 
         Reaction_RequireValues(values, "4", "4", "4", "4", "4", "4", "4");
     }
@@ -525,10 +525,10 @@ TEST_CASE("Observable covariance",
 {
     CONTEXT("implicit conversion")
     {
-        auto floats = Observable<>::just(17.f);
-        auto doubles = Observable<>::just(34.0);
-        auto vars = Observable<>::just<var>(51);
-        auto strings = Observable<>::just<String>("Hello");
+        auto floats = Observable<float>::just(17.f);
+        auto doubles = Observable<double>::just(34.0);
+        auto vars = Observable<var>::just(51);
+        auto strings = Observable<String>::just("Hello");
         
         IT("can convert from var to float")
         {
@@ -586,8 +586,8 @@ TEST_CASE("Observable covariance",
             int b;
         };
         
-        auto bases = Observable<>::just(Base(100));
-        auto deriveds = Observable<>::just(Derived(200, 1000));
+        auto bases = Observable<Base>::just(Base(100));
+        auto deriveds = Observable<Derived>::just(Derived(200, 1000));
         
         IT("can convert from Deriveds to Bases")
         {
