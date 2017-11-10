@@ -3,29 +3,75 @@
 TEST_CASE("Reactive<Component>",
           "[Reactive<Component>][ComponentExtension]")
 {
-    Array<bool> values;
     Reactive<Component> component;
-    Reaction_CollectValues(component.rx.visible, values);
 
-    IT("initially has the same value as the getter")
+    CONTEXT("visibility")
     {
-        REQUIRE(component.isVisible() == component.rx.visible.getValue());
+        Array<bool> values;
+        Reaction_CollectValues(component.rx.visible, values);
+        Reaction_RequireValues(values, false);
+
+        IT("initially has the same value as the getter")
+        {
+            REQUIRE(component.isVisible() == component.rx.visible.getValue());
+        }
+
+        IT("emits when changed through setter")
+        {
+            for (bool visible : { false, false, true, true, false })
+                component.setVisible(visible);
+
+            Reaction_RequireValues(values, false, true, false);
+        }
+
+        IT("changes when pushing values")
+        {
+            for (bool visible : { false, false, true, true, false }) {
+                component.rx.visible.onNext(visible);
+
+                REQUIRE(component.isVisible() == visible);
+            }
+        }
     }
 
-    IT("emits when visibility is changed through setter")
+    CONTEXT("bounds")
     {
-        for (bool visible : { false, false, true, true, false })
-            component.setVisible(visible);
+        Array<Rectangle<int>> values;
+        Reaction_CollectValues(component.rx.bounds, values);
+        Reaction_RequireValues(values, Rectangle<int>(0, 0, 0, 0));
 
-        Reaction_RequireValues(values, false, true, false);
-    }
+        auto rects = {
+            Rectangle<int>(3, -14, 5, 1031),
+            Rectangle<int>(3, -14, 5, 1031),
+            Rectangle<int>(13, 1411, 25, 2),
+            Rectangle<int>(13, 1411, 25, 2),
+            Rectangle<int>(13, 1411, 25, 1)
+        };
+        
+        IT("initially has the same value as the getter")
+        {
+            REQUIRE(component.getBounds() == component.rx.bounds.getValue());
+        }
 
-    IT("changes visiblility when pushing values")
-    {
-        for (bool visible : { false, false, true, true, false }) {
-            component.rx.visible.onNext(visible);
+        IT("emits when changed through setter")
+        {
+            for (const auto &rect : rects)
+                component.setBounds(rect);
 
-            REQUIRE(component.isVisible() == visible);
+            Reaction_RequireValues(values,
+                                   Rectangle<int>(0, 0, 0, 0),
+                                   Rectangle<int>(3, -14, 5, 1031),
+                                   Rectangle<int>(13, 1411, 25, 2),
+                                   Rectangle<int>(13, 1411, 25, 1));
+        }
+
+        IT("changes when pushing values")
+        {
+            for (const auto &rect : rects) {
+                component.rx.bounds.onNext(rect);
+
+                REQUIRE(component.getBounds() == rect);
+            }
         }
     }
 }
@@ -105,17 +151,17 @@ TEST_CASE("Reactive<Button>",
             button.setState(Button::ButtonState::buttonDown);
 
             Reaction_CheckValues(values,
-                           Button::ButtonState::buttonNormal,
-                           Button::ButtonState::buttonDown);
+                                 Button::ButtonState::buttonNormal,
+                                 Button::ButtonState::buttonDown);
 
             button.setState(Button::ButtonState::buttonNormal);
             button.setState(Button::ButtonState::buttonOver);
 
             Reaction_RequireValues(values,
-                             Button::ButtonState::buttonNormal,
-                             Button::ButtonState::buttonDown,
-                             Button::ButtonState::buttonNormal,
-                             Button::ButtonState::buttonOver);
+                                   Button::ButtonState::buttonNormal,
+                                   Button::ButtonState::buttonDown,
+                                   Button::ButtonState::buttonNormal,
+                                   Button::ButtonState::buttonOver);
         }
     }
 
@@ -234,14 +280,14 @@ TEST_CASE("Reactive<Button> with custom TextButton subclass",
     {
         button.hoverAcrossButton();
         Reaction_CheckValues(values,
-                       Button::ButtonState::buttonNormal,
-                       Button::ButtonState::buttonOver);
+                             Button::ButtonState::buttonNormal,
+                             Button::ButtonState::buttonOver);
         Reaction_RunDispatchLoopUntil(values.size() == 3);
 
         Reaction_RequireValues(values,
-                         Button::ButtonState::buttonNormal,
-                         Button::ButtonState::buttonOver,
-                         Button::ButtonState::buttonNormal);
+                               Button::ButtonState::buttonNormal,
+                               Button::ButtonState::buttonOver,
+                               Button::ButtonState::buttonNormal);
     }
 }
 

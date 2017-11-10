@@ -18,7 +18,6 @@ public:
     
     ~ComponentExtension();
     
-#pragma message("Add tests")
     /// Controls the bounds of the `Component`, and emits a value whenever they change (relative to the `Component`'s parent).
     const BehaviorSubject<juce::Rectangle<int>> bounds;
 
