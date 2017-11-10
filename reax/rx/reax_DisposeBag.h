@@ -15,10 +15,10 @@ public:
     ~DisposeBag();
 
     /// Inserts a `Subscription` into the `DisposeBag`. The `Subscription` is disposed when the `DisposeBag` is destroyed. 
-    void insert(Subscription&& subscription);
+    void insert(const Subscription& subscription);
 
 private:
-    const detail::any wrapped;
+    detail::any wrapped;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(DisposeBag)
+    JUCE_LEAK_DETECTOR(DisposeBag)
 };

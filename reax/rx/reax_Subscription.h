@@ -14,12 +14,9 @@ class DisposeBag;
 class Subscription
 {
 public:
-    ///@{
-    /// Transfers ownership from an existing Subscription.
-    Subscription(Subscription&&) = default;
-    Subscription& operator=(Subscription&&) = default;
-    ///@}
-
+    Subscription(const Subscription&) = default;
+    Subscription& operator=(const Subscription&) = default;
+    
     /// Unsubscribes from the Observable.
     void unsubscribe() const;
 
@@ -30,15 +27,15 @@ public:
      
         @see DisposeBag::insert()
      */
-    void disposedBy(DisposeBag& disposeBag) &&;
+    void disposedBy(DisposeBag& disposeBag);
 
 private:
     friend struct detail::ObservableImpl;
     friend class DisposeBag;
     
-    const detail::any wrapped;
+    detail::any wrapped;
 
     explicit Subscription(detail::any&& wrapped);
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Subscription)
+    JUCE_LEAK_DETECTOR(Subscription)
 };

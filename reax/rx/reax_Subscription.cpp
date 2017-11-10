@@ -7,7 +7,7 @@ void Subscription::unsubscribe() const
     wrapped.get<rxcpp::subscription>().unsubscribe();
 }
 
-void Subscription::disposedBy(DisposeBag& disposeBag) &&
+void Subscription::disposedBy(DisposeBag& disposeBag)
 {
-    disposeBag.insert(std::move(*this));
+    disposeBag.insert(*this);
 }
