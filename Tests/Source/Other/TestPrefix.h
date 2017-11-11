@@ -5,47 +5,48 @@
 #define DONT_SET_USING_JUCE_NAMESPACE 1
 #include "JuceHeader.h"
 
-VARX_ENABLE_EXTRA_WARNINGS
+REAX_ENABLE_EXTRA_WARNINGS
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wheader-hygiene"
 using namespace juce;
-using namespace varx;
+using namespace reax;
 #pragma clang diagnostic pop
 
 
 #define CONTEXT(desc) SECTION(std::string(" Context: ") + desc, "")
 #define IT(desc) SECTION(std::string("       It ") + desc, "")
 
-/// Subscribes to an Observable and collects all emitted items into a given Array.
-#define varxCollectItems(__observable, __arrayName) \
+/// Subscribes to an Observable and collects all emitted values into a given Array.
+#define ReaX_CollectValues(__observable, __arrayName) \
     DisposeBag JUCE_JOIN_MACRO(__arrayName, JUCE_JOIN_MACRO(Subscription_, __LINE__)); \
-    (__observable).subscribe([&__arrayName](const decltype(__arrayName.getFirst())& item) { __arrayName.add(item); }).disposedBy(JUCE_JOIN_MACRO(__arrayName, JUCE_JOIN_MACRO(Subscription_, __LINE__)));
+    (__observable).subscribe([&__arrayName](const decltype(__arrayName.getFirst())& value) { __arrayName.add(value); }).disposedBy(JUCE_JOIN_MACRO(__arrayName, JUCE_JOIN_MACRO(Subscription_, __LINE__)));
 
-/// REQUIREs that a given Array is equal to the list of passed items.
-#define varxRequireItems(__arrayName, ...) REQUIRE(__arrayName == decltype(__arrayName)({ __VA_ARGS__ }))
+/// REQUIREs that a given Array is equal to the given list of values.
+#define ReaX_RequireValues(__arrayName, ...) REQUIRE(__arrayName == decltype(__arrayName)({ __VA_ARGS__ }))
 
-/// CHECKs that a given Array is equal to the list of passed items.
-#define varxCheckItems(__arrayName, ...) CHECK(__arrayName == decltype(__arrayName)({ __VA_ARGS__ }))
+/// CHECKs that a given Array is equal to the given list of values.
+#define ReaX_CheckValues(__arrayName, ...) CHECK(__arrayName == decltype(__arrayName)({ __VA_ARGS__ }))
 
 
 /// Runs the JUCE dispatch loop for a given time, to process async callbacks.
-inline void varxRunDispatchLoop(int millisecondsToRunFor = 0)
+inline void ReaX_RunDispatchLoop(int millisecondsToRunFor = 0)
 {
     MessageManager::getInstance()->runDispatchLoopUntil(millisecondsToRunFor);
 }
 
 /// Runs the JUCE dispatch loop until a given condition is fulfilled.
-#define varxRunDispatchLoopUntil(__condition) \
+#define ReaX_RunDispatchLoopUntil(__condition) \
     { \
         const auto startTime = juce::Time::getMillisecondCounter(); \
         while (!(__condition) && Time::getMillisecondCounter() < startTime + 5 * 1000) { \
-            varxRunDispatchLoop(5); \
+            ReaX_RunDispatchLoop(5); \
         } \
     } \
     REQUIRE(__condition);
 
 namespace juce {
+/// Output stream operator<< for juce::var
 inline std::ostream& operator<<(std::ostream& os, const var& v)
 {
     os << v.toString();
@@ -71,7 +72,7 @@ public:
 
 private:
     TestWindow()
-    : DocumentWindow("varx-Tests", Colours::white, DocumentWindow::TitleBarButtons::closeButton, true)
+    : DocumentWindow("ReaX-Tests", Colours::white, DocumentWindow::TitleBarButtons::closeButton, true)
     {
         ScopedPointer<Component> component(new Component());
         component->setSize(1, 1);

@@ -4,7 +4,7 @@
 #define DONT_SET_USING_JUCE_NAMESPACE 1
 #include "JuceHeader.h"
 
-VARX_ENABLE_EXTRA_WARNINGS
+REAX_ENABLE_EXTRA_WARNINGS
 
 using namespace juce;
 

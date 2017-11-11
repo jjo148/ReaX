@@ -5,7 +5,7 @@ TEST_CASE("Observable onError",
           "[Observable][onError]")
 {
     // Create an Observable that throws on subscribe
-    auto syncThrow = Observable<>::create<String>([](Observer<String>) { throw std::runtime_error("Error!"); });
+    auto syncThrow = Observable<String>::create([](Observer<String>) { throw std::runtime_error("Error!"); });
 
     IT("calls onError on subscribe")
     {
@@ -23,7 +23,7 @@ TEST_CASE("Observable onError",
     IT("calls onError asynchronously")
     {
         // Create an Observable that throws asynchronously
-        auto asyncThrow = Observable<>::create<int>([](Observer<int> observer) {
+        auto asyncThrow = Observable<int>::create([](Observer<int> observer) {
             MessageManager::getInstance()->callAsync([observer]() {
                 observer.onNext(3);
             });
@@ -36,7 +36,7 @@ TEST_CASE("Observable onError",
         asyncThrow.subscribe([](int) {}, [&](std::exception_ptr) { called = true; });
 
         CHECK_FALSE(called);
-        varxRunDispatchLoopUntil(called);
+        ReaX_RunDispatchLoopUntil(called);
         REQUIRE(called);
     }
 }
@@ -52,7 +52,7 @@ TEST_CASE("Observable onComplete",
 
     IT("calls onComplete synchronously")
     {
-        Observable<>::just(2).subscribe([](int) {}, [](std::exception_ptr) {}, onComplete);
+        Observable<int>::just(2).subscribe([](int) {}, [](std::exception_ptr) {}, onComplete);
         REQUIRE(called);
     }
 }

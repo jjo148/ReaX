@@ -60,12 +60,12 @@ TEST_CASE("LockFreeTarget",
         CHECK(target.tryDequeueAll(value));
         CHECK(value == Point<int>(43, 29));
         
-        // Enqueue 3 items
+        // Enqueue 3 values
         subject.onNext(Point<int>(18, -5));
         subject.onNext(Point<int>(-163, 122));
         subject.onNext(Point<int>(0, 774));
         
-        // Dequeue 3 items
+        // Dequeue 3 values
         CHECK(target.tryDequeue(value));
         CHECK(value == Point<int>(18, -5));
         CHECK(target.tryDequeue(value));

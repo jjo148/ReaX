@@ -4,22 +4,22 @@
 TEST_CASE("Observer",
           "[Observer]")
 {
-    IT("Emits items pushed to onNext")
+    IT("Emits values pushed to onNext")
     {
-        auto o = Observable<>::create<var>([](Observer<var> observer) {
+        auto o = Observable<var>::create([](Observer<var> observer) {
             observer.onNext(3);
             observer.onNext("Hello");
         });
 
-        Array<var> items;
-        varxCollectItems(o, items);
+        Array<var> values;
+        ReaX_CollectValues(o, values);
 
-        varxRequireItems(items, var(3), var("Hello"));
+        ReaX_RequireValues(values, var(3), var("Hello"));
     }
 
     IT("emits an error when calling onError")
     {
-        auto o = Observable<>::create<int>([](Observer<int> observer) {
+        auto o = Observable<int>::create([](Observer<int> observer) {
             observer.onError(std::exception_ptr());
         });
 
@@ -30,7 +30,7 @@ TEST_CASE("Observer",
 
     IT("notifies onCompleted")
     {
-        auto o = Observable<>::create<float>([](Observer<float> observer) {
+        auto o = Observable<float>::create([](Observer<float> observer) {
             observer.onCompleted();
         });
 
@@ -46,19 +46,19 @@ TEST_CASE("Observer",
 
         // Create subject
         BehaviorSubject<var> subject("Initial Value");
-        CHECK(subject.getLatestItem() == "Initial Value");
+        CHECK(subject.getValue() == "Initial Value");
 
-        // Collect items from subject
-        Array<var> items;
-        varxCollectItems(subject, items);
+        // Collect values from subject
+        Array<var> values;
+        ReaX_CollectValues(subject, values);
 
         // Subscribe observer to some observable
         Observer<var> observer = subject;
-        Observable<>::from<var>({ 3, 4, 5 }).subscribe(observer).disposedBy(disposeBag);
+        Observable<var>::from({ 3, 4, 5 }).subscribe(observer).disposedBy(disposeBag);
 
-        // Subject should have received items from Observable
-        varxRequireItems(items, var("Initial Value"), var(3), var(4), var(5));
-        REQUIRE(subject.getLatestItem() == var(5));
+        // Subject should have received values from Observable
+        ReaX_RequireValues(values, var("Initial Value"), var(3), var(4), var(5));
+        REQUIRE(subject.getValue() == var(5));
     }
 }
 
@@ -74,42 +74,42 @@ TEST_CASE("Observer contravariance",
         
         IT("can convert from var to float")
         {
-            Array<var> items;
+            Array<var> values;
             Observer<float> o = vars;
-            varxCollectItems(vars, items);
+            ReaX_CollectValues(vars, values);
             o.onNext(14.57f);
             
-            varxRequireItems(items, 14.57f);
+            ReaX_RequireValues(values, 14.57f);
         }
         
         IT("can convert from float to var")
         {
-            Array<float> items;
+            Array<float> values;
             Observer<var> o = floats;
-            varxCollectItems(floats, items);
+            ReaX_CollectValues(floats, values);
             o.onNext(var(85.2f));
             
-            varxRequireItems(items, 85.2f);
+            ReaX_RequireValues(values, 85.2f);
         }
         
         IT("can convert from var to String")
         {
-            Array<var> items;
+            Array<var> values;
             Observer<String> o = vars;
-            varxCollectItems(vars, items);
+            ReaX_CollectValues(vars, values);
             o.onNext("Hello world!");
             
-            varxRequireItems(items, "Hello world!");
+            ReaX_RequireValues(values, "Hello world!");
         }
         
         IT("can convert from float to int")
         {
-            Array<int> items;
+            Array<int> values;
             Observer<float> o = ints;
-            varxCollectItems(ints, items);
+            ReaX_CollectValues(ints, values);
             o.onNext(15.67f);
             
-            varxRequireItems(items, 15);
+            ReaX_RequireValues(values, 15);
         }
     }
     
@@ -136,12 +136,12 @@ TEST_CASE("Observer contravariance",
         
         IT("can convert from Deriveds to Bases")
         {
-            Array<Base> items;
+            Array<Base> values;
             Observer<Derived> o = bases;
-            varxCollectItems(bases, items);
+            ReaX_CollectValues(bases, values);
             o.onNext(Derived(205, 1002));
             
-            varxRequireItems(items, Base(205));
+            ReaX_RequireValues(values, Base(205));
         }
     }
 }

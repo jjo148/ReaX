@@ -4,8 +4,8 @@
 TEST_CASE("Observable::observeOn",
           "[Observable][Observable::observeOn]")
 {
-    auto observable = Observable<>::from<int>({ 1, 2, 3 });
-    Array<int> items;
+    auto observable = Observable<int>::from({ 1, 2, 3 });
+    Array<int> values;
 
     IT("can schedule to a background thread and two new threads")
     {
@@ -35,7 +35,7 @@ TEST_CASE("Observable::observeOn",
         });
 
         // Wait blocking
-        items = onAnotherNewThread.toArray();
+        values = onAnotherNewThread.toArray();
 
         // Check that no thread IDs are equal, and all are != nullptr
         SortedSet<Thread::ThreadID> threadIDs;
@@ -46,7 +46,7 @@ TEST_CASE("Observable::observeOn",
         threadIDs.add(nullptr);
 
         REQUIRE(threadIDs.size() == 5);
-        varxRequireItems(items, 24, 48, 72);
+        ReaX_RequireValues(values, 24, 48, 72);
     }
 
     IT("can schedule to the message thread")
@@ -54,14 +54,14 @@ TEST_CASE("Observable::observeOn",
         auto onMessageThread = observable.observeOn(Scheduler::messageThread()).map([](int i) {
             return i * 2;
         });
-        varxCollectItems(onMessageThread, items);
+        ReaX_CollectValues(onMessageThread, values);
 
-        // There shouldn't be any items yet, because observeOn is asynchronous
-        CHECK(items.isEmpty());
+        // There shouldn't be any values yet, because observeOn is asynchronous
+        CHECK(values.isEmpty());
 
-        // Wait for items to be emitted asynchronously
-        varxRunDispatchLoopUntil(items.size() == 3);
+        // Wait for values to be emitted asynchronously
+        ReaX_RunDispatchLoopUntil(values.size() == 3);
 
-        varxRequireItems(items, 2, 4, 6);
+        ReaX_RequireValues(values, 2, 4, 6);
     }
 }

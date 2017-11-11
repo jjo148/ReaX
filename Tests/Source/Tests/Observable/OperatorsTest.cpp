@@ -2,13 +2,13 @@
 
 
 template<typename T, typename... Ts>
-String transform(T t, Ts... ts)
+String concatStrings(T t, Ts... ts)
 {
-    return t + transform(ts...);
+    return t + concatStrings(ts...);
 }
 
 template<>
-String transform<String>(String s)
+String concatStrings<String>(String s)
 {
     return s;
 }
@@ -16,74 +16,74 @@ String transform<String>(String s)
 TEST_CASE("Observable::combineLatest",
           "[Observable][Observable::combineLatest]")
 {
-    Array<String> items;
+    Array<String> values;
     OwnedArray<Observable<String>> os;
     for (int i = 0; i < 8; i++)
-        os.add(new Observable<String>(Observable<>::just(String(i) + " ")));
+        os.add(new Observable<String>(Observable<String>::just(String(i) + " ")));
 
     IT("works with arity 1")
     {
-        const auto f = transform<String, String>;
-        varxCollectItems(os[0]->combineLatest(f, *os[1]), items);
-        varxRequireItems(items, "0 1 ");
+        const auto f = concatStrings<String, String>;
+        ReaX_CollectValues(os[0]->combineLatest(f, *os[1]), values);
+        ReaX_RequireValues(values, "0 1 ");
     }
 
     IT("works with arity 2")
     {
-        const auto f = transform<String, String, String>;
-        varxCollectItems(os[0]->combineLatest(f, *os[1], *os[2]), items);
-        varxRequireItems(items, "0 1 2 ");
+        const auto f = concatStrings<String, String, String>;
+        ReaX_CollectValues(os[0]->combineLatest(f, *os[1], *os[2]), values);
+        ReaX_RequireValues(values, "0 1 2 ");
     }
 
     IT("works with arity 3")
     {
-        const auto f = transform<String, String, String, String>;
-        varxCollectItems(os[0]->combineLatest(f, *os[1], *os[2], *os[3]), items);
-        varxRequireItems(items, "0 1 2 3 ");
+        const auto f = concatStrings<String, String, String, String>;
+        ReaX_CollectValues(os[0]->combineLatest(f, *os[1], *os[2], *os[3]), values);
+        ReaX_RequireValues(values, "0 1 2 3 ");
     }
 
     IT("works with arity 4")
     {
-        const auto f = transform<String, String, String, String, String>;
-        varxCollectItems(os[0]->combineLatest(f, *os[1], *os[2], *os[3], *os[4]), items);
-        varxRequireItems(items, "0 1 2 3 4 ");
+        const auto f = concatStrings<String, String, String, String, String>;
+        ReaX_CollectValues(os[0]->combineLatest(f, *os[1], *os[2], *os[3], *os[4]), values);
+        ReaX_RequireValues(values, "0 1 2 3 4 ");
     }
 
     IT("works with arity 5")
     {
-        const auto f = transform<String, String, String, String, String, String>;
-        varxCollectItems(os[0]->combineLatest(f, *os[1], *os[2], *os[3], *os[4], *os[5]), items);
-        varxRequireItems(items, "0 1 2 3 4 5 ");
+        const auto f = concatStrings<String, String, String, String, String, String>;
+        ReaX_CollectValues(os[0]->combineLatest(f, *os[1], *os[2], *os[3], *os[4], *os[5]), values);
+        ReaX_RequireValues(values, "0 1 2 3 4 5 ");
     }
 
     IT("works with arity 6")
     {
-        const auto f = transform<String, String, String, String, String, String, String>;
-        varxCollectItems(os[0]->combineLatest(f, *os[1], *os[2], *os[3], *os[4], *os[5], *os[6]), items);
-        varxRequireItems(items, "0 1 2 3 4 5 6 ");
+        const auto f = concatStrings<String, String, String, String, String, String, String>;
+        ReaX_CollectValues(os[0]->combineLatest(f, *os[1], *os[2], *os[3], *os[4], *os[5], *os[6]), values);
+        ReaX_RequireValues(values, "0 1 2 3 4 5 6 ");
     }
 
     IT("works with arity 7")
     {
-        const auto f = transform<String, String, String, String, String, String, String, String>;
-        varxCollectItems(os[0]->combineLatest(f, *os[1], *os[2], *os[3], *os[4], *os[5], *os[6], *os[7]), items);
-        varxRequireItems(items, "0 1 2 3 4 5 6 7 ");
+        const auto f = concatStrings<String, String, String, String, String, String, String, String>;
+        ReaX_CollectValues(os[0]->combineLatest(f, *os[1], *os[2], *os[3], *os[4], *os[5], *os[6], *os[7]), values);
+        ReaX_RequireValues(values, "0 1 2 3 4 5 6 7 ");
     }
 
-    IT("combines elements into a tuple when no transform is given")
+    IT("combines elements into a tuple when no function is given")
     {
-        auto o1 = Observable<>::just(true);
-        auto o2 = Observable<>::from<String>({ "Hello", "World" });
-        auto o3 = Observable<>::range(4, 6);
+        auto o1 = Observable<bool>::just(true);
+        auto o2 = Observable<String>::from({ "Hello", "World" });
+        auto o3 = Observable<long long>::range(4, 6);
         auto combined = o1.combineLatest(o2, o3);
-        static_assert(std::is_same<decltype(combined), Observable<std::tuple<bool, String, int>>>::value, "Combined Observable has wrong type.");
+        static_assert(std::is_same<decltype(combined), Observable<std::tuple<bool, String, long long>>>::value, "Combined Observable has wrong type.");
 
-        Array<std::tuple<bool, String, int>> items;
-        varxCollectItems(combined, items);
+        Array<std::tuple<bool, String, int>> values;
+        ReaX_CollectValues(combined, values);
         
-        CHECK(items.size() == 3);
+        CHECK(values.size() == 3);
         
-        varxRequireItems(items,
+        ReaX_RequireValues(values,
                          std::make_tuple(true, "World", 4),
                          std::make_tuple(true, "World", 5),
                          std::make_tuple(true, "World", 6));
@@ -94,15 +94,15 @@ TEST_CASE("Observable::combineLatest",
 TEST_CASE("Observable::concat",
           "[Observable][Observable::concat]")
 {
-    Array<var> items;
+    Array<var> values;
 
     IT("concatenates the values emitted by the source Observables")
     {
-        auto observable = Observable<>::from<var>({ "Hello", "World" });
-        auto another = Observable<>::from<var>({ 1.5, 2.32, 5.6 });
-        varxCollectItems(observable.concat({another}), items);
+        auto observable = Observable<var>::from({ "Hello", "World" });
+        auto another = Observable<var>::from({ 1.5, 2.32, 5.6 });
+        ReaX_CollectValues(observable.concat({another}), values);
 
-        varxRequireItems(items, var("Hello"), var("World"), var(1.5), var(2.32), var(5.6));
+        ReaX_RequireValues(values, var("Hello"), var("World"), var(1.5), var(2.32), var(5.6));
     }
 }
 
@@ -112,12 +112,12 @@ TEST_CASE("Observable::distinctUntilChanged",
 {
     IT("doesn't emit consecutive duplicate integers")
     {
-        Array<var> originalItems;
-        Array<var> filteredItems;
+        Array<var> originalValues;
+        Array<var> filteredValues;
         PublishSubject<var> subject;
 
-        varxCollectItems(subject, originalItems);
-        varxCollectItems(subject.distinctUntilChanged(), filteredItems);
+        ReaX_CollectValues(subject, originalValues);
+        ReaX_CollectValues(subject.distinctUntilChanged(), filteredValues);
 
         subject.onNext(3);
         subject.onNext(3);
@@ -127,23 +127,23 @@ TEST_CASE("Observable::distinctUntilChanged",
         subject.onNext(5);
         subject.onNext(3);
 
-        varxRequireItems(originalItems, var(3), var(3), var("3"), var(3), var(3), var(5), var(3));
-        varxRequireItems(filteredItems, var(3), var(5), var(3));
+        ReaX_RequireValues(originalValues, var(3), var(3), var("3"), var(3), var(3), var(5), var(3));
+        ReaX_RequireValues(filteredValues, var(3), var(5), var(3));
     }
 
     IT("doesn't emit consecutive duplicate Point<int>s")
     {
-        Array<Point<int>> items;
+        Array<Point<int>> values;
         PublishSubject<Point<int>> subject;
 
         // Declare Point<int> as the type parameter, to use Point<int>::operator== for comparison:
-        varxCollectItems(subject.distinctUntilChanged(), items);
+        ReaX_CollectValues(subject.distinctUntilChanged(), values);
 
         subject.onNext(Point<int>(27, 12));
         subject.onNext(Point<int>(27, 12));
         subject.onNext(Point<int>(27, 14));
 
-        varxRequireItems(items, Point<int>(27, 12), Point<int>(27, 14));
+        ReaX_RequireValues(values, Point<int>(27, 12), Point<int>(27, 14));
     }
 }
 
@@ -151,14 +151,14 @@ TEST_CASE("Observable::distinctUntilChanged",
 TEST_CASE("Observable::elementAt",
           "[Observable][Observable::elementAt]")
 {
-    auto observable = Observable<>::from<float>({ 17.4, 3.0, 1.5, 6.77 });
-    Array<double> items;
+    auto observable = Observable<float>::from({ 17.4, 3.0, 1.5, 6.77 });
+    Array<double> values;
 
-    IT("emits only the item at the given index")
+    IT("emits only the value at the given index")
     {
-        varxCollectItems(observable.elementAt(2), items);
+        ReaX_CollectValues(observable.elementAt(2), values);
 
-        varxRequireItems(items, 1.5);
+        ReaX_RequireValues(values, 1.5);
     }
 }
 
@@ -168,56 +168,56 @@ TEST_CASE("Observable::filter",
 {
     IT("filters ints")
     {
-        Array<int> items;
-        auto source = Observable<>::range(4, 9, 1);
+        Array<int> values;
+        auto source = Observable<int>::range(4, 9, 1);
         auto filtered = source.filter([](int i) {
             return (i % 2 == 0);
         });
-        varxCollectItems(filtered, items);
+        ReaX_CollectValues(filtered, values);
 
-        varxRequireItems(items, 4, 6, 8);
+        ReaX_RequireValues(values, 4, 6, 8);
     }
 
     IT("filters Strings")
     {
-        Array<String> items;
-        auto source = Observable<>::from<String>({ "Hello", "Great", "World", "Hey" });
+        Array<String> values;
+        auto source = Observable<String>::from({ "Hello", "Great", "World", "Hey" });
         auto filtered = source.filter([](String s) {
             return s[0] == 'H';
         });
-        varxCollectItems(filtered, items);
+        ReaX_CollectValues(filtered, values);
 
-        varxRequireItems(items, "Hello", "Hey");
+        ReaX_RequireValues(values, "Hello", "Hey");
     }
 
     IT("filters an Observable which emits different types")
     {
-        Array<var> items;
-        auto source = Observable<>::from<var>({ var(3), var("Hello"), var(5.43) });
+        Array<var> values;
+        auto source = Observable<var>::from({ 3, "Hello", 5.43 });
         auto filtered = source.filter([](var v) {
             return v.isDouble();
         });
-        varxCollectItems(filtered, items);
+        ReaX_CollectValues(filtered, values);
 
-        varxRequireItems(items, 5.43);
+        ReaX_RequireValues(values, 5.43);
     }
 
     IT("works with std::bind")
     {
-        Array<int> items;
-        auto source = Observable<>::range(14, 19);
+        Array<int> values;
+        auto source = Observable<int>::range(14, 19);
 
         struct Test
         {
-            bool test(int item) { return item < 17; }
+            bool test(int value) { return value < 17; }
         };
 
         Test t;
         auto predicate = std::bind(&Test::test, &t, std::placeholders::_1);
         auto filtered = source.filter(predicate);
 
-        varxCollectItems(filtered, items);
-        varxRequireItems(items, 14, 15, 16);
+        ReaX_CollectValues(filtered, values);
+        ReaX_RequireValues(values, 14, 15, 16);
     }
 }
 
@@ -225,16 +225,16 @@ TEST_CASE("Observable::filter",
 TEST_CASE("Observable::flatMap",
           "[Observable][Observable::flatMap]")
 {
-    Array<String> items;
+    Array<String> values;
 
     IT("merges the values emitted by the returned Observables")
     {
-        auto o = Observable<>::from<String>({ "Hello", "World" }).flatMap([](String s) {
-            return Observable<>::from<String>({ s.toLowerCase(), s.toUpperCase() + "!" });
+        auto o = Observable<String>::from({ "Hello", "World" }).flatMap([](String s) {
+            return Observable<String>::from({ s.toLowerCase(), s.toUpperCase() + "!" });
         });
-        varxCollectItems(o, items);
+        ReaX_CollectValues(o, values);
 
-        varxRequireItems(items, "hello", "HELLO!", "world", "WORLD!");
+        ReaX_RequireValues(values, "hello", "HELLO!", "world", "WORLD!");
     }
 }
 
@@ -242,15 +242,15 @@ TEST_CASE("Observable::flatMap",
 TEST_CASE("Observable::map",
           "[Observable][Observable::map]")
 {
-    Array<int> items;
-    auto source = Observable<>::range(4, 7, 2);
+    Array<long long> values;
+    auto source = Observable<long>::range(4, 7, 2);
 
     IT("emits values synchronously")
     {
-        auto mapped = source.map([](int i) { return i * 1.5; });
-        varxCollectItems(mapped, items);
+        auto mapped = source.map([](long l) { return l * 1.5; });
+        ReaX_CollectValues(mapped, values);
 
-        varxRequireItems(items, 6.0, 9.0, 10.5);
+        ReaX_RequireValues(values, 6.0, 9.0, 10.5);
     }
 }
 
@@ -260,43 +260,43 @@ TEST_CASE("Interaction between Observable::map and Observable::switchOnNext",
 {
     IT("supports returning Observables in map, even nested twice")
     {
-        Array<String> items;
-        auto source = Observable<>::just(1);
+        Array<String> values;
+        auto source = Observable<int>::just(1);
         auto nested = source.map([](int i) {
-            return Observable<>::just<String>("Hello").map([i](String s) {
-                return Observable<>::just<var>(String(i) + " " + s);
+            return Observable<String>::just("Hello").map([i](String s) {
+                return Observable<var>::just(String(i) + " " + s);
             });
         });
 
         // Unwrap twice
         auto unwrapped = nested.switchOnNext().switchOnNext();
-        varxCollectItems(unwrapped, items);
+        ReaX_CollectValues(unwrapped, values);
 
-        varxRequireItems(items, "1 Hello");
+        ReaX_RequireValues(values, "1 Hello");
     }
 
-    IT("continues to emit items after the source Observable is gone")
+    IT("continues to emit values after the source Observable is gone")
     {
-        Array<int> items;
-        auto source = std::make_shared<Observable<int>>(Observable<>::just(17));
+        Array<int> values;
+        auto source = std::make_shared<Observable<int>>(Observable<int>::just(17));
         auto mapped = source->map([](int next) {
-            return Observable<>::create<int>([next](Observer<int> observer) {
+            return Observable<int>::create([next](Observer<int> observer) {
                 MessageManager::getInstance()->callAsync([observer, next]() {
                     observer.onNext(next * 3);
                 });
             });
         });
         auto unwrapped = mapped.switchOnNext();
-        varxCollectItems(unwrapped, items);
+        ReaX_CollectValues(unwrapped, values);
 
-        // There should be no items before running dispatch loop
-        CHECK(items.isEmpty());
+        // There should be no values before running dispatch loop
+        CHECK(values.isEmpty());
 
         source.reset();
-        varxRunDispatchLoopUntil(!items.isEmpty());
+        ReaX_RunDispatchLoopUntil(!values.isEmpty());
 
-        // The item should be emitted, although there's no reference to the source anymore
-        varxRequireItems(items, 17 * 3);
+        // The value should be emitted, although there's no reference to the source anymore
+        ReaX_RequireValues(values, 17 * 3);
     }
 }
 
@@ -304,20 +304,20 @@ TEST_CASE("Interaction between Observable::map and Observable::switchOnNext",
 TEST_CASE("Observable::merge",
           "[Observable][Observable::merge]")
 {
-    Array<int> items;
+    Array<int> values;
     
     IT("works with arity 8")
     {
         Array<Observable<int>> os;
         
         for (int i = 0; i < 8; ++i)
-            os.add(Observable<>::range(-i, 1));
+            os.add(Observable<int>::range(-i, 1));
         
         auto merged = os[0].merge({os[1], os[2], os[3], os[4], os[5], os[6], os[7]});
-        varxCollectItems(merged, items);
+        ReaX_CollectValues(merged, values);
         
-        CHECK(items.size() == 44);
-        varxRequireItems(items, 0, 1, -1, 0, 1, -2, -1, 0, 1, -3, -2, -1, 0, 1, -4, -3, -2, -1, 0, 1, -5, -4, -3, -2, -1, 0, 1, -6, -5, -4, -3, -2, -1, 0, 1, -7, -6, -5, -4, -3, -2, -1, 0, 1);
+        CHECK(values.size() == 44);
+        ReaX_RequireValues(values, 0, 1, -1, 0, 1, -2, -1, 0, 1, -3, -2, -1, 0, 1, -4, -3, -2, -1, 0, 1, -5, -4, -3, -2, -1, 0, 1, -6, -5, -4, -3, -2, -1, 0, 1, -7, -6, -5, -4, -3, -2, -1, 0, 1);
     }
 }
 
@@ -325,17 +325,17 @@ TEST_CASE("Observable::merge",
 TEST_CASE("Observable::reduce",
           "[Observable][Observable::reduce]")
 {
-    Array<int> items;
+    Array<int> values;
 
-    IT("reduces emitted items")
+    IT("reduces emitted values")
     {
-        auto observable = Observable<>::from<int>({ 10, 100, 1000 }).reduce(2, [](int accum, int next) {
+        auto observable = Observable<int>::from({ 10, 100, 1000 }).reduce(2, [](int accum, int next) {
             return accum + next;
         });
 
-        varxCollectItems(observable, items);
+        ReaX_CollectValues(observable, values);
 
-        varxRequireItems(items, 1112);
+        ReaX_RequireValues(values, 1112);
     }
 }
 
@@ -343,16 +343,16 @@ TEST_CASE("Observable::reduce",
 TEST_CASE("Observable::scan",
           "[Observable][Observable::scan]")
 {
-    Array<int> items;
+    Array<int> values;
 
-    IT("applies the transform function to the inputs")
+    IT("applies the function to the inputs")
     {
-        auto o = Observable<>::range(1, 5).scan(10, [](int accum, int currentValue) {
+        auto o = Observable<int>::range(1, 5).scan(10, [](int accum, int currentValue) {
             return accum + currentValue;
         });
-        varxCollectItems(o, items);
+        ReaX_CollectValues(o, values);
 
-        varxRequireItems(items, 11, 13, 16, 20, 25);
+        ReaX_RequireValues(values, 11, 13, 16, 20, 25);
     }
 }
 
@@ -360,14 +360,14 @@ TEST_CASE("Observable::scan",
 TEST_CASE("Observable::skip",
           "[Observable][Observable::skip]")
 {
-    Array<int> items;
+    Array<int> values;
 
-    IT("skips the first 4 items")
+    IT("skips the first 4 values")
     {
-        auto o = Observable<>::from<int>({ 4, 7, 2, 1, 19, 1, 33, 4 }).skip(4);
-        varxCollectItems(o, items);
+        auto o = Observable<int>::from({ 4, 7, 2, 1, 19, 1, 33, 4 }).skip(4);
+        ReaX_CollectValues(o, values);
 
-        varxRequireItems(items, 19, 1, 33, 4);
+        ReaX_RequireValues(values, 19, 1, 33, 4);
     }
 }
 
@@ -375,16 +375,16 @@ TEST_CASE("Observable::skip",
 TEST_CASE("Observable::skipUntil",
           "[Observable][Observable::skipUntil]")
 {
-    Array<String> items;
+    Array<String> values;
 
-    IT("skips until another Observable emits an item")
+    IT("skips until another Observable emits a value")
     {
         PublishSubject<String> subject;
         PublishSubject<var> trigger;
 
-        varxCollectItems(subject.skipUntil(trigger), items);
+        ReaX_CollectValues(subject.skipUntil(trigger), values);
 
-        // Emit some items, these should NOT be received
+        // Emit some values, these should NOT be received
         subject.onNext("Not");
         subject.onNext("Getting");
         subject.onNext("This");
@@ -392,12 +392,12 @@ TEST_CASE("Observable::skipUntil",
         // Trigger
         trigger.onNext(var::undefined());
 
-        // Emit more items, these should be received
+        // Emit more values, these should be received
         subject.onNext("These");
         subject.onNext("Are");
         subject.onNext("Received");
 
-        varxRequireItems(items, "These", "Are", "Received");
+        ReaX_RequireValues(values, "These", "Are", "Received");
     }
 }
 
@@ -405,14 +405,14 @@ TEST_CASE("Observable::skipUntil",
 TEST_CASE("Observable::startWith",
           "[Observable][Observable::startWith]")
 {
-    Array<int> items;
-    auto observable = Observable<>::from<int>({ 17, 3 });
+    Array<int> values;
+    auto observable = Observable<int>::from({ 17, 3 });
 
-    IT("prepends items to an existing Observable")
+    IT("prepends values to an existing Observable")
     {
-        varxCollectItems(observable.startWith({6, 4, 7, 2}), items);
+        ReaX_CollectValues(observable.startWith({6, 4, 7, 2}), values);
 
-        varxRequireItems(items, 6, 4, 7, 2, 17, 3);
+        ReaX_RequireValues(values, 6, 4, 7, 2, 17, 3);
     }
 }
 
@@ -420,14 +420,14 @@ TEST_CASE("Observable::startWith",
 TEST_CASE("Observable::takeLast",
           "[Observable][Observable::takeLast]")
 {
-    Array<String> items;
-    auto observable = Observable<>::from<String>({ "First", "Another", "And one more", "Last item" });
+    Array<String> values;
+    auto observable = Observable<String>::from({ "First", "Another", "And one more", "Last value" });
 
-    IT("takes the last 2 emitted items")
+    IT("takes the last 2 emitted values")
     {
-        varxCollectItems(observable.takeLast(2), items);
+        ReaX_CollectValues(observable.takeLast(2), values);
 
-        varxRequireItems(items, "And one more", "Last item");
+        ReaX_RequireValues(values, "And one more", "Last value");
     }
 }
 
@@ -435,16 +435,16 @@ TEST_CASE("Observable::takeLast",
 TEST_CASE("Observable::takeUntil",
           "[Observable][Observable::takeUntil]")
 {
-    Array<String> items;
+    Array<String> values;
 
-    IT("emits until another Observable emits an item")
+    IT("emits until another Observable emits a value")
     {
         PublishSubject<String> subject;
         PublishSubject<String> trigger;
 
-        varxCollectItems(subject.takeUntil(trigger), items);
+        ReaX_CollectValues(subject.takeUntil(trigger), values);
 
-        // Emit some items, these should be received
+        // Emit some values, these should be received
         subject.onNext("These");
         subject.onNext("Are");
         subject.onNext("Received");
@@ -452,12 +452,12 @@ TEST_CASE("Observable::takeUntil",
         // Trigger
         trigger.onNext("Hey stop!");
 
-        // Emit more items, these should NOT be received
+        // Emit more values, these should NOT be received
         subject.onNext("Not");
         subject.onNext("Getting");
         subject.onNext("This");
 
-        varxRequireItems(items, "These", "Are", "Received");
+        ReaX_RequireValues(values, "These", "Are", "Received");
     }
 }
 
@@ -465,16 +465,16 @@ TEST_CASE("Observable::takeUntil",
 TEST_CASE("Observable::takeWhile",
           "[Observable][Observable::takeWhile]")
 {
-    Array<int> items;
+    Array<int> values;
 
-    IT("emits items as long as the predicate returns true")
+    IT("emits values as long as the predicate returns true")
     {
         PublishSubject<int> subject;
         const auto predicate = [](int i) {
             return i <= 10;
         };
 
-        varxCollectItems(subject.takeWhile(predicate), items);
+        ReaX_CollectValues(subject.takeWhile(predicate), values);
 
         // These should be emitted
         subject.onNext(4);
@@ -486,7 +486,7 @@ TEST_CASE("Observable::takeWhile",
         subject.onNext(3);
         subject.onNext(7);
 
-        varxRequireItems(items, 4, 7, 10);
+        ReaX_RequireValues(values, 4, 7, 10);
     }
 }
 
@@ -494,20 +494,20 @@ TEST_CASE("Observable::takeWhile",
 TEST_CASE("Observable::withLatestFrom",
           "[Observable][Observable::withLatestFrom]")
 {
-    Array<String> items;
+    Array<String> values;
     PublishSubject<String> s1;
     PublishSubject<String> s2;
 
     IT("only emits when the first Observable emits")
     {
-        const auto f = transform<String, String>;
-        varxCollectItems(s1.withLatestFrom(f, s2), items);
-        CHECK(items.isEmpty());
+        const auto f = concatStrings<String, String>;
+        ReaX_CollectValues(s1.withLatestFrom(f, s2), values);
+        CHECK(values.isEmpty());
         s2.onNext("World!");
-        CHECK(items.isEmpty());
+        CHECK(values.isEmpty());
         s1.onNext("Hello ");
 
-        varxRequireItems(items, "Hello World!");
+        ReaX_RequireValues(values, "Hello World!");
     }
 }
 
@@ -515,7 +515,7 @@ TEST_CASE("Observable::withLatestFrom",
 TEST_CASE("Observable::zip",
           "[Observable][Observable::zip]")
 {
-    Array<String> items;
+    Array<String> values;
 
     IT("zips three Observables together")
     {
@@ -526,22 +526,22 @@ TEST_CASE("Observable::zip",
             return "s=" + s + "; i=" + String(i) + "; d=" + String(d);
         };
 
-        varxCollectItems(strings.zip(combine, ints, doubles), items);
+        ReaX_CollectValues(strings.zip(combine, ints, doubles), values);
 
-        // First item should be emitted when all three Observables have emitted once
+        // First value should be emitted when all three Observables have emitted once
         strings.onNext("a");
-        CHECK(items.isEmpty());
+        CHECK(values.isEmpty());
         ints.onNext(1);
-        CHECK(items.isEmpty());
+        CHECK(values.isEmpty());
         doubles.onNext(0.1);
-        varxCheckItems(items, "s=a; i=1; d=0.1");
+        ReaX_CheckValues(values, "s=a; i=1; d=0.1");
 
-        // Second item should be emitted when all three Observables have emitted twice
+        // Second value should be emitted when all three Observables have emitted twice
         doubles.onNext(0.25);
-        CHECK(items.size() == 1);
+        CHECK(values.size() == 1);
         ints.onNext(57);
-        CHECK(items.size() == 1);
+        CHECK(values.size() == 1);
         strings.onNext("x");
-        varxRequireItems(items, "s=a; i=1; d=0.1", "s=x; i=57; d=0.25");
+        ReaX_RequireValues(values, "s=a; i=1; d=0.1", "s=x; i=57; d=0.25");
     }
 }
