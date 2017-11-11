@@ -1,267 +1,320 @@
-/*
-  ==============================================================================
-
-    SubjectsTest.cpp
-    Created: 30 Apr 2017 11:25:48am
-    Author:  Martin Finke
-
-  ==============================================================================
-*/
-
-#include "TestPrefix.h"
+#include "../Other/TestPrefix.h"
 
 
 TEST_CASE("BehaviorSubject",
-		  "[Subject][BehaviorSubject]")
+          "[Subject][BehaviorSubject]")
 {
-	BehaviorSubject subject("Initial Item");
-	
-	// Subscribe to the subject's Observable
-	Array<var> items;
-	varxCollectItems(subject.asObservable(), items);
-	
-	IT("changes value when changing the Observer") {
-		CHECK(subject.getLatestItem() == "Initial Item");
-		subject.asObserver().onNext(32.55);
-		
-		REQUIRE(subject.getLatestItem() == var(32.55));
-	}
-	
-	IT("has the initial item after being created") {
-		CHECK(subject.getLatestItem() == "Initial Item");
-		varxRequireItems(items, "Initial Item");
-	}
-	
-	IT("emits when pushing a new item") {
-		varxCheckItems(items, "Initial Item");
-		
-		subject.onNext("New Item");
-		
-		CHECK(subject.getLatestItem() == "New Item");
-		varxRequireItems(items, "Initial Item", "New Item");
-	}
-	
-	IT("emits an error when calling onError") {
-		BehaviorSubject subject(17);
-		bool onErrorCalled = false;
-		subject.onError(Error());
-		subject.asObservable().subscribe([](var){}, [&](Error) { onErrorCalled = true; });
-		REQUIRE(onErrorCalled);
-	}
-	
-	IT("notifies onCompleted when calling onCompleted") {
-		bool completed = false;
-		subject.asObservable().subscribe([](var){}, [](Error){}, [&](){ completed = true; });
-		subject.onCompleted();
-		
-		REQUIRE(completed);
-	}
-	
-	IT("does not call onCompleted when destroying the subject") {
-		auto subject = std::make_shared<BehaviorSubject>(3);
-		bool completed = false;
-		subject->asObservable().subscribe([](var){}, [](Error){}, [&](){ completed = true; });
-		subject.reset();
-		
-		REQUIRE(!completed);
-	}
-	
-	IT("can call onCompleted multiple times") {
-		subject.onCompleted();
-		subject.onCompleted();
-		subject.onCompleted();
-	}
+    BehaviorSubject<var> subject("Initial Value");
+
+    // Subscribe to the subject's Observable
+    Array<var> values;
+    ReaX_CollectValues(subject, values);
+
+    IT("changes value when changing the Observer")
+    {
+        CHECK(subject.getValue() == "Initial Value");
+        subject.onNext(32.55);
+
+        REQUIRE(subject.getValue() == var(32.55));
+    }
+
+    IT("has the initial value after being created")
+    {
+        CHECK(subject.getValue() == "Initial Value");
+        ReaX_RequireValues(values, "Initial Value");
+    }
+
+    IT("emits when pushing a new value")
+    {
+        ReaX_CheckValues(values, "Initial Value");
+
+        subject.onNext("New Value");
+
+        CHECK(subject.getValue() == "New Value");
+        ReaX_RequireValues(values, "Initial Value", "New Value");
+    }
+
+    IT("emits an error when calling onError")
+    {
+        BehaviorSubject<int> subject(17);
+        bool onErrorCalled = false;
+        subject.onError(std::exception_ptr());
+        subject.subscribe([](int) {}, [&](std::exception_ptr) { onErrorCalled = true; });
+        REQUIRE(onErrorCalled);
+    }
+
+    IT("notifies onCompleted when calling onCompleted")
+    {
+        bool completed = false;
+        subject.subscribe([](var) {}, [](std::exception_ptr) {}, [&]() { completed = true; });
+        subject.onCompleted();
+
+        REQUIRE(completed);
+    }
+
+    IT("does not call onCompleted when destroying the subject")
+    {
+        auto subject = std::make_shared<BehaviorSubject<int>>(3);
+        bool completed = false;
+        subject->subscribe([](int) {}, [](std::exception_ptr) {}, [&]() { completed = true; });
+        subject.reset();
+
+        REQUIRE(!completed);
+    }
+
+    IT("can call onCompleted multiple times")
+    {
+        subject.onCompleted();
+        subject.onCompleted();
+        subject.onCompleted();
+    }
+    
+    IT("can receive an initial value of a custom type, without wrapping with toVar()")
+    {
+        BehaviorSubject<Point<int>> subject(Point<int>(13, 556));
+        REQUIRE(subject.getValue() == Point<int>(13, 556));
+    }
 }
 
 
 TEST_CASE("PublishSubject",
-		  "[Subject][PublishSubject]")
+          "[Subject][PublishSubject]")
 {
-	PublishSubject subject;
-	DisposeBag disposeBag;
-	
-	// Subscribe to the subject's Observable
-	Array<var> items;
-	varxCollectItems(subject.asObservable(), items);
-	
-	IT("does not emit an item if nothing has been pushed") {
-		REQUIRE(items.isEmpty());
-	}
-	
-	IT("emits when pushing a new item") {
-		CHECK(items.isEmpty());
-		
-		subject.onNext("First Item");
-	
-		varxRequireItems(items, "First Item");
-	}
-	
-	IT("does not emit previous item(s) when subscribing") {
-		subject.onNext(1);
-		subject.onNext(2);
-		varxCheckItems(items, 1, 2);
-		
-		Array<var> laterItems;
-		varxCollectItems(subject.asObservable(), laterItems);
-		
-		REQUIRE(laterItems.isEmpty());
-	}
-	
-	IT("changes value when changing the Observer") {
-		subject.asObserver().onNext(32.51);
-		subject.asObserver().onNext(3.0);
-		
-		varxRequireItems(items, 32.51, 3.0);
-	}
-	
-	IT("emits after destruction, if there's still an Observer pushing items") {
-		auto subject = std::make_shared<PublishSubject>();
-		auto observer = subject->asObserver();
-		
-		varxCollectItems(subject->asObservable(), items);
-		subject.reset();
-		observer.onNext(12345);
-		
-		varxRequireItems(items, 12345);
-	}
-	
-	IT("emits an error when calling onError") {
-		PublishSubject subject;
-		bool onErrorCalled = false;
-		subject.onError(Error());
-		subject.asObservable().subscribe([](var){}, [&](Error) { onErrorCalled = true; }).disposedBy(disposeBag);
-		REQUIRE(onErrorCalled);
-	}
-	
-	CONTEXT("onCompleted") {
-		auto subject = std::make_shared<PublishSubject>();
-		bool completed = false;
-		
-		IT("notifies onCompleted when calling onCompleted") {
-			subject->onCompleted();
-			subject->asObservable().subscribe([](var){}, [](Error){}, [&](){ completed = true; }).disposedBy(disposeBag);
-			
-			REQUIRE(completed);
-		}
-		
-		IT("does not call onCompleted when destroying the subject") {
-			subject->asObservable().subscribe([](var){}, [](Error){}, [&](){ completed = true; }).disposedBy(disposeBag);
-			CHECK(!completed);
-			subject.reset();
-			
-			REQUIRE(!completed);
-		}
-		
-		IT("can call onCompleted multiple times") {
-			subject->onCompleted();
-			subject->onCompleted();
-			subject->onCompleted();
-		}
-	}
+    PublishSubject<var> subject;
+    DisposeBag disposeBag;
+
+    // Subscribe to the subject's Observable
+    Array<var> values;
+    ReaX_CollectValues(subject, values);
+
+    IT("does not emit a value if nothing has been pushed")
+    {
+        REQUIRE(values.isEmpty());
+    }
+
+    IT("emits when pushing a new value")
+    {
+        CHECK(values.isEmpty());
+
+        subject.onNext("First Value");
+
+        ReaX_RequireValues(values, "First Value");
+    }
+
+    IT("does not emit previous value(s) when subscribing")
+    {
+        subject.onNext(1);
+        subject.onNext(2);
+        ReaX_CheckValues(values, 1, 2);
+
+        Array<var> laterValues;
+        ReaX_CollectValues(subject, laterValues);
+
+        REQUIRE(laterValues.isEmpty());
+    }
+
+    IT("changes value when changing the Observer")
+    {
+        subject.onNext(32.51);
+        subject.onNext(3.0);
+
+        ReaX_RequireValues(values, 32.51, 3.0);
+    }
+
+    IT("emits after destruction, if there's still an Observer pushing values")
+    {
+        auto subject = std::make_shared<PublishSubject<int>>();
+        Observer<int> observer = *subject;
+
+        ReaX_CollectValues(*subject, values);
+        subject.reset();
+        observer.onNext(12345);
+
+        ReaX_RequireValues(values, 12345);
+    }
+
+    IT("emits an error when calling onError")
+    {
+        PublishSubject<int> subject;
+        bool onErrorCalled = false;
+        subject.onError(std::exception_ptr());
+        subject.subscribe([](int) {}, [&](std::exception_ptr) { onErrorCalled = true; }).disposedBy(disposeBag);
+        REQUIRE(onErrorCalled);
+    }
+
+    CONTEXT("onCompleted")
+    {
+        auto subject = std::make_shared<PublishSubject<int>>();
+        bool completed = false;
+
+        IT("notifies onCompleted when calling onCompleted")
+        {
+            subject->onCompleted();
+            subject->subscribe([](int) {}, [](std::exception_ptr) {}, [&]() { completed = true; }).disposedBy(disposeBag);
+
+            REQUIRE(completed);
+        }
+
+        IT("does not call onCompleted when destroying the subject")
+        {
+            subject->subscribe([](int) {}, [](std::exception_ptr) {}, [&]() { completed = true; }).disposedBy(disposeBag);
+            CHECK(!completed);
+            subject.reset();
+
+            REQUIRE(!completed);
+        }
+
+        IT("can call onCompleted multiple times")
+        {
+            subject->onCompleted();
+            subject->onCompleted();
+            subject->onCompleted();
+        }
+    }
 }
 
 
 TEST_CASE("ReplaySubject",
-		  "[Subject][ReplaySubject]")
+          "[Subject][ReplaySubject]")
 {
-	ReplaySubject subject;
-	DisposeBag disposeBag;
-	
-	// Subscribe to the subject's Observable
-	Array<var> items;
-	varxCollectItems(subject.asObservable(), items);
-	
-	IT("does not emit an item if nothing has been pushed") {
-		REQUIRE(items.isEmpty());
-	}
-	
-	IT("emits when pushing a new item") {
-		CHECK(items.isEmpty());
-		
-		subject.onNext("First Item");
-		
-		varxRequireItems(items, "First Item");
-	}
-	
-	IT("emits previous items when subscribing") {
-		subject.onNext(1);
-		subject.onNext(2);
-		varxCheckItems(items, 1, 2);
-		
-		Array<var> laterItems;
-		varxCollectItems(subject.asObservable(), laterItems);
-		
-		varxRequireItems(laterItems, 1, 2);
-	}
-	
-	IT("emits previous items limited by the max. buffer size") {
-		auto subject = std::make_shared<ReplaySubject>(4);
-		
-		// These should be forgotten:
-		subject->onNext(17.5);
-		subject->onNext("Hello!");
-		
-		// These should be remembered:
-		subject->onNext(7);
-		subject->onNext(28);
-		subject->onNext(3);
-		subject->onNext(6);
-		
-		Array<var> items;
-		varxCollectItems(*subject, items);
-		
-		varxRequireItems(items, 7, 28, 3, 6);
-	}
-	
-	IT("changes value when changing the Observer") {
-		subject.asObserver().onNext(32.51);
-		subject.asObserver().onNext(3.0);
-		
-		varxRequireItems(items, 32.51, 3.0);
-	}
-	
-	IT("emits after destruction, if there's still an Observer pushing items") {
-		auto subject = std::make_shared<ReplaySubject>();
-		auto observer = subject->asObserver();
-		
-		varxCollectItems(subject->asObservable(), items);
-		subject.reset();
-		observer.onNext(12345);
-		
-		varxRequireItems(items, 12345);
-	}
-	
-	IT("emits an error when calling onError") {
-		ReplaySubject subject;
-		bool onErrorCalled = false;
-		subject.onError(Error());
-		subject.asObservable().subscribe([](var){}, [&](Error) { onErrorCalled = true; }).disposedBy(disposeBag);
-		REQUIRE(onErrorCalled);
-	}
-	
-	CONTEXT("onCompleted") {
-		auto subject = std::make_shared<PublishSubject>();
-		bool completed = false;
-		
-		IT("notifies onCompleted when calling onCompleted") {
-			subject->onCompleted();
-			subject->asObservable().subscribe([](var){}, [](Error){}, [&](){ completed = true; }).disposedBy(disposeBag);
-			
-			REQUIRE(completed);
-		}
-		
-		IT("does not call onCompleted when destroying the subject") {
-			subject->asObservable().subscribe([](var){}, [](Error){}, [&](){ completed = true; }).disposedBy(disposeBag);
-			CHECK(!completed);
-			subject.reset();
-			
-			REQUIRE(!completed);
-		}
-		
-		IT("can call onCompleted multiple times") {
-			subject->onCompleted();
-			subject->onCompleted();
-			subject->onCompleted();
-		}
-	}
+    ReplaySubject<var> subject;
+    DisposeBag disposeBag;
+
+    // Subscribe to the subject's Observable
+    Array<var> values;
+    ReaX_CollectValues(subject, values);
+
+    IT("does not emit a value if nothing has been pushed")
+    {
+        REQUIRE(values.isEmpty());
+    }
+
+    IT("emits when pushing a new value")
+    {
+        CHECK(values.isEmpty());
+
+        subject.onNext("First Value");
+
+        ReaX_RequireValues(values, "First Value");
+    }
+
+    IT("emits previous values when subscribing")
+    {
+        subject.onNext(1);
+        subject.onNext(2);
+        ReaX_CheckValues(values, 1, 2);
+
+        Array<var> laterValues;
+        ReaX_CollectValues(subject, laterValues);
+
+        ReaX_RequireValues(laterValues, 1, 2);
+    }
+
+    IT("emits previous values limited by the max. buffer size")
+    {
+        auto subject = std::make_shared<ReplaySubject<var>>(4);
+
+        // These should be forgotten:
+        subject->onNext(17.5);
+        subject->onNext("Hello!");
+
+        // These should be remembered:
+        subject->onNext(7);
+        subject->onNext(28);
+        subject->onNext(3);
+        subject->onNext(6);
+
+        Array<var> values;
+        ReaX_CollectValues(*subject, values);
+
+        ReaX_RequireValues(values, 7, 28, 3, 6);
+    }
+
+    IT("changes value when changing the Observer")
+    {
+        subject.onNext(32.51);
+        subject.onNext(3.0);
+
+        ReaX_RequireValues(values, 32.51, 3.0);
+    }
+
+    IT("emits after destruction, if there's still an Observer pushing values")
+    {
+        auto subject = std::make_shared<ReplaySubject<int>>();
+        Observer<int> observer = *subject;
+
+        ReaX_CollectValues(*subject, values);
+        subject.reset();
+        observer.onNext(12345);
+
+        ReaX_RequireValues(values, 12345);
+    }
+
+    IT("emits an error when calling onError")
+    {
+        ReplaySubject<int> subject;
+        bool onErrorCalled = false;
+        subject.onError(std::exception_ptr());
+        subject.subscribe([](int) {}, [&](std::exception_ptr) { onErrorCalled = true; }).disposedBy(disposeBag);
+        REQUIRE(onErrorCalled);
+    }
+
+    CONTEXT("onCompleted")
+    {
+        auto subject = std::make_shared<ReplaySubject<String>>();
+        bool completed = false;
+
+        IT("notifies onCompleted when calling onCompleted")
+        {
+            subject->onCompleted();
+            subject->subscribe([](String) {}, [](std::exception_ptr) {}, [&]() { completed = true; }).disposedBy(disposeBag);
+
+            REQUIRE(completed);
+        }
+
+        IT("does not call onCompleted when destroying the subject")
+        {
+            subject->subscribe([](String) {}, [](std::exception_ptr) {}, [&]() { completed = true; }).disposedBy(disposeBag);
+            CHECK(!completed);
+            subject.reset();
+
+            REQUIRE(!completed);
+        }
+
+        IT("can call onCompleted multiple times")
+        {
+            subject->onCompleted();
+            subject->onCompleted();
+            subject->onCompleted();
+        }
+    }
+}
+
+
+TEST_CASE("onNext move overload",
+          "[Subject][Observer]")
+{
+    CopyAndMoveConstructible::Counters counters;
+    PublishSubject<CopyAndMoveConstructible> subject;
+    
+    IT("uses the const T& overload for lvalues")
+    {
+        CopyAndMoveConstructible test(&counters);
+        subject.onNext(test);
+        
+        REQUIRE(counters.numCopyConstructions == 1);
+        REQUIRE(counters.numMoveConstructions == 0);
+        REQUIRE(counters.numCopyAssignments == 0);
+        REQUIRE(counters.numMoveAssignments == 0);
+    }
+    
+    IT("uses the T&& overload for rvalues")
+    {
+        subject.onNext(CopyAndMoveConstructible(&counters));
+        
+        REQUIRE(counters.numCopyConstructions == 0);
+        REQUIRE(counters.numMoveConstructions == 1);
+        REQUIRE(counters.numCopyAssignments == 0);
+        REQUIRE(counters.numMoveAssignments == 0);
+    }
 }
