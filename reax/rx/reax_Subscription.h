@@ -14,7 +14,10 @@ class DisposeBag;
 class Subscription
 {
 public:
+    /// Copy constructor.
     Subscription(const Subscription&) = default;
+    
+    /// Copy assignment.
     Subscription& operator=(const Subscription&) = default;
     
     /// Unsubscribes from the Observable.

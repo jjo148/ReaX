@@ -6,7 +6,7 @@ vendor: martin-finke
 version: 0.7.0
 name: ReaX
 description: Reactive Extensions (Rx) for JUCE.
-dependencies: juce_core, juce_data_structures, juce_events, juce_graphics, juce_gui_basics
+dependencies: juce_audio_basics, juce_audio_processors, juce_core, juce_data_structures, juce_events, juce_graphics, juce_gui_basics
 website: http://github.com/martinfinke/reax
 license: MIT
 minimumCppStandard: 11

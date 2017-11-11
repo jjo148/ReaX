@@ -236,7 +236,7 @@ We've just scratched the surface of how Rx can help build great apps. If you wou
 
 ## API Reference
 
-[The complete API reference is available here](http://martin-finke.de/reax/api).
+[The complete API reference is available here](http://martin-finke.de/reax/api/annotated.html).
 
 <a name="tests"/>
 
@@ -252,7 +252,7 @@ ReaX is well-tested. To run the tests, please clone this repo and open `Tests/Re
 
 ## Credits
 
-- ReaX uses the great [RxCpp](https://github.com/Reactive-Extensions/RxCpp) under the hood. It would not be possible without it.
+- ReaX uses the great [RxCpp](https://github.com/Reactive-Extensions/RxCpp) under the hood.
 - ReaX uses the great [ConcurrentQueue](https://github.com/cameron314/concurrentqueue) library by Cameron Desrochers.
 - Documentation from [ReactiveX.io](http://reactivex.io) is used in the source code, under the terms of the [Creative Commons Attribution 3.0 License](https://creativecommons.org/licenses/by/3.0/). Documentation has been adopted and changed for the purpose of this project.
 

@@ -13,11 +13,14 @@ class Observer;
 template<typename T>
 class Observable
 {
+    typedef detail::ObservableImpl Impl;
+    typedef detail::any any;
+
 public:
 #pragma mark - Helpers
     /// The type of values emitted by this Observable.
     typedef T ValueType;
-    
+
     /// \cond internal
     template<typename U>
     struct IsObservable : std::false_type
@@ -608,9 +611,6 @@ private:
     friend class Observable;
     template<typename U>
     friend class Subject;
-    
-    typedef detail::ObservableImpl Impl;
-    typedef detail::any any;
 
     Impl impl;
 
