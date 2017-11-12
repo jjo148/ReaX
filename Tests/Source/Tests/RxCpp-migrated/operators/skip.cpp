@@ -1,5 +1,4 @@
 #include "../test.h"
-#include "../../../../reax/RxCpp/Rx/v2/src/rxcpp/operators/rx-skip.hpp"
 
 SCENARIO("skip, complete after", "[skip][operators]"){
     GIVEN("a source"){

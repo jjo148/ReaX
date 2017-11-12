@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-take_last.hpp>
 
 SCENARIO("take last 0", "[take_last][operators]"){
     GIVEN("a source"){

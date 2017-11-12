@@ -1,6 +1,5 @@
 #include "../test.h"
 
-#include <rxcpp/rx-coroutine.hpp>
 
 #ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
 

@@ -1,10 +1,4 @@
 #include "../test.h"
-#include "../../../../reax/RxCpp/Rx/v2/src/rxcpp/operators/rx-combine_latest.hpp"
-#include "../../../../reax/RxCpp/Rx/v2/src/rxcpp/operators/rx-map.hpp"
-#include "../../../../reax/RxCpp/Rx/v2/src/rxcpp/operators/rx-take.hpp"
-#include "../../../../reax/RxCpp/Rx/v2/src/rxcpp/operators/rx-observe_on.hpp"
-#include "../../../../reax/RxCpp/Rx/v2/src/rxcpp/operators/rx-publish.hpp"
-#include "../../../../reax/RxCpp/Rx/v2/src/rxcpp/operators/rx-ref_count.hpp"
 
 SCENARIO("observe subscription", "[hide]"){
     GIVEN("observable of ints"){

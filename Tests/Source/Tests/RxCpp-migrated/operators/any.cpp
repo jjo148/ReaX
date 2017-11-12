@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-any.hpp>
 
 SCENARIO("any emits true if an item satisfies the given condition", "[any][operators]"){
     GIVEN("a source") {

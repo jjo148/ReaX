@@ -1,5 +1,4 @@
 #include "../test.h"
-#include "../../../../reax/RxCpp/Rx/v2/src/rxcpp/operators/rx-sequence_equal.hpp"
 
 SCENARIO("sequence_equal - source never emits", "[sequence_equal][operators]"){
     GIVEN("two sources"){

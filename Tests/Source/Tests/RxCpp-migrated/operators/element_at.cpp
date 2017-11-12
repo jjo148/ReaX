@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-element_at.hpp>
 
 SCENARIO("element_at - never", "[element_at][operators]"){
     GIVEN("a source"){

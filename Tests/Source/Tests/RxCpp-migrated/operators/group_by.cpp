@@ -1,12 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-concat.hpp>
-#include <rxcpp/operators/rx-group_by.hpp>
-#include <rxcpp/operators/rx-reduce.hpp>
-#include <rxcpp/operators/rx-map.hpp>
-#include <rxcpp/operators/rx-merge.hpp>
-#include <rxcpp/operators/rx-take.hpp>
-#include <rxcpp/operators/rx-start_with.hpp>
-#include <rxcpp/operators/rx-observe_on.hpp>
 
 #include <locale>
 

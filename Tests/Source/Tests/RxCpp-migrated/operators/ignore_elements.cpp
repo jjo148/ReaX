@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-ignore_elements.hpp>
 
 SCENARIO("ignore_elements - never", "[ignore_elements][operators]"){
     GIVEN("a source"){

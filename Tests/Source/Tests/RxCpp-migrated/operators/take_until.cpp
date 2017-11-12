@@ -1,6 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-map.hpp>
-#include <rxcpp/operators/rx-take_until.hpp>
 
 SCENARIO("take_until trigger on_next", "[take_until][take][operators]"){
     GIVEN("2 sources"){

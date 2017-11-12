@@ -1,6 +1,4 @@
 #include "../test.h"
-#include "../../../../reax/RxCpp/Rx/v2/src/rxcpp/operators/rx-repeat.hpp"
-
 
 SCENARIO("repeat, basic test", "[repeat][operators]"){
     GIVEN("cold observable of 3 ints."){

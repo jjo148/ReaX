@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-all.hpp>
 
 SCENARIO("all emits true if every item emitted by the source observable evaluated as true", "[all][operators]") {
     GIVEN("a source") {

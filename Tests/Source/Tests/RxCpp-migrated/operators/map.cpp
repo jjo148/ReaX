@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-map.hpp>
 
 SCENARIO("map stops on completion", "[map][operators]") {
     GIVEN("a test hot observable of ints") {

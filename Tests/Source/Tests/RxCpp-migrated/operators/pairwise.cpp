@@ -1,5 +1,4 @@
 #include "../test.h"
-#include "../../../../reax/RxCpp/Rx/v2/src/rxcpp/operators/rx-pairwise.hpp"
 
 SCENARIO("pairwise - enough items to create pairs", "[pairwise][operators]") {
     GIVEN("a cold observable of n ints") {

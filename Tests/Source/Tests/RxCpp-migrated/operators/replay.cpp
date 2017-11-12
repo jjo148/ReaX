@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-replay.hpp>
 
 SCENARIO("replay basic", "[replay][multicast][subject][operators]"){
     GIVEN("a test hot observable of ints"){

@@ -2,7 +2,6 @@
 
 #include "../test.h"
 
-#include <rxcpp/operators/rx-finally.hpp>
 
 #include <future>
 

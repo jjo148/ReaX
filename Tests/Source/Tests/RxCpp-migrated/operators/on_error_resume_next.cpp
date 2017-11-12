@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-on_error_resume_next.hpp>
 
 SCENARIO("switch_on_error stops on completion", "[switch_on_error][on_error_resume_next][operators]"){
     GIVEN("a test hot observable of ints"){

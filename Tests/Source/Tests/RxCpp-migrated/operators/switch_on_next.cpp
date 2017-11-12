@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-switch_on_next.hpp>
 
 SCENARIO("switch_on_next - some changes", "[switch_on_next][operators]"){
     GIVEN("a source"){

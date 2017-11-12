@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-finally.hpp>
 
 SCENARIO("finally - never", "[finally][operators]"){
     GIVEN("a source"){

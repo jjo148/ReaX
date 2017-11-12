@@ -1,7 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-map.hpp>
-#include <rxcpp/operators/rx-take.hpp>
-#include <rxcpp/operators/rx-scan.hpp>
 
 SCENARIO("scan: issue 41", "[scan][operators][issue][hide]"){
     GIVEN("map of scan of interval"){

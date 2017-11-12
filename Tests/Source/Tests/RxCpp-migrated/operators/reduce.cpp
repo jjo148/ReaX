@@ -1,5 +1,4 @@
 #include "../test.h"
-#include "../../../../reax/RxCpp/Rx/v2/src/rxcpp/operators/rx-reduce.hpp"
 
 SCENARIO("reduce some data with seed", "[reduce][operators]"){
     GIVEN("a test hot observable of ints"){

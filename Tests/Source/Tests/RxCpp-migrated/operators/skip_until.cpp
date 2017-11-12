@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-skip_until.hpp>
 
 SCENARIO("skip_until, some data next", "[skip_until][skip][operators]"){
     GIVEN("2 sources"){

@@ -1,13 +1,4 @@
-#include <exception>
-#if (__GLIBCXX__ / 10000) == 2014 || (__GLIBCXX__ / 10000) == 2015
-namespace std {
-inline bool uncaught_exception() noexcept(true) {
-    return current_exception() != nullptr;
-}
-}
-#endif
-
-#include "../../../../reax/RxCpp/Rx/v2/src/rxcpp/rx-lite.hpp"
+#include "../../../../reax/RxCpp/Rx/v2/src/rxcpp/rx.hpp"
 namespace rx=rxcpp;
 namespace rxu=rxcpp::util;
 namespace rxs=rxcpp::sources;

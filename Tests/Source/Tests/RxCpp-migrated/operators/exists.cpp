@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-any.hpp>
 
 // NOTE: `exists` is an alias of `any`
 

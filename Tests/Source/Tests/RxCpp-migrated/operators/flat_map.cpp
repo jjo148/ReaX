@@ -1,10 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-reduce.hpp>
-#include <rxcpp/operators/rx-filter.hpp>
-#include <rxcpp/operators/rx-map.hpp>
-#include <rxcpp/operators/rx-take.hpp>
-#include <rxcpp/operators/rx-flat_map.hpp>
-#include <rxcpp/operators/rx-observe_on.hpp>
 
 static const int static_tripletCount = 100;
 

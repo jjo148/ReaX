@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-tap.hpp>
 
 SCENARIO("tap stops on completion", "[tap][operators]"){
     GIVEN("a test hot observable of ints"){

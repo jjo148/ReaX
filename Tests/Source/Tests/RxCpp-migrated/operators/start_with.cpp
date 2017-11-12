@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-start_with.hpp>
 
 SCENARIO("start_with - source never emits or completes", "[start_with][operators]"){
     GIVEN("a source"){

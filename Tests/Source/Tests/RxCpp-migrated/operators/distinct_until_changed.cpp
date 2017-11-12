@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-distinct_until_changed.hpp>
 
 SCENARIO("distinct_until_changed - never", "[distinct_until_changed][operators]"){
     GIVEN("a source"){

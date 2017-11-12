@@ -1,5 +1,4 @@
 #include "../test.h"
-#include "../../../../reax/RxCpp/Rx/v2/src/rxcpp/operators/rx-amb.hpp"
 
 SCENARIO("amb never 3", "[amb][join][operators]"){
     GIVEN("1 cold observable with 3 hot observables of ints."){

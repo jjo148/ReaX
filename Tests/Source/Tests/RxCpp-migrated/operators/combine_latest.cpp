@@ -1,5 +1,4 @@
 #include "../test.h"
-#include "../../../../reax/RxCpp/Rx/v2/src/rxcpp/operators/rx-combine_latest.hpp"
 
 SCENARIO("combine_latest interleaved with tail", "[combine_latest][join][operators]"){
     GIVEN("2 hot observables of ints."){

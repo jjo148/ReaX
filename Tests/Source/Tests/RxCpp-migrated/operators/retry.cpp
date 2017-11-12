@@ -1,5 +1,4 @@
 #include "../test.h"
-#include "../../../../reax/RxCpp/Rx/v2/src/rxcpp/operators/rx-retry.hpp"
 
 SCENARIO("retry, basic test", "[retry][operators]") {
     GIVEN("hot observable of 3x4x7 ints with errors inbetween the groups. Infinite retry.") {

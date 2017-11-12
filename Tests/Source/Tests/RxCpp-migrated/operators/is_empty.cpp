@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-all.hpp>
 
 SCENARIO("is_empty emits false if the source observable is not empty", "[is_empty][operators]") {
     GIVEN("a source") {

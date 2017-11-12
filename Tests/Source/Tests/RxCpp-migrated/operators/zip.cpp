@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-zip.hpp>
 
 SCENARIO("zip never/never", "[zip][join][operators]"){
     GIVEN("2 hot observables of ints."){

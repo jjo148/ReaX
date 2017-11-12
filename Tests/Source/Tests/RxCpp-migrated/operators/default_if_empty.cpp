@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-switch_if_empty.hpp>
 
 SCENARIO("default_if_empty should not switch if the source is not empty", "[default_if_empty][operators]"){
     GIVEN("a source"){

@@ -1,5 +1,4 @@
 #include "../test.h"
-#include <rxcpp/operators/rx-filter.hpp>
 
 namespace {
 bool IsPrime(int x)
