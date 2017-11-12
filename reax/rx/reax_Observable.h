@@ -87,8 +87,8 @@ public:
      
      Note that you can also pass an initializer list, like this:
      
-         Observable::from<String>({"Hello", "Test"})
-         Observable::from<var>({var(3), var("four")})
+         Observable<String>::from({"Hello", "Test"})
+         Observable<var>::from({var(3), var("four")})
      */
     static Observable<T> from(const juce::Array<T>& array)
     {
@@ -151,8 +151,8 @@ public:
      
      For example:
      
-         Observable::range(3, 7, 3) // {3, 6, 7}
-         Observable::range(17.5, 22.8, 2) // {17.5, 19.5, 21.5, 22.8}
+         Observable<int>::range(3, 7, 3) // {3, 6, 7}
+         Observable<double>::range(17.5, 22.8, 2) // {17.5, 19.5, 21.5, 22.8}
      */
     template<typename U = T>
     static Observable<T> range(T first, T last, unsigned int step = 1, typename std::enable_if<std::is_same<U, T>::value && std::is_integral<U>::value>::type* = 0)
@@ -340,7 +340,7 @@ public:
      This Observable:
      
          Observable<String>::from({"Hello", "World"}).flatMap([](String s) {
-             return Observable::from<String>({s.toLowerCase(), s.toUpperCase() + "!"});
+             return Observable<String>::from({s.toLowerCase(), s.toUpperCase() + "!"});
          });
      
      Will emit the values: `"hello"`, `"HELLO!"`, `"world"` and `"WORLD!"`.
@@ -568,7 +568,7 @@ public:
      
      For example:
      
-         Observable::range(1, 1000, 1)
+         Observable<int>::range(1, 1000, 1)
              .observeOn(Scheduler::newThread())
              .map([](double d){ return std::sqrt(d); }) // This lambda is called on a new thread
              .observeOn(Scheduler::messageThread())
