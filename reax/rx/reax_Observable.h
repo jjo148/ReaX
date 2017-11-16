@@ -273,8 +273,9 @@ public:
      */
     Observable<T> concat(std::initializer_list<Observable<T>> others) const
     {
-        // Must pass at least one other Observable:
-        jassert(others.size() > 0);
+        // Nothing to do if others is empty
+        if (others.size() == 0)
+            return *this;
 
         // Too many Observables passed to concat:
         jassert(others.size() <= Impl::MaximumArity);
@@ -375,8 +376,9 @@ public:
      */
     Observable<T> merge(std::initializer_list<Observable<T>> others) const
     {
-        // Must pass at least one other Observable:
-        jassert(others.size() > 0);
+        // Nothing to do if others is empty
+        if (others.size() == 0)
+            return *this;
 
         // Too many Observables:
         jassert(others.size() <= Impl::MaximumArity);
@@ -444,8 +446,9 @@ public:
      */
     Observable<T> startWith(std::initializer_list<T> values) const
     {
-        // Must pass at least one value:
-        jassert(values.size() > 0);
+        // Nothing to do if values is empty
+        if (values.size() == 0)
+            return *this;
 
         // Too many values:
         jassert(values.size() <= Impl::MaximumArity);
