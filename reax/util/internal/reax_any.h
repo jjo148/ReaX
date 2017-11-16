@@ -180,7 +180,7 @@ private:
         const std::type_info& typeInfo;
     };
 
-    // Object subclass that is also a T. It inherits from T to make this work: any(Derived()).get<Base>();
+    // Object subclass that holds a T.
     template<typename T>
     struct TypedObject : Object
     {
@@ -255,7 +255,7 @@ private:
     };
 
     // The held value, if it's non-scalar.
-    std::shared_ptr<Object> objectValue;
+    std::shared_ptr<const Object> objectValue;
 
     template<typename T>
     std::runtime_error typeMismatchError() const
