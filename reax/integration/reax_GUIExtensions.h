@@ -192,6 +192,7 @@ private:
  */
 class SliderExtension : public ComponentExtension, private juce::Slider::Listener
 {
+private:
     PublishSubject<double> _minimum;
     PublishSubject<double> _maximum;
     PublishSubject<double> _doubleClickReturnValue;
@@ -204,9 +205,7 @@ class SliderExtension : public ComponentExtension, private juce::Slider::Listene
 
 public:
     /// Creates a new instance for a given `Slider`.
-    SliderExtension(juce::Slider& parent,
-                    const Observer<std::function<double(const juce::String&)>>& getValueFromText,
-                    const Observer<std::function<juce::String(double)>>& getTextFromValue);
+    SliderExtension(juce::Slider& parent);
     
     ~SliderExtension();
 
@@ -250,10 +249,10 @@ public:
     const Observer<bool> discardChangesWhenHidingTextBox;
 
     /// Controls how a String that has been entered into the text-box is converted to a `Slider` value.​ If you don't use this, the `Slider` will use its `getValueFromText` member function.
-    const Observer<std::function<double(const juce::String&)>> getValueFromText;
-
+    const BehaviorSubject<std::function<double(const juce::String&)>> getValueFromText;
+    
     /// Controls how a `Slider` value is displayed as a `String`.​ If you don't use this, the slider will use its `getTextFromValue` member function.
-    const Observer<std::function<juce::String(double)>> getTextFromValue;
+    const BehaviorSubject<std::function<juce::String(double)>> getTextFromValue;
 
 private:
     DisposeBag disposeBag;

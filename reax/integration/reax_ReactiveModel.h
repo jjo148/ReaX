@@ -44,7 +44,7 @@ public:
     Reactive& operator=(const juce::var& newValue);
 
     /// The reactive extension object.
-    const ValueExtension rx;
+    const ValueExtension rx{ *this };
 
 private:
     Reactive& operator=(const Reactive&) = delete;
@@ -58,14 +58,10 @@ class Reactive<juce::AudioProcessor> : public juce::AudioProcessor
 {
 public:
     /// Creates a new instance. @see `juce::AudioProcessor::AudioProcessor`.
-    template<typename... Args>
-    Reactive(Args&&... args)
-    : juce::AudioProcessor(std::forward<Args>(args)...),
-      rx(*this)
-    {}
+    using juce::AudioProcessor::AudioProcessor;
 
     /// The reactive extension object.
-    const AudioProcessorExtension rx;
+    const AudioProcessorExtension rx{ *this };
 };
 
 
@@ -77,8 +73,8 @@ class Reactive<juce::AudioProcessorValueTreeState> : public juce::AudioProcessor
 {
 public:
     /// Creates a new instance. @see `juce::AudioProcessorValueTreeState::AudioProcessorValueTreeState`.
-    Reactive(juce::AudioProcessor& processorToConnectTo, juce::UndoManager* undoManagerToUse);
+    using juce::AudioProcessorValueTreeState::AudioProcessorValueTreeState;
 
     /// The reactive extension object.
-    const AudioProcessorValueTreeStateExtension rx;
+    const AudioProcessorValueTreeStateExtension rx{ *this };
 };

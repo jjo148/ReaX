@@ -1,13 +1,10 @@
-Reactive<Value>::Reactive()
-: rx(value) {}
+Reactive<Value>::Reactive() {}
 
 Reactive<Value>::Reactive(const Value& other)
-: value(other),
-  rx(value) {}
+: value(other) {}
 
 Reactive<Value>::Reactive(const var& initialValue)
-: value(initialValue),
-  rx(value) {}
+: value(initialValue) {}
 
 Reactive<Value>::operator juce::Value() const
 {
@@ -34,8 +31,3 @@ Reactive<Value>& Reactive<Value>::operator=(const var& newValue)
     value = newValue; // Causes Observable to emit
     return *this;
 }
-
-Reactive<AudioProcessorValueTreeState>::Reactive(AudioProcessor& processorToConnectTo, UndoManager* undoManagerToUse)
-: AudioProcessorValueTreeState(processorToConnectTo, undoManagerToUse),
-  rx(*this)
-{}

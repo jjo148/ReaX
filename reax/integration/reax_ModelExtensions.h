@@ -8,7 +8,7 @@
 class ValueExtension : private juce::Value::Listener
 {
 public:
-    /// Creates a new instance for a given `Value`. The subject will refers to the **`ValueSource`** of `inputValue`.
+    /// Creates a new instance for a given `Value`. The subject refers to the **`ValueSource`** of `inputValue`.
     ValueExtension(const juce::Value& inputValue);
     
     /// The subject that's connected to the `Value`'s `ValueSource`. This changes whenever the `Value` changes, and vice versa.

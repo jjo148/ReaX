@@ -25,14 +25,10 @@ class Reactive<ComponentType, detail::IsSimpleComponent<ComponentType>> : public
 {
 public:
     /// Creates a new instance. @see `juce::Component::Component`.
-    template<typename... Args>
-    Reactive(Args&&... args)
-    : ComponentType(std::forward<Args>(args)...),
-      rx(*this)
-    {}
+    using ComponentType::ComponentType;
 
-    /// The reactive extension object. 
-    const ComponentExtension rx;
+    /// The reactive extension object.
+    const ComponentExtension rx{ *this };
 };
 
 /**
@@ -43,14 +39,10 @@ class Reactive<ImageComponentType, detail::IsImageComponent<ImageComponentType>>
 {
 public:
     /// Creates a new instance. @see `juce::ImageComponent::ImageComponent`.
-    template<typename... Args>
-    Reactive(Args&&... args)
-    : ImageComponentType(std::forward<Args>(args)...),
-      rx(*this)
-    {}
+    using ImageComponentType::ImageComponentType;
 
-    /// The reactive extension object. 
-    const ImageComponentExtension rx;
+    /// The reactive extension object.
+    const ImageComponentExtension rx{ *this };
 };
 
 /**
@@ -61,14 +53,10 @@ class Reactive<ButtonType, detail::IsButton<ButtonType>> : public ButtonType
 {
 public:
     /// Creates a new instance. @see `juce::Button::Button`.
-    template<typename... Args>
-    Reactive(Args&&... args)
-    : ButtonType(std::forward<Args>(args)...),
-      rx(*this)
-    {}
+    using ButtonType::ButtonType;
 
-    /// The reactive extension object. 
-    const ButtonExtension rx;
+    /// The reactive extension object.
+    const ButtonExtension rx{ *this };
 };
 
 /**
@@ -79,14 +67,10 @@ class Reactive<LabelType, detail::IsLabel<LabelType>> : public LabelType
 {
 public:
     /// Creates a new instance. @see `juce::Label::Label`.
-    template<typename... Args>
-    Reactive(Args&&... args)
-    : LabelType(std::forward<Args>(args)...),
-      rx(*this)
-    {}
+    using LabelType::LabelType;
 
-    /// The reactive extension object. 
-    const LabelExtension rx;
+    /// The reactive extension object.
+    const LabelExtension rx{ *this };
 };
 
 /**
@@ -95,50 +79,22 @@ public:
 template<typename SliderType>
 class Reactive<SliderType, detail::IsSlider<SliderType>> : public SliderType
 {
-    typedef std::function<double(const juce::String&)> GetValueFromText_Function;
-    typedef std::function<juce::String(double)> GetTextFromValue_Function;
-
-    GetValueFromText_Function getValueFromText_Function;
-    GetTextFromValue_Function getTextFromValue_Function;
-
-    PublishSubject<GetValueFromText_Function> getValueFromText_Subject;
-    PublishSubject<GetTextFromValue_Function> getTextFromValue_Subject;
-
 public:
-    /// Creates a new instance. @see `juce::Slider::Slider`. 
-    template<typename... Args>
-    Reactive(Args&&... args)
-    : SliderType(std::forward<Args>(args)...),
-      rx(*this, getValueFromText_Subject, getTextFromValue_Subject)
-    {
-        getValueFromText_Subject.subscribe([this](const GetValueFromText_Function& function) {
-            this->getValueFromText_Function = function;
-        });
+    /// Creates a new instance. @see `juce::Slider::Slider`.
+    using SliderType::SliderType;
 
-        getTextFromValue_Subject.subscribe([this](const GetTextFromValue_Function& function) {
-            this->getTextFromValue_Function = function;
-            this->updateText();
-        });
-    }
-
-    /// The reactive extension object. 
-    const SliderExtension rx;
+    /// The reactive extension object.
+    const SliderExtension rx{ *this };
 
     ///@cond INTERNAL
     double getValueFromText(const juce::String& text) override
     {
-        if (getValueFromText_Function)
-            return getValueFromText_Function(text);
-        else
-            return SliderType::getValueFromText(text);
+        return rx.getValueFromText.getValue()(text);
     }
 
     juce::String getTextFromValue(double value) override
     {
-        if (getTextFromValue_Function)
-            return getTextFromValue_Function(value);
-        else
-            return SliderType::getTextFromValue(value);
+        return rx.getTextFromValue.getValue()(value);
     }
     ///@endcond
 };

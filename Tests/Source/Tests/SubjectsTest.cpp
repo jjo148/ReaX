@@ -68,7 +68,7 @@ TEST_CASE("BehaviorSubject",
         subject.onCompleted();
         subject.onCompleted();
     }
-    
+
     IT("can receive an initial value of a custom type, without wrapping with toVar()")
     {
         BehaviorSubject<Point<int>> subject(Point<int>(13, 556));
@@ -296,22 +296,22 @@ TEST_CASE("onNext move overload",
 {
     CopyAndMoveConstructible::Counters counters;
     PublishSubject<CopyAndMoveConstructible> subject;
-    
+
     IT("uses the const T& overload for lvalues")
     {
         CopyAndMoveConstructible test(&counters);
         subject.onNext(test);
-        
+
         REQUIRE(counters.numCopyConstructions == 1);
         REQUIRE(counters.numMoveConstructions == 0);
         REQUIRE(counters.numCopyAssignments == 0);
         REQUIRE(counters.numMoveAssignments == 0);
     }
-    
+
     IT("uses the T&& overload for rvalues")
     {
         subject.onNext(CopyAndMoveConstructible(&counters));
-        
+
         REQUIRE(counters.numCopyConstructions == 0);
         REQUIRE(counters.numMoveConstructions == 1);
         REQUIRE(counters.numCopyAssignments == 0);

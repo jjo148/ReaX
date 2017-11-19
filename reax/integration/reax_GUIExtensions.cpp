@@ -199,9 +199,7 @@ void LabelExtension::editorHidden(Label*, TextEditor&)
 }
 
 
-SliderExtension::SliderExtension(juce::Slider& parent,
-                                 const Observer<std::function<double(const juce::String&)>>& getValueFromText,
-                                 const Observer<std::function<juce::String(double)>>& getTextFromValue)
+SliderExtension::SliderExtension(juce::Slider& parent)
 : ComponentExtension(parent),
   _dragging(false),
   _discardChangesWhenHidingTextBox(false),
@@ -218,8 +216,12 @@ SliderExtension::SliderExtension(juce::Slider& parent,
   showTextBox(_showTextBox),
   textBoxIsEditable(_textBoxIsEditable),
   discardChangesWhenHidingTextBox(_discardChangesWhenHidingTextBox),
-  getValueFromText(getValueFromText),
-  getTextFromValue(getTextFromValue)
+  getValueFromText([&parent](const juce::String& text) {
+      return parent.juce::Slider::getValueFromText(text);
+  }),
+  getTextFromValue([&parent](double value) {
+      return parent.juce::Slider::getTextFromValue(value);
+  })
 {
     parent.addListener(this);
 
@@ -268,6 +270,10 @@ SliderExtension::SliderExtension(juce::Slider& parent,
         .disposedBy(disposeBag);
 
     _textBoxIsEditable.subscribe(std::bind(&Slider::setTextBoxIsEditable, &parent, _1)).disposedBy(disposeBag);
+
+    getTextFromValue.subscribe([&parent](const std::function<juce::String(double)>&) {
+        parent.updateText();
+    }).disposedBy(disposeBag);
 }
 
 SliderExtension::~SliderExtension()
