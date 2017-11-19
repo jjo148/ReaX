@@ -24,31 +24,6 @@ any::any(double value)
   doubleValue(value)
 {}
 
-bool any::equals(const any& other) const
-{
-    if (isArithmetic() != other.isArithmetic())
-        return false;
-
-    switch (type) {
-        case Type::Int:
-            return (get<int>() == other.get<int>());
-        case Type::Int64:
-            return (get<int64>() == other.get<int64>());
-        case Type::Bool:
-            return (get<bool>() == other.get<bool>());
-        case Type::Float:
-            return (get<float>() == other.get<float>());
-        case Type::Double:
-            return (get<double>() == other.get<double>());
-        case Type::Enum:
-            return (other.type == Type::Enum && enumValue == other.enumValue);
-        case Type::RawPointer:
-            return (other.type == Type::RawPointer && rawPointerValue == other.rawPointerValue);
-        case Type::Object:
-            return objectValue->equals(*other.objectValue);
-    }
-}
-
 bool any::isArithmetic() const
 {
     return (type != Type::Enum && type != Type::RawPointer && type != Type::Object);

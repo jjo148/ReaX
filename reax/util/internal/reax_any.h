@@ -6,8 +6,6 @@ namespace detail {
  
  The type of the held value is erased. So to extract the held value (using `any::get()`), you have to provide the exact type of the held value. No base-class, of it, but the exact type it was constructed from. If in doubt, use `static_cast` before passing the value to the `any` constructor, to ensure that it's stored as a certain type.
  
- Two `any` instances are equality-comparable. If an instance `a` is compared to an instance `b` as in `a == b`, and both hold a scalar value (e.g. int, float, bool), the scalar values are converted and compared. So `var(1.f) == var(1)`. If both hold an object, it casts `b` to the type of `a`. If that succeeds, it compares them using `a`'s `operator==`. If `a` is not equality-comparable, it checks if the addresses of the wrapped values in `a` and `b` are equal. This may be false if both `a` and `b` were contructed from the same value, because the value may have been copied when constructing. Otherwise, `a` and `b` are considered to be non-equal.
- 
  This class is used to create a dynamic layer between the type-safe `reax::Observable` and the type-safe `rxcpp::observable`.
 */
 ///@cond INTERNAL
@@ -61,7 +59,7 @@ public:
     template<typename T>
     explicit any(T&& value, typename std::enable_if<is_class<T>::value && !is_any<T>::value>::type* = 0)
     : type(Type::Object),
-      objectValue(std::make_shared<EquatableTypedObject<typename std::decay<T>::type>>(std::forward<T>(value)))
+      objectValue(std::make_shared<TypedObject<typename std::decay<T>::type>>(std::forward<T>(value)))
     {}
 
     /// Default move constructor
@@ -160,22 +158,12 @@ public:
         return (getObjectPointer<T>() != nullptr);
     }
 
-    /**
-     Compares the held value to that of another instance.
-     
-     If the wrapped type is equality-comparable (i.e. has operator==), the values are compared using ==. Otherwise, it returns true if the wrapped values are the same instance.
-     
-     Scalar types are converted as needed (i.e. float to int).
-     */
-    bool equals(const any& other) const;
-
 private:
     // Type-erased wrapper
     struct Object
     {
         Object(const std::type_info& typeInfo);
         virtual ~Object() {}
-        virtual bool equals(const Object& other) const = 0;
 
         const std::type_info& typeInfo;
     };
@@ -191,41 +179,6 @@ private:
         {}
 
         T t;
-    };
-
-    // Checks if T has operator==
-    template<typename T>
-    using HasEqualityOperator = typename std::enable_if<true, decltype(std::declval<T&>() == std::declval<T&>(), (void)0)>::type;
-
-    // Implements the equals() function using pointer comparison
-    template<typename T, typename Enable = void>
-    struct EquatableTypedObject : TypedObject<T>
-    {
-        using TypedObject<T>::TypedObject;
-
-        bool equals(const Object& other) const override
-        {
-            // Compare by address. dynamic_cast<void*> downcasts to the most derived class, so if this and other are the same instance, the expression is true.
-            return (dynamic_cast<const void*>(this) == dynamic_cast<const void*>(&other));
-        }
-    };
-
-    // Implements the equals() function using operator==
-    template<typename T>
-    struct EquatableTypedObject<T, HasEqualityOperator<T>> : TypedObject<T>
-    {
-        using TypedObject<T>::TypedObject;
-
-        bool equals(const Object& other) const override
-        {
-            // If other contains a T, compare them:
-            if (auto ptr = dynamic_cast<const EquatableTypedObject<T>*>(&other))
-                return (TypedObject<T>::t == ptr->t);
-
-            // other does not contain a T, so the objects can't be equal
-            else
-                return false;
-        }
     };
 
     // The type of the held value. Needed to use the correct member of the union.
@@ -273,17 +226,8 @@ private:
     bool isArithmetic() const;
 
     std::string getTypeName() const;
-
+    
     JUCE_LEAK_DETECTOR(any)
 };
 ///@endcond
-
-inline bool operator==(const any& lhs, const any& rhs)
-{
-    return lhs.equals(rhs);
-}
-inline bool operator!=(const any& lhs, const any& rhs)
-{
-    return !(lhs == rhs);
-}
 }

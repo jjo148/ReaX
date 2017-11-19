@@ -40,13 +40,6 @@ TEST_CASE("any",
             REQUIRE(anyFloat.get<int>() == 51);
         }
 
-        IT("can compare wrapped values for equality")
-        {
-            REQUIRE(any(14) == any(static_cast<int64>(14)));
-            REQUIRE(any(0) == any(false));
-            REQUIRE(any(14.2) != any(14.1));
-        }
-
         IT("throws when trying to extract an object value")
         {
             REQUIRE_THROWS_WITH(anyInt.get<String>(), Contains("Error getting type from any."));
@@ -78,14 +71,6 @@ TEST_CASE("any",
         {
             REQUIRE_THROWS_WITH(anyEnum.get<juce::int64>(), Contains("Error getting type from any."));
         }
-
-        IT("can compare enums for equality")
-        {
-            REQUIRE(anyEnum == any(TestEnumFoo));
-            REQUIRE(anyEnum != any(TestEnumBar));
-            REQUIRE(anyEnumClass == any(TestEnumClass::Bar));
-            REQUIRE(anyEnumClass != any(TestEnumClass::Foo));
-        }
     }
 
     CONTEXT("non-scalar types")
@@ -114,19 +99,6 @@ TEST_CASE("any",
             REQUIRE_THROWS_WITH(anyString.get<int>(), Contains("Error getting type from any."));
             REQUIRE_THROWS_WITH(anyString.get<Point<int>>(), Contains("Error getting type from any."));
             REQUIRE_THROWS_WITH(anyString.get<Point<float>>(), Contains("Error getting type from any."));
-        }
-
-        IT("can compare wrapped values for equality")
-        {
-            REQUIRE(any(String("Hello, this is a test.")) == anyString);
-            REQUIRE(any(String("Hello, this is different.")) != anyString);
-            REQUIRE(anyPoint == any(Point<int>(4, 15)));
-            REQUIRE(anyPoint != any(Point<int>(4, -15)));
-        }
-
-        IT("does not perform implicit conversion when checking for equality")
-        {
-            REQUIRE(anyPoint != any(Point<int64>(4, 15)));
         }
 
         IT("holds an independent copy of the original value")
@@ -165,122 +137,6 @@ TEST_CASE("any",
             any anyInt(&x);
             
             REQUIRE(*anyInt.get<int*>() == -19381);
-        }
-    }
-
-    CONTEXT("polymorphic types")
-    {
-        // Define Animal class with subclasses Dog and Cat
-        class LivingBeing
-        {};
-        class Animal : public LivingBeing
-        {
-        public:
-            Animal(int weight)
-            : weight(weight) {}
-
-            bool operator==(const Animal& other) const
-            {
-                return (weight == other.weight);
-            }
-
-            int weight;
-        };
-
-        class Dog : public Animal
-        {
-        public:
-            Dog(int weight, int barksPerMinute)
-            : Animal(weight), barksPerMinute(barksPerMinute) {}
-
-            bool operator==(const Dog& other) const
-            {
-                return (Animal::operator==(other) && barksPerMinute == other.barksPerMinute);
-            }
-
-            int barksPerMinute;
-        };
-
-        class Cat : public Animal
-        {
-        public:
-            Cat(int weight, double cutenessFactor)
-            : Animal(weight), cutenessFactor(cutenessFactor) {}
-
-            bool operator==(const Cat& other) const
-            {
-                return (Animal::operator==(other) && cutenessFactor == other.cutenessFactor);
-            }
-
-            double cutenessFactor;
-        };
-
-        // Create instances
-        any sameWeightAsGarfield(Animal(120));
-        any bello(Dog(16, 9));
-        any garfield(Cat(120, 0.001));
-        any identicalGarfield(Cat(120, 0.001));
-        any cuteGarfield(Cat(120, 1));
-        any helloKitty(Cat(16, 10000));
-
-        IT("can compare instances of the same subclass")
-        {
-            REQUIRE(garfield == garfield);
-            REQUIRE_FALSE(garfield != garfield);
-            REQUIRE(garfield == identicalGarfield);
-            REQUIRE_FALSE(garfield != identicalGarfield);
-
-            REQUIRE_FALSE(garfield == cuteGarfield);
-            REQUIRE_FALSE(cuteGarfield == helloKitty);
-        }
-
-        IT("can compare instances of separate subclasses")
-        {
-            // Should be non-equal, although the Animal part is equal
-            REQUIRE_FALSE(bello == helloKitty);
-        }
-
-        IT("is equal even if the wrapped value has been copied")
-        {
-            any copy(garfield.get<Cat>());
-
-            REQUIRE(copy == garfield);
-            REQUIRE(identicalGarfield == copy);
-        }
-    }
-
-    CONTEXT("Equality with pointer comparison")
-    {
-        struct Foo
-        {
-            Foo(int x)
-            : x(x) {}
-
-            int x;
-        };
-
-        IT("is equal if the wrapped value is the same instance")
-        {
-            any anyFoo(Foo(5));
-            CHECK(anyFoo == anyFoo);
-
-            any another = anyFoo;
-
-            REQUIRE(anyFoo == another);
-        }
-
-        IT("is non-equal if two instances are constructed from the same value")
-        {
-            Foo foo(16);
-            REQUIRE(any(foo) != any(foo));
-        }
-
-        IT("is non-equal if two instances are constructed from two different values")
-        {
-            Foo foo1(16);
-            Foo foo2(16);
-
-            REQUIRE(any(foo1) != any(foo2));
         }
     }
 
