@@ -27,90 +27,91 @@
           <FILE id="HK9l8H" name="rx-test.hpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/rx-test.hpp"/>
           <FILE id="ea4eog" name="test.h" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/test.h"/>
           <GROUP id="{104DA753-072E-08DF-EFCA-8EAD037210D3}" name="operators">
-            <FILE id="Qo7O64" name="all.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/all.cpp"/>
-            <FILE id="EtkRZV" name="amb.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/amb.cpp"/>
-            <FILE id="MrReRr" name="amb_variadic.cpp" compile="1" resource="0"
+            <FILE id="Qo7O64" name="all.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/all.cpp"
+                  xcodeResource="0"/>
+            <FILE id="EtkRZV" name="amb.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/amb.cpp"/>
+            <FILE id="MrReRr" name="amb_variadic.cpp" compile="0" resource="0"
                   file="Source/Tests/RxCpp-migrated/operators/amb_variadic.cpp"/>
-            <FILE id="z9UZj8" name="any.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/any.cpp"/>
-            <FILE id="nUqi1w" name="buffer.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/buffer.cpp"/>
-            <FILE id="ZDJID9" name="combine_latest.cpp" compile="1" resource="0"
+            <FILE id="z9UZj8" name="any.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/any.cpp"/>
+            <FILE id="nUqi1w" name="buffer.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/buffer.cpp"/>
+            <FILE id="ZDJID9" name="combine_latest.cpp" compile="0" resource="0"
                   file="Source/Tests/RxCpp-migrated/operators/combine_latest.cpp"/>
-            <FILE id="czh1Ml" name="concat.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/concat.cpp"/>
-            <FILE id="vTZZXZ" name="concat_map.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/concat_map.cpp"/>
-            <FILE id="cRMUD3" name="contains.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/contains.cpp"/>
-            <FILE id="FSOFHs" name="debounce.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/debounce.cpp"/>
-            <FILE id="OsaVPo" name="default_if_empty.cpp" compile="1" resource="0"
+            <FILE id="czh1Ml" name="concat.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/concat.cpp"/>
+            <FILE id="vTZZXZ" name="concat_map.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/concat_map.cpp"/>
+            <FILE id="cRMUD3" name="contains.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/contains.cpp"/>
+            <FILE id="FSOFHs" name="debounce.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/debounce.cpp"/>
+            <FILE id="OsaVPo" name="default_if_empty.cpp" compile="0" resource="0"
                   file="Source/Tests/RxCpp-migrated/operators/default_if_empty.cpp"/>
-            <FILE id="JwhbEF" name="delay.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/delay.cpp"/>
-            <FILE id="tB5Fxz" name="distinct.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/distinct.cpp"/>
-            <FILE id="TtFMEm" name="distinct_until_changed.cpp" compile="1" resource="0"
+            <FILE id="JwhbEF" name="delay.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/delay.cpp"/>
+            <FILE id="tB5Fxz" name="distinct.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/distinct.cpp"/>
+            <FILE id="TtFMEm" name="distinct_until_changed.cpp" compile="0" resource="0"
                   file="Source/Tests/RxCpp-migrated/operators/distinct_until_changed.cpp"/>
-            <FILE id="ELpSWi" name="element_at.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/element_at.cpp"/>
-            <FILE id="beusXW" name="exists.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/exists.cpp"/>
-            <FILE id="MkqdhG" name="filter.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/filter.cpp"/>
-            <FILE id="EUNiGb" name="finally.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/finally.cpp"/>
-            <FILE id="kRTYzs" name="flat_map.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/flat_map.cpp"/>
-            <FILE id="Mk1ogX" name="group_by.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/group_by.cpp"/>
-            <FILE id="RU8CCi" name="ignore_elements.cpp" compile="1" resource="0"
+            <FILE id="ELpSWi" name="element_at.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/element_at.cpp"/>
+            <FILE id="beusXW" name="exists.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/exists.cpp"/>
+            <FILE id="MkqdhG" name="filter.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/filter.cpp"/>
+            <FILE id="EUNiGb" name="finally.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/finally.cpp"/>
+            <FILE id="kRTYzs" name="flat_map.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/flat_map.cpp"/>
+            <FILE id="Mk1ogX" name="group_by.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/group_by.cpp"/>
+            <FILE id="RU8CCi" name="ignore_elements.cpp" compile="0" resource="0"
                   file="Source/Tests/RxCpp-migrated/operators/ignore_elements.cpp"/>
-            <FILE id="Gvw6Mq" name="is_empty.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/is_empty.cpp"/>
-            <FILE id="GwSZoS" name="lift.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/lift.cpp"/>
-            <FILE id="BFJaCX" name="map.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/map.cpp"/>
-            <FILE id="jAqS4c" name="merge.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/merge.cpp"/>
-            <FILE id="tJUJss" name="observe_on.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/observe_on.cpp"/>
-            <FILE id="UL0s3E" name="on_error_resume_next.cpp" compile="1" resource="0"
+            <FILE id="Gvw6Mq" name="is_empty.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/is_empty.cpp"/>
+            <FILE id="GwSZoS" name="lift.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/lift.cpp"/>
+            <FILE id="BFJaCX" name="map.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/map.cpp"/>
+            <FILE id="jAqS4c" name="merge.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/merge.cpp"/>
+            <FILE id="tJUJss" name="observe_on.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/observe_on.cpp"/>
+            <FILE id="UL0s3E" name="on_error_resume_next.cpp" compile="0" resource="0"
                   file="Source/Tests/RxCpp-migrated/operators/on_error_resume_next.cpp"/>
-            <FILE id="msVso4" name="pairwise.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/pairwise.cpp"/>
-            <FILE id="phjnVh" name="publish.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/publish.cpp"/>
-            <FILE id="Iyr6wx" name="reduce.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/reduce.cpp"/>
-            <FILE id="wdlRr1" name="repeat.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/repeat.cpp"/>
-            <FILE id="DcR43g" name="replay.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/replay.cpp"/>
-            <FILE id="LLN61A" name="retry.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/retry.cpp"/>
-            <FILE id="XF7wcj" name="sample.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/sample.cpp"/>
-            <FILE id="gLoRc7" name="scan.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/scan.cpp"/>
-            <FILE id="CswbcH" name="sequence_equal.cpp" compile="1" resource="0"
+            <FILE id="msVso4" name="pairwise.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/pairwise.cpp"/>
+            <FILE id="phjnVh" name="publish.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/publish.cpp"/>
+            <FILE id="Iyr6wx" name="reduce.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/reduce.cpp"/>
+            <FILE id="wdlRr1" name="repeat.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/repeat.cpp"/>
+            <FILE id="DcR43g" name="replay.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/replay.cpp"/>
+            <FILE id="LLN61A" name="retry.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/retry.cpp"/>
+            <FILE id="XF7wcj" name="sample.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/sample.cpp"/>
+            <FILE id="gLoRc7" name="scan.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/scan.cpp"/>
+            <FILE id="CswbcH" name="sequence_equal.cpp" compile="0" resource="0"
                   file="Source/Tests/RxCpp-migrated/operators/sequence_equal.cpp"/>
-            <FILE id="ckz3AS" name="skip.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/skip.cpp"/>
-            <FILE id="K6t4Pm" name="skip_last.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/skip_last.cpp"/>
-            <FILE id="jX2te5" name="skip_until.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/skip_until.cpp"/>
-            <FILE id="CNI17T" name="start_with.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/start_with.cpp"/>
-            <FILE id="aeRm4p" name="subscribe_on.cpp" compile="1" resource="0"
+            <FILE id="ckz3AS" name="skip.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/skip.cpp"/>
+            <FILE id="K6t4Pm" name="skip_last.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/skip_last.cpp"/>
+            <FILE id="jX2te5" name="skip_until.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/skip_until.cpp"/>
+            <FILE id="CNI17T" name="start_with.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/start_with.cpp"/>
+            <FILE id="aeRm4p" name="subscribe_on.cpp" compile="0" resource="0"
                   file="Source/Tests/RxCpp-migrated/operators/subscribe_on.cpp"/>
-            <FILE id="XNUCur" name="switch_if_empty.cpp" compile="1" resource="0"
+            <FILE id="XNUCur" name="switch_if_empty.cpp" compile="0" resource="0"
                   file="Source/Tests/RxCpp-migrated/operators/switch_if_empty.cpp"/>
-            <FILE id="i3b2s0" name="switch_on_next.cpp" compile="1" resource="0"
+            <FILE id="i3b2s0" name="switch_on_next.cpp" compile="0" resource="0"
                   file="Source/Tests/RxCpp-migrated/operators/switch_on_next.cpp"/>
-            <FILE id="QbgHtM" name="take.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/take.cpp"/>
-            <FILE id="GTrxWK" name="take_last.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/take_last.cpp"/>
-            <FILE id="bH6Dqh" name="take_until.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/take_until.cpp"/>
-            <FILE id="H5YJJ8" name="take_while.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/take_while.cpp"/>
-            <FILE id="tPTrbH" name="tap.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/tap.cpp"/>
-            <FILE id="m9lHq1" name="time_interval.cpp" compile="1" resource="0"
+            <FILE id="QbgHtM" name="take.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/take.cpp"/>
+            <FILE id="GTrxWK" name="take_last.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/take_last.cpp"/>
+            <FILE id="bH6Dqh" name="take_until.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/take_until.cpp"/>
+            <FILE id="H5YJJ8" name="take_while.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/take_while.cpp"/>
+            <FILE id="tPTrbH" name="tap.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/tap.cpp"/>
+            <FILE id="m9lHq1" name="time_interval.cpp" compile="0" resource="0"
                   file="Source/Tests/RxCpp-migrated/operators/time_interval.cpp"/>
-            <FILE id="fB1gDm" name="timeout.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/timeout.cpp"/>
-            <FILE id="kVyI41" name="timestamp.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/timestamp.cpp"/>
-            <FILE id="LXvpXv" name="window.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/window.cpp"/>
-            <FILE id="QPV8Zz" name="window_toggle.cpp" compile="1" resource="0"
+            <FILE id="fB1gDm" name="timeout.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/timeout.cpp"/>
+            <FILE id="kVyI41" name="timestamp.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/timestamp.cpp"/>
+            <FILE id="LXvpXv" name="window.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/window.cpp"/>
+            <FILE id="QPV8Zz" name="window_toggle.cpp" compile="0" resource="0"
                   file="Source/Tests/RxCpp-migrated/operators/window_toggle.cpp"/>
-            <FILE id="nfUCeH" name="with_latest_from.cpp" compile="1" resource="0"
+            <FILE id="nfUCeH" name="with_latest_from.cpp" compile="0" resource="0"
                   file="Source/Tests/RxCpp-migrated/operators/with_latest_from.cpp"/>
-            <FILE id="Qrrga2" name="zip.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/operators/zip.cpp"/>
+            <FILE id="Qrrga2" name="zip.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/operators/zip.cpp"/>
           </GROUP>
           <GROUP id="{F7620948-AE68-F661-C245-48F91D1EA4AE}" name="sources">
-            <FILE id="RGAj1h" name="create.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/sources/create.cpp"/>
-            <FILE id="gVY3gk" name="defer.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/sources/defer.cpp"/>
-            <FILE id="iNLOCW" name="empty.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/sources/empty.cpp"/>
-            <FILE id="LIokTw" name="interval.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/sources/interval.cpp"/>
-            <FILE id="DHUiCh" name="scope.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/sources/scope.cpp"/>
-            <FILE id="X9DrkG" name="timer.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/sources/timer.cpp"/>
+            <FILE id="RGAj1h" name="create.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/sources/create.cpp"/>
+            <FILE id="gVY3gk" name="defer.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/sources/defer.cpp"/>
+            <FILE id="iNLOCW" name="empty.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/sources/empty.cpp"/>
+            <FILE id="LIokTw" name="interval.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/sources/interval.cpp"/>
+            <FILE id="DHUiCh" name="scope.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/sources/scope.cpp"/>
+            <FILE id="X9DrkG" name="timer.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/sources/timer.cpp"/>
           </GROUP>
           <GROUP id="{857D033A-E851-0ADC-66DC-4445A636D38B}" name="subjects">
-            <FILE id="tCsJLO" name="subject.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/subjects/subject.cpp"/>
+            <FILE id="tCsJLO" name="subject.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/subjects/subject.cpp"/>
           </GROUP>
           <GROUP id="{6E4BA3AD-6DFC-CAA2-3809-8A55FDDC9A68}" name="subscriptions">
-            <FILE id="NIpMJw" name="coroutine.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/subscriptions/coroutine.cpp"/>
-            <FILE id="zmUu9J" name="observer.cpp" compile="1" resource="0" file="Source/Tests/RxCpp-migrated/subscriptions/observer.cpp"/>
-            <FILE id="jbqkk0" name="subscription.cpp" compile="1" resource="0"
+            <FILE id="NIpMJw" name="coroutine.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/subscriptions/coroutine.cpp"/>
+            <FILE id="zmUu9J" name="observer.cpp" compile="0" resource="0" file="Source/Tests/RxCpp-migrated/subscriptions/observer.cpp"/>
+            <FILE id="jbqkk0" name="subscription.cpp" compile="0" resource="0"
                   file="Source/Tests/RxCpp-migrated/subscriptions/subscription.cpp"/>
           </GROUP>
         </GROUP>
