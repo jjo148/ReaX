@@ -795,7 +795,7 @@ TEST_CASE("Reactive<Slider>",
 
 
 template<typename T1, typename T2>
-using isSame = typename std::is_same<typename std::decay<T1>::type, T2>;
+using isSame = typename std::is_same<decay_t<T1>, T2>;
 
 TEST_CASE("Template ambiguities")
 {

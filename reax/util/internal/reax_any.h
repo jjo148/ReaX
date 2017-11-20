@@ -9,7 +9,7 @@ namespace detail {
  This class is used to create a dynamic layer between the type-safe `reax::Observable` and the type-safe `rxcpp::observable`.
 */
 ///@cond INTERNAL
-class any
+class any final
 {
 public:
     ///@{
@@ -24,29 +24,29 @@ public:
     ///@}
 
     template<typename T>
-    using is_enum = std::is_enum<typename std::decay<T>::type>;
+    using is_enum = std::is_enum<decay_t<T>>;
 
     template<typename T>
-    using is_pointer = std::is_pointer<typename std::decay<T>::type>;
+    using is_pointer = std::is_pointer<decay_t<T>>;
 
     template<typename T>
-    using is_arithmetic = std::is_arithmetic<typename std::decay<T>::type>;
+    using is_arithmetic = std::is_arithmetic<decay_t<T>>;
 
     template<typename T>
-    using is_class = std::is_class<typename std::decay<T>::type>;
+    using is_class = std::is_class<decay_t<T>>;
 
     template<typename T>
-    using is_any = std::is_base_of<any, typename std::decay<T>::type>;
+    using is_any = std::is_base_of<any, decay_t<T>>;
 
 
     template<typename T>
-    explicit any(T&& value, typename std::enable_if<is_enum<T>::value>::type* = 0)
+    explicit any(T&& value, enable_if_t<is_enum<T>::value>* = 0)
     : type(Type::Enum),
       enumValue(static_cast<juce::int64>(value))
     {}
 
     template<typename T>
-    explicit any(T&& value, typename std::enable_if<is_pointer<T>::value>::type* = 0)
+    explicit any(T&& value, enable_if_t<is_pointer<T>::value>* = 0)
     : type(Type::RawPointer),
       rawPointerValue(value)
     {}
@@ -57,9 +57,9 @@ public:
      If you use this constructor, make sure that the value you're passing in actually has the type that you try to `get<T>()` later on. One way to ensure this is to use `any(static_cast<T>(myT))`.
      */
     template<typename T>
-    explicit any(T&& value, typename std::enable_if<is_class<T>::value && !is_any<T>::value>::type* = 0)
+    explicit any(T&& value, enable_if_t<is_class<T>::value && !is_any<T>::value>* = 0)
     : type(Type::Object),
-      objectValue(std::make_shared<TypedObject<typename std::decay<T>::type>>(std::forward<T>(value)))
+      objectValue(std::make_shared<TypedObject<decay_t<T>>>(std::forward<T>(value)))
     {}
 
     /// Default move constructor
@@ -78,7 +78,7 @@ public:
      Objects are returned by `const &`, so no copy is made.
      */
     template<typename T>
-    T get(typename std::enable_if<is_enum<T>::value>::type* = 0) const
+    T get(enable_if_t<is_enum<T>::value>* = 0) const
     {
         if (!is<T>())
             throw typeMismatchError<T>();
@@ -87,7 +87,7 @@ public:
     }
 
     template<typename T>
-    T get(typename std::enable_if<is_pointer<T>::value>::type* = 0) const
+    T get(enable_if_t<is_pointer<T>::value>* = 0) const
     {
         if (!is<T>())
             throw typeMismatchError<T>();
@@ -96,7 +96,7 @@ public:
     }
 
     template<typename T>
-    T get(typename std::enable_if<is_arithmetic<T>::value>::type* = 0) const
+    T get(enable_if_t<is_arithmetic<T>::value>* = 0) const
     {
         if (!is<T>())
             throw typeMismatchError<T>();
@@ -122,7 +122,7 @@ public:
     }
 
     template<typename T>
-    const T& get(typename std::enable_if<is_class<T>::value>::type* = 0) const
+    const T& get(enable_if_t<is_class<T>::value>* = 0) const
     {
         if (!is<T>())
             throw typeMismatchError<T>();
@@ -135,25 +135,25 @@ public:
      Checks whether the held value is a T. For class types, it returns true only if the wrapped type is exactly T, not a base class.
      */
     template<typename T>
-    bool is(typename std::enable_if<is_enum<T>::value>::type* = 0) const
+    bool is(enable_if_t<is_enum<T>::value>* = 0) const
     {
         return (type == Type::Enum);
     }
 
     template<typename T>
-    bool is(typename std::enable_if<is_pointer<T>::value>::type* = 0) const
+    bool is(enable_if_t<is_pointer<T>::value>* = 0) const
     {
         return (type == Type::RawPointer);
     }
 
     template<typename T>
-    bool is(typename std::enable_if<is_arithmetic<T>::value>::type* = 0) const
+    bool is(enable_if_t<is_arithmetic<T>::value>* = 0) const
     {
         return isArithmetic();
     }
 
     template<typename T>
-    bool is(typename std::enable_if<is_class<T>::value>::type* = 0) const
+    bool is(enable_if_t<is_class<T>::value>* = 0) const
     {
         return (getObjectPointer<T>() != nullptr);
     }
@@ -178,7 +178,7 @@ private:
           t(std::forward<U>(value))
         {}
 
-        T t;
+        const T t;
     };
 
     // The type of the held value. Needed to use the correct member of the union.

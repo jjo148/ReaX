@@ -4,6 +4,7 @@
 #define DONT_SET_USING_JUCE_NAMESPACE 1
 #include "JuceHeader.h"
 
+#include "../../../reax/util/internal/reax_Global.h"
 REAX_ENABLE_EXTRA_WARNINGS
 
 using namespace juce;

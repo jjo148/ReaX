@@ -38,7 +38,7 @@ END_JUCE_MODULE_DECLARATION
 #include <vector>
 
 // Enable stricter warnings
-#include "util/internal/reax_ExtraWarnings.h"
+#include "util/internal/reax_Global.h"
 #pragma clang diagnostic push
 REAX_ENABLE_EXTRA_WARNINGS
 

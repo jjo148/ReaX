@@ -2,6 +2,7 @@
 #include "JuceHeader.h"
 
 // Enable stricter warnings
+#include "util/internal/reax_Global.h"
 #pragma clang diagnostic push
 REAX_ENABLE_EXTRA_WARNINGS
 

@@ -108,7 +108,7 @@ public:
      When calling Value::setValue, it notifies asynchronously. So **the returned Observable emits the new value asynchronously.** If you call setValue immediately before destroying the returned Observable, the new value will not be emitted.
      */
     template<typename U = T>
-    static Observable<T> fromValue(juce::Value value, typename std::enable_if<std::is_same<U, T>::value && std::is_base_of<juce::var, U>::value>::type* = 0)
+    static Observable<T> fromValue(juce::Value value, enable_if_t<std::is_same<U, T>::value && std::is_base_of<juce::var, U>::value>* = 0)
     {
         return Impl::fromValue(value);
     }
@@ -121,7 +121,7 @@ public:
      The interval has millisecond resolution.
      */
     template<typename U = T>
-    static Observable<T> interval(const juce::RelativeTime& interval, typename std::enable_if<std::is_same<U, T>::value && std::is_same<int, T>::value>::type* = 0)
+    static Observable<T> interval(const juce::RelativeTime& interval, enable_if_t<std::is_same<U, T>::value && std::is_same<int, T>::value>* = 0)
     {
         return Impl::interval(interval);
     }
@@ -155,19 +155,19 @@ public:
          Observable<double>::range(17.5, 22.8, 2) // {17.5, 19.5, 21.5, 22.8}
      */
     template<typename U = T>
-    static Observable<T> range(T first, T last, unsigned int step = 1, typename std::enable_if<std::is_same<U, T>::value && std::is_integral<U>::value>::type* = 0)
+    static Observable<T> range(T first, T last, unsigned int step = 1, enable_if_t<std::is_same<U, T>::value && std::is_integral<U>::value>* = 0)
     {
         return Impl::integralRange(first, last, step);
     }
     /// \overload
     template<typename U = T>
-    static Observable<T> range(float first, float last, unsigned int step = 1, typename std::enable_if<std::is_same<U, T>::value && std::is_same<U, float>::value>::type* = 0)
+    static Observable<T> range(float first, float last, unsigned int step = 1, enable_if_t<std::is_same<U, T>::value && std::is_same<U, float>::value>* = 0)
     {
         return Impl::floatRange(first, last, step);
     }
     /// \overload
     template<typename U = T>
-    static Observable<T> range(double first, double last, unsigned int step = 1, typename std::enable_if<std::is_same<U, T>::value && std::is_same<U, double>::value>::type* = 0)
+    static Observable<T> range(double first, double last, unsigned int step = 1, enable_if_t<std::is_same<U, T>::value && std::is_same<U, double>::value>* = 0)
     {
         return Impl::doubleRange(first, last, step);
     }
@@ -225,7 +225,7 @@ public:
      The returned Subscription can be used to `unsubscribe()` the Observer, so it stops being notified by this Observable. **The Observer keeps receiving values until you call Subscription::unsubscribe, or until the Observable source is destroyed**. The best way is to use a DisposeBag, which automatically unsubscribes when it is destroyed.
      */
     template<typename U>
-    Subscription subscribe(const Observer<U>& observer, typename std::enable_if<std::is_convertible<T, U>::value>::type* = 0) const
+    Subscription subscribe(const Observer<U>& observer, enable_if_t<std::is_convertible<T, U>::value>* = 0) const
     {
         // Converts values from T to U
         static auto convert = [](const any& t) {
@@ -349,7 +349,7 @@ public:
      @see Observable::merge, Observable::switchOnNext.
      */
     template<typename Function>
-    Observable<typename CallResult<Function, T>::ValueType> flatMap(Function&& function, typename std::enable_if<IsObservable<CallResult<Function, T>>::value>::type* = 0) const
+    Observable<typename CallResult<Function, T>::ValueType> flatMap(Function&& function, enable_if_t<IsObservable<CallResult<Function, T>>::value>* = 0) const
     {
         return impl.flatMap([function](const any& value) {
             return function(value.get<T>()).impl;
@@ -466,7 +466,7 @@ public:
      Therefore, it can only be used when this Observable emits Observables.
      */
     template<typename U = T>
-    Observable<typename U::ValueType> switchOnNext(typename std::enable_if<std::is_same<U, T>::value && IsObservable<U>::value>::type* = 0) const
+    Observable<typename U::ValueType> switchOnNext(enable_if_t<std::is_same<U, T>::value && IsObservable<U>::value>* = 0) const
     {
         return impl.switchOnNext();
     }
@@ -605,7 +605,7 @@ public:
 
     /// Covariant constructor: If `U` is convertible to `T`, then an `Observable<U>` is convertible to an `Observable<T>`.
     template<typename U>
-    Observable(const Observable<U>& other, typename std::enable_if<std::is_convertible<U, T>::value>::type* = 0)
+    Observable(const Observable<U>& other, enable_if_t<std::is_convertible<U, T>::value>* = 0)
     : Observable(other.impl.map([](const any& u) { return toAny(static_cast<T>(u.get<U>())); }))
     {}
 
@@ -623,12 +623,12 @@ private:
 
     // Calls the any() constructor, but for Observable<T> it stores the ObservableImpl
     template<typename U>
-    static any toAny(const U& u, typename std::enable_if<!IsObservable<U>::value>::type* = 0)
+    static any toAny(const U& u, enable_if_t<!IsObservable<U>::value>* = 0)
     {
         return any(u);
     }
     template<typename U>
-    static any toAny(const U& u, typename std::enable_if<IsObservable<U>::value>::type* = 0)
+    static any toAny(const U& u, enable_if_t<IsObservable<U>::value>* = 0)
     {
         return any(u.impl);
     }

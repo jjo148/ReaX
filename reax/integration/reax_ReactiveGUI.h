@@ -2,19 +2,19 @@
 
 namespace detail {
 template<typename T>
-using IsSimpleComponent = typename std::enable_if<std::is_base_of<juce::Component, T>::value && !std::is_base_of<juce::ImageComponent, T>::value && !std::is_base_of<juce::Button, T>::value && !std::is_base_of<juce::Label, T>::value && !std::is_base_of<juce::Slider, T>::value>::type;
+using IsSimpleComponent = enable_if_t<std::is_base_of<juce::Component, T>::value && !std::is_base_of<juce::ImageComponent, T>::value && !std::is_base_of<juce::Button, T>::value && !std::is_base_of<juce::Label, T>::value && !std::is_base_of<juce::Slider, T>::value>;
 
 template<typename T>
-using IsImageComponent = typename std::enable_if<std::is_base_of<juce::ImageComponent, T>::value>::type;
+using IsImageComponent = enable_if_t<std::is_base_of<juce::ImageComponent, T>::value>;
 
 template<typename T>
-using IsButton = typename std::enable_if<std::is_base_of<juce::Button, T>::value>::type;
+using IsButton = enable_if_t<std::is_base_of<juce::Button, T>::value>;
 
 template<typename T>
-using IsLabel = typename std::enable_if<std::is_base_of<juce::Label, T>::value>::type;
+using IsLabel = enable_if_t<std::is_base_of<juce::Label, T>::value>;
 
 template<typename T>
-using IsSlider = typename std::enable_if<std::is_base_of<juce::Slider, T>::value>::type;
+using IsSlider = enable_if_t<std::is_base_of<juce::Slider, T>::value>;
 }
 
 /**
