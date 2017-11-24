@@ -267,7 +267,7 @@ ObservableImpl ObservableImpl::combineLatest(std::initializer_list<ObservableImp
     REAX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_FUNCTION(combineLatest, others, function)
 }
 
-ObservableImpl ObservableImpl::concat(const Array<ObservableImpl>& others) const
+ObservableImpl ObservableImpl::concat(std::initializer_list<ObservableImpl> others) const
 {
     REAX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION(concat, others);
 }
@@ -305,7 +305,7 @@ ObservableImpl ObservableImpl::map(const std::function<any(const any&)>& functio
     return wrap(unwrap(wrapped).map(function));
 }
 
-ObservableImpl ObservableImpl::merge(const juce::Array<ObservableImpl>& others) const {
+ObservableImpl ObservableImpl::merge(std::initializer_list<ObservableImpl> others) const {
     REAX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION(merge, others)
 }
 

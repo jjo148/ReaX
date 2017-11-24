@@ -34,14 +34,14 @@ struct ObservableImpl
 
     // Operators
     ObservableImpl combineLatest(std::initializer_list<ObservableImpl> others, const any& function) const;
-    ObservableImpl concat(const juce::Array<ObservableImpl>& others) const;
+    ObservableImpl concat(std::initializer_list<ObservableImpl> others) const;
     ObservableImpl debounce(const juce::RelativeTime& interval) const;
     ObservableImpl distinctUntilChanged(const std::function<bool(const any&, const any&)>& equals) const;
     ObservableImpl elementAt(int index) const;
     ObservableImpl filter(const std::function<bool(const any&)>& predicate) const;
     ObservableImpl flatMap(const std::function<ObservableImpl(const any&)>& function) const;
     ObservableImpl map(const std::function<any(const any&)>& function) const;
-    ObservableImpl merge(const juce::Array<ObservableImpl>& others) const;
+    ObservableImpl merge(std::initializer_list<ObservableImpl> others) const;
     ObservableImpl reduce(const any& startValue, const std::function<any(const any&, const any&)>& f) const;
     ObservableImpl sample(const juce::RelativeTime& interval) const;
     ObservableImpl scan(const any& startValue, const std::function<any(const any&, const any&)>& f) const;

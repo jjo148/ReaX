@@ -15,7 +15,7 @@ class Observable
 {
     typedef detail::ObservableImpl Impl;
     typedef detail::any any;
-
+    
 public:
 #pragma mark - Helpers
     /// The type of values emitted by this Observable.
@@ -271,20 +271,14 @@ public:
      
      It only subscribes to the first in the `others` list when this Observable has completed. And only subscribes to the second when the first has completed, and so on.
      */
-    Observable<T> concat(std::initializer_list<Observable<T>> others) const
+    template<typename... Ts>
+    Observable<T> concat(const Observable<Ts>&... others) const
     {
-        // Nothing to do if others is empty
-        if (others.size() == 0)
-            return *this;
+        static_assert(sizeof...(others) > 0, "Must pass at least one other Observable to concat.");
+        static_assert(sizeof...(others) <= Impl::MaximumArity, "Too many Observables passed to concat.");
+        static_assert(conjunction<std::is_same<T, Ts>...>::value, "All Observables must have the same type.");
 
-        // Too many Observables passed to concat:
-        jassert(others.size() <= Impl::MaximumArity);
-
-        juce::Array<Impl> otherImpls;
-        for (auto& other : others)
-            otherImpls.add(other.impl);
-
-        return impl.concat(otherImpls);
+        return impl.concat({ others.impl... });
     }
 
     /**
@@ -310,10 +304,10 @@ public:
      
      If, for some reason, the custom type T doesn't have operator==, you can pass a custom equality function.
      */
-    Observable<T> distinctUntilChanged(const std::function<bool(const T&, const T&)>& equals = std::equal_to<T>()) const
+    Observable<T> distinctUntilChanged() const
     {
-        return impl.distinctUntilChanged([equals](const any& lhs, const any& rhs) {
-            return equals(lhs.get<T>(), rhs.get<T>());
+        return impl.distinctUntilChanged([](const any& lhs, const any& rhs) {
+            return (lhs.get<T>() == rhs.get<T>());
         });
     }
 
@@ -374,20 +368,14 @@ public:
      
      An error in one of the source Observables notifies the result Observable's `onError` immediately.
      */
-    Observable<T> merge(std::initializer_list<Observable<T>> others) const
+    template<typename... Ts>
+    Observable<T> merge(const Observable<Ts>&... others) const
     {
-        // Nothing to do if others is empty
-        if (others.size() == 0)
-            return *this;
-
-        // Too many Observables:
-        jassert(others.size() <= Impl::MaximumArity);
-
-        juce::Array<Impl> otherImpls;
-        for (auto& other : others)
-            otherImpls.add(other.impl);
-
-        return impl.merge(otherImpls);
+        static_assert(sizeof...(others) > 0, "Must pass at least one other Observable to merge.");
+        static_assert(sizeof...(others) <= Impl::MaximumArity, "Too many Observables passed to concat.");
+        static_assert(conjunction<std::is_same<T, Ts>...>::value, "All Observables must have the same type.");
+        
+        return impl.merge({others.impl...});
     }
 
     /**

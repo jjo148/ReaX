@@ -235,7 +235,7 @@ TEST_CASE("Observable::fromValue",
 
     ReaX_CheckValues(values, "Initial Value");
 
-    IT("emits if a copy of the Value sets a new value")
+    IT("emits when a copy of the Value sets a new value")
     {
         Value copy(value);
         copy.setValue("Set by copy");

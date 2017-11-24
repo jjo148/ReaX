@@ -100,7 +100,7 @@ TEST_CASE("Observable::concat",
     {
         auto observable = Observable<var>::from({ "Hello", "World" });
         auto another = Observable<var>::from({ 1.5, 2.32, 5.6 });
-        ReaX_CollectValues(observable.concat({another}), values);
+        ReaX_CollectValues(observable.concat(another), values);
 
         ReaX_RequireValues(values, var("Hello"), var("World"), var(1.5), var(2.32), var(5.6));
     }
@@ -313,7 +313,7 @@ TEST_CASE("Observable::merge",
         for (int i = 0; i < 8; ++i)
             os.add(Observable<int>::range(-i, 1));
         
-        auto merged = os[0].merge({os[1], os[2], os[3], os[4], os[5], os[6], os[7]});
+        auto merged = os[0].merge(os[1], os[2], os[3], os[4], os[5], os[6], os[7]);
         ReaX_CollectValues(merged, values);
         
         CHECK(values.size() == 44);

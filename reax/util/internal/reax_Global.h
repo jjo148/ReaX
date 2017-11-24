@@ -13,4 +13,21 @@ using enable_if_t = typename std::enable_if<B, T>::type;
 
 template<class T>
 using decay_t = typename std::decay<T>::type;
+
+template<bool B, class T, class F>
+using conditional_t = typename std::conditional<B, T, F>::type;
+
+template<class...>
+struct conjunction : std::true_type
+{
+};
+template<class B1>
+struct conjunction<B1> : B1
+{
+};
+template<class B1, class... Bn>
+struct conjunction<B1, Bn...>
+: conditional_t<bool(B1::value), conjunction<Bn...>, B1>
+{
+};
 }
