@@ -377,6 +377,14 @@ public:
         
         return impl.merge({others.impl...});
     }
+    
+    Observable<std::pair<T, T>> pairwise() const
+    {
+        return Observable<std::tuple<any, any>>(impl.pairwise()).map([](const std::tuple<any, any>& tuple) {
+            return std::make_pair(std::get<0>(tuple).get<T>(),
+                                  std::get<1>(tuple).get<T>());
+        });
+    }
 
     /**
      Begins with a `startValue`, and then applies `f` to all values emitted by this Observable, and returns the aggregate result as a single-element Observable sequence.

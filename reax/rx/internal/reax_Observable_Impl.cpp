@@ -309,6 +309,20 @@ ObservableImpl ObservableImpl::merge(std::initializer_list<ObservableImpl> other
     REAX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION(merge, others)
 }
 
+ObservableImpl ObservableImpl::pairwise() const
+{
+    const rxcpp::observable<any> unwrapped = unwrap(wrapped);
+    const rxcpp::observable<std::tuple<any, any>> tupled = unwrapped.pairwise();
+    const rxcpp::observable<any> wrappedTuple = tupled.map([](const std::tuple<any, any>& tuple) {
+        return any(tuple);
+    });
+    return wrap(wrappedTuple);
+    
+//    return wrap(unwrap(wrapped).pairwise().map([](const std::tuple<any, any>& tuple) {
+//        return any(tuple);
+//    }));
+}
+
 ObservableImpl ObservableImpl::reduce(const any& startValue, const std::function<any(const any&, const any&)>& f) const
 {
     return wrap(unwrap(wrapped).reduce(startValue, f));

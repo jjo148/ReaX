@@ -42,6 +42,7 @@ struct ObservableImpl
     ObservableImpl flatMap(const std::function<ObservableImpl(const any&)>& function) const;
     ObservableImpl map(const std::function<any(const any&)>& function) const;
     ObservableImpl merge(std::initializer_list<ObservableImpl> others) const;
+    ObservableImpl pairwise() const;
     ObservableImpl reduce(const any& startValue, const std::function<any(const any&, const any&)>& f) const;
     ObservableImpl sample(const juce::RelativeTime& interval) const;
     ObservableImpl scan(const any& startValue, const std::function<any(const any&, const any&)>& f) const;
