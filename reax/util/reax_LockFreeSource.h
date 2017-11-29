@@ -29,7 +29,7 @@ enum class CongestionPolicy {
  
  The value type must be copy-constructible or (preferably) move-constructible.
  
- Call asObservable() to get the Observable, subscribe to it, etc. Then call LockFreeSource::onNext on the realtime thread to emit values.
+ You can call LockFreeSource::onNext on the realtime thread to emit values. The Observable side will emit the values on the JUCE message thread.
  */
 template<typename T>
 class LockFreeSource : private detail::LockFreeSourceBase<T>, private juce::Timer, public Observable<T>

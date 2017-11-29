@@ -54,7 +54,7 @@ TEST_CASE("LockFreeSource",
     {
         // Create source
         CopyAndMoveConstructible::Counters unused;
-        LockFreeSource<CopyAndMoveConstructible> source(10, CopyAndMoveConstructible(&unused));
+        LockFreeSource<CopyAndMoveConstructible> source(10, 10, CopyAndMoveConstructible(&unused));
         
         // Create counting object
         CopyAndMoveConstructible::Counters counters;
@@ -73,10 +73,11 @@ TEST_CASE("LockFreeSource",
         IT("uses the move overload for an rvalue")
         {
             source.onNext(std::move(value), CongestionPolicy::Allocate);
+            source.onNext(CopyAndMoveConstructible(&counters), CongestionPolicy::Allocate);
             
             REQUIRE(counters.numCopyConstructions == 0);
             REQUIRE(counters.numCopyAssignments == 0);
-            REQUIRE(counters.numMoveConstructions == 1);
+            REQUIRE(counters.numMoveConstructions == 2);
             REQUIRE(counters.numMoveAssignments == 0);
         }
     }

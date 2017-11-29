@@ -322,6 +322,20 @@ TEST_CASE("Observable::merge",
 }
 
 
+TEST_CASE("Observable::pairwise",
+          "[Observable][Observable::pairwise]")
+{
+    Array<std::pair<int, int>> values;
+    
+    IT("combines the elements from an Observable pairwise")
+    {
+        ReaX_CollectValues(Observable<int>::range(0, 8).pairwise(), values);
+        
+        ReaX_RequireValues(values, std::make_pair(0, 1), std::make_pair(1, 2), std::make_pair(2, 3), std::make_pair(3, 4), std::make_pair(4, 5), std::make_pair(5, 6), std::make_pair(6, 7), std::make_pair(7, 8));
+    }
+}
+
+
 TEST_CASE("Observable::reduce",
           "[Observable][Observable::reduce]")
 {
