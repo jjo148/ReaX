@@ -296,17 +296,16 @@ public:
     /**
      Returns an Observable which emits the same values as this Observable, but suppresses consecutive duplicate values.
      
+     The value type must be equality-comparable.
+     
      For example:
      
          Observable<int>::from({1, 2, 2, 2, 3, 4, 4, 6}).distinctUntilChanged(); // Emits: 1, 2, 3, 4, 6
-     
-     If T is comparable using ==, this is used to determine whether two values are equal. Otherwise, the values are compared by their addresses.
-     
-     If, for some reason, the custom type T doesn't have operator==, you can pass a custom equality function.
      */
     Observable<T> distinctUntilChanged() const
     {
         return impl.distinctUntilChanged([](const any& lhs, const any& rhs) {
+            // T must be equality-comparable
             return (lhs.get<T>() == rhs.get<T>());
         });
     }

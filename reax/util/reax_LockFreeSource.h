@@ -68,7 +68,7 @@ public:
 
 private:
     moodycamel::ConcurrentQueue<T> queue;
-    T dummy;
+    const T dummy;
 
     template<typename U>
     void _onNext(U&& value, CongestionPolicy congestionPolicy)
