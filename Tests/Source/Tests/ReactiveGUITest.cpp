@@ -47,7 +47,7 @@ TEST_CASE("Reactive<Component>",
             Rectangle<int>(13, 1411, 25, 2),
             Rectangle<int>(13, 1411, 25, 1)
         };
-        
+
         IT("initially has the same value as the getter")
         {
             REQUIRE(component.getBounds() == component.rx.bounds.getValue());
@@ -59,10 +59,10 @@ TEST_CASE("Reactive<Component>",
                 component.setBounds(rect);
 
             ReaX_RequireValues(values,
-                                   Rectangle<int>(0, 0, 0, 0),
-                                   Rectangle<int>(3, -14, 5, 1031),
-                                   Rectangle<int>(13, 1411, 25, 2),
-                                   Rectangle<int>(13, 1411, 25, 1));
+                               Rectangle<int>(0, 0, 0, 0),
+                               Rectangle<int>(3, -14, 5, 1031),
+                               Rectangle<int>(13, 1411, 25, 2),
+                               Rectangle<int>(13, 1411, 25, 1));
         }
 
         IT("changes when pushing values")
@@ -151,17 +151,17 @@ TEST_CASE("Reactive<Button>",
             button.setState(Button::ButtonState::buttonDown);
 
             ReaX_CheckValues(values,
-                                 Button::ButtonState::buttonNormal,
-                                 Button::ButtonState::buttonDown);
+                             Button::ButtonState::buttonNormal,
+                             Button::ButtonState::buttonDown);
 
             button.setState(Button::ButtonState::buttonNormal);
             button.setState(Button::ButtonState::buttonOver);
 
             ReaX_RequireValues(values,
-                                   Button::ButtonState::buttonNormal,
-                                   Button::ButtonState::buttonDown,
-                                   Button::ButtonState::buttonNormal,
-                                   Button::ButtonState::buttonOver);
+                               Button::ButtonState::buttonNormal,
+                               Button::ButtonState::buttonDown,
+                               Button::ButtonState::buttonNormal,
+                               Button::ButtonState::buttonOver);
         }
     }
 
@@ -280,14 +280,14 @@ TEST_CASE("Reactive<Button> with custom TextButton subclass",
     {
         button.hoverAcrossButton();
         ReaX_CheckValues(values,
-                             Button::ButtonState::buttonNormal,
-                             Button::ButtonState::buttonOver);
+                         Button::ButtonState::buttonNormal,
+                         Button::ButtonState::buttonOver);
         ReaX_RunDispatchLoopUntil(values.size() == 3);
 
         ReaX_RequireValues(values,
-                               Button::ButtonState::buttonNormal,
-                               Button::ButtonState::buttonOver,
-                               Button::ButtonState::buttonNormal);
+                           Button::ButtonState::buttonNormal,
+                           Button::ButtonState::buttonOver,
+                           Button::ButtonState::buttonNormal);
     }
 }
 
@@ -410,6 +410,22 @@ TEST_CASE("Reactive<Label>",
                 CHECK(editors.getLast() == nullptr);
 
                 REQUIRE(label.getCurrentTextEditor() == nullptr);
+            }
+
+            IT("has updated the text on the subject when closing the editor")
+            {
+                const auto combine = [](bool, String text) { return text; };
+                const auto textWhenClosing = label.rx.showEditor.withLatestFrom(combine, label.rx.text);
+                Array<String> texts;
+                ReaX_CollectValues(textWhenClosing, texts);
+                ReaX_CheckValues(texts, "");
+                
+                // Enter text in editor
+                label.showEditor();
+                label.getCurrentTextEditor()->setText("Entered into text editor");
+                label.hideEditor(false);
+                
+                ReaX_RequireValues(texts, "", "Entered into text editor");
             }
         }
     }

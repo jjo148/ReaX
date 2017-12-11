@@ -190,8 +190,11 @@ void LabelExtension::editorShown(Label* parent, TextEditor&)
     _textEditor.onNext(parent->getCurrentTextEditor());
 }
 
-void LabelExtension::editorHidden(Label*, TextEditor&)
+void LabelExtension::editorHidden(Label* parent, TextEditor& editor)
 {
+    // The label has changed its text internally, but hasn't yet notified its listeners of its new text. When we use something like showEditor.withLatestFrom(text), we want it to emit the updated text. So we set the text early here.
+    parent->setText(editor.getText(), sendNotificationSync);
+    
     if (showEditor.getValue())
         showEditor.onNext(false);
 
