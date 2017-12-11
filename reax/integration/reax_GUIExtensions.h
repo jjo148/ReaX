@@ -190,7 +190,7 @@ private:
  
  If you use this directly (instead of `Reactive<Slider>`), you **must** ensure that the `Slider` has a longer lifetime than this `SliderExtension`!
  */
-class SliderExtension : public ComponentExtension, private juce::Slider::Listener
+class SliderExtension : public ComponentExtension, private juce::Slider::Listener, private juce::Value::Listener
 {
 private:
     PublishSubject<double> _minimum;
@@ -257,9 +257,12 @@ public:
 private:
     DisposeBag disposeBag;
 
+    void updateFromParent(juce::Slider& parent);
+    juce::Slider& getParent();
     void sliderValueChanged(juce::Slider*) override;
     void sliderDragStarted(juce::Slider*) override;
     void sliderDragEnded(juce::Slider*) override;
+    void valueChanged(juce::Value&) override;
 
     static bool hasMultipleThumbs(const juce::Slider& parent);
     

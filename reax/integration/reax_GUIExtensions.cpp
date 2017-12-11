@@ -227,6 +227,9 @@ SliderExtension::SliderExtension(juce::Slider& parent)
   })
 {
     parent.addListener(this);
+    parent.getValueObject().addListener(this);
+    parent.getMinValueObject().addListener(this);
+    parent.getMaxValueObject().addListener(this);
 
     value.skip(1).subscribe([&parent](double value) {
                      parent.setValue(value, sendNotificationSync);
@@ -281,20 +284,33 @@ SliderExtension::SliderExtension(juce::Slider& parent)
 
 SliderExtension::~SliderExtension()
 {
+    getParent().getMaxValueObject().removeListener(this);
+    getParent().getMinValueObject().removeListener(this);
+    getParent().getValueObject().removeListener(this);
+    getParent().removeListener(this);
+}
+
+void SliderExtension::updateFromParent(Slider& parent)
+{
+    if (parent.getValue() != value.getValue())
+        value.onNext(parent.getValue());
+    
+    if (hasMultipleThumbs(parent) && parent.getMinValue() != minValue.getValue())
+        minValue.onNext(parent.getMinValue());
+    
+    if (hasMultipleThumbs(parent) && parent.getMaxValue() != maxValue.getValue())
+        maxValue.onNext(parent.getMaxValue());
+}
+
+Slider& SliderExtension::getParent()
+{
     // The constructor has initialized ComponentExtension() with a Slider& parent.
-    static_cast<Slider&>(parent).removeListener(this);
+    return static_cast<Slider&>(parent);
 }
 
 void SliderExtension::sliderValueChanged(Slider* slider)
 {
-    if (slider->getValue() != value.getValue())
-        value.onNext(slider->getValue());
-
-    if (hasMultipleThumbs(*slider) && slider->getMinValue() != minValue.getValue())
-        minValue.onNext(slider->getMinValue());
-
-    if (hasMultipleThumbs(*slider) && slider->getMaxValue() != maxValue.getValue())
-        maxValue.onNext(slider->getMaxValue());
+    updateFromParent(*slider);
 }
 
 void SliderExtension::sliderDragStarted(Slider*)
@@ -307,7 +323,12 @@ void SliderExtension::sliderDragEnded(Slider*)
     _dragging.onNext(false);
 }
 
-bool SliderExtension::hasMultipleThumbs(const juce::Slider& parent)
+void SliderExtension::valueChanged(Value&)
+{
+    updateFromParent(getParent());
+}
+
+bool SliderExtension::hasMultipleThumbs(const Slider& parent)
 {
     switch (parent.getSliderStyle()) {
         case Slider::TwoValueHorizontal:

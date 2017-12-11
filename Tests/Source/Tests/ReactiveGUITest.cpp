@@ -638,6 +638,65 @@ TEST_CASE("Reactive<Slider>",
 
             ReaX_RequireValues(values, 10.0, 3.0, 7.45);
         }
+        
+        CONTEXT("Using referTo with the Value object")
+        {
+            IT("retrieves value updates when (and after) calling referTo()")
+            {
+                Value other(7.312);
+                
+                slider.getValueObject().referTo(other);
+                ReaX_CheckValues(values, 10.0, 7.312);
+                
+                other = 3.471;
+                ReaX_RunDispatchLoopUntil(values.size() == 3);
+                ReaX_RequireValues(values, 10.0, 7.312, 3.471);
+            }
+            
+            IT("retrieves minValue updates when (and after) calling referTo()")
+            {
+                slider.setValue(5);
+                slider.setSliderStyle(Slider::ThreeValueHorizontal);
+                slider.setMinValue(1.5);
+                slider.setMaxValue(9.8);
+                
+                Array<double> minValues;
+                ReaX_CollectValues(slider.rx.minValue, minValues);
+                ReaX_RunDispatchLoopUntil(minValues.size() == 2);
+                
+                Value other(3.773);
+                
+                slider.getMinValueObject().referTo(other);
+                ReaX_CheckValues(minValues, 0.0, 1.5, 3.773);
+                
+                other = 7.318;
+                ReaX_RunDispatchLoopUntil(minValues.size() == 4);
+                ReaX_RequireValues(minValues, 0.0, 1.5, 3.773, 7.318);
+            }
+            
+            IT("retrieves maxValue updates when (and after) calling referTo()")
+            {
+                slider.setValue(5);
+                slider.setSliderStyle(Slider::ThreeValueHorizontal);
+                slider.setMinValue(1.5);
+                slider.setMaxValue(9.8);
+                
+                Array<double> maxValues;
+                ReaX_CollectValues(slider.rx.maxValue, maxValues);
+                ReaX_RunDispatchLoopUntil(maxValues.size() == 2);
+                
+                Value other(8.67);
+                
+                slider.getMaxValueObject().referTo(other);
+                ReaX_CheckValues(maxValues, 0.0, 9.8, 8.67);
+                
+                other = 9.33;
+                ReaX_RunDispatchLoopUntil(maxValues.size() == 4);
+                ReaX_RequireValues(maxValues, 0.0, 9.8, 8.67, 9.33);
+            }
+        }
+        
+        
     }
 
     CONTEXT("dragging")
