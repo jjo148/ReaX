@@ -194,7 +194,8 @@ void LabelExtension::editorHidden(Label* parent, TextEditor& editor)
 {
     // The label has changed its text internally, but hasn't yet notified its listeners of its new text. When we use something like showEditor.withLatestFrom(text), we want it to emit the updated text. So we set the text early here.
     parent->setText(editor.getText(), sendNotificationSync);
-    
+    labelTextChanged(parent);
+
     if (showEditor.getValue())
         showEditor.onNext(false);
 
@@ -219,12 +220,9 @@ SliderExtension::SliderExtension(juce::Slider& parent)
   showTextBox(_showTextBox),
   textBoxIsEditable(_textBoxIsEditable),
   discardChangesWhenHidingTextBox(_discardChangesWhenHidingTextBox),
-  getValueFromText([&parent](const juce::String& text) {
-      return parent.juce::Slider::getValueFromText(text);
-  }),
-  getTextFromValue([&parent](double value) {
-      return parent.juce::Slider::getTextFromValue(value);
-  })
+  getValueFromText(nullptr),
+  getTextFromValue(nullptr),
+  snapValue(nullptr)
 {
     parent.addListener(this);
     parent.getValueObject().addListener(this);
@@ -278,8 +276,14 @@ SliderExtension::SliderExtension(juce::Slider& parent)
     _textBoxIsEditable.subscribe(std::bind(&Slider::setTextBoxIsEditable, &parent, _1)).disposedBy(disposeBag);
 
     getTextFromValue.subscribe([&parent](const std::function<juce::String(double)>&) {
-        parent.updateText();
-    }).disposedBy(disposeBag);
+                        parent.updateText();
+                    })
+        .disposedBy(disposeBag);
+
+    snapValue.subscribe([&parent](const std::function<double(double, Slider::DragMode)>&) {
+        parent.setValue(parent.snapValue(parent.getValue(), Slider::notDragging));
+             })
+        .disposedBy(disposeBag);
 }
 
 SliderExtension::~SliderExtension()
@@ -294,10 +298,10 @@ void SliderExtension::updateFromParent(Slider& parent)
 {
     if (parent.getValue() != value.getValue())
         value.onNext(parent.getValue());
-    
+
     if (hasMultipleThumbs(parent) && parent.getMinValue() != minValue.getValue())
         minValue.onNext(parent.getMinValue());
-    
+
     if (hasMultipleThumbs(parent) && parent.getMaxValue() != maxValue.getValue())
         maxValue.onNext(parent.getMaxValue());
 }

@@ -248,11 +248,14 @@ public:
     /// Controls whether changes are discarded when hiding the text-box. The default is `false`.
     const Observer<bool> discardChangesWhenHidingTextBox;
 
-    /// Controls how a String that has been entered into the text-box is converted to a `Slider` value.​ If you don't use this, the `Slider` will use its `getValueFromText` member function.
+    /// Controls how a String that has been entered into the text-box is converted to a `Slider` value.​ If you don't use this, the `Slider` will use its `getValueFromText` member function. **This only works when used with Reactive<Slider>!**
     const BehaviorSubject<std::function<double(const juce::String&)>> getValueFromText;
     
-    /// Controls how a `Slider` value is displayed as a `String`.​ If you don't use this, the slider will use its `getTextFromValue` member function.
+    /// Controls how a `Slider` value is displayed as a `String`.​ If you don't use this, the slider will use its `getTextFromValue` member function. **This only works when used with Reactive<Slider>!**
     const BehaviorSubject<std::function<juce::String(double)>> getTextFromValue;
+    
+    /// Controls how a `Slider` value is snapped to the nearest legal value. **This only works when used with Reactive<Slider>!**
+    const BehaviorSubject<std::function<double(double, juce::Slider::DragMode)>> snapValue;
 
 private:
     DisposeBag disposeBag;

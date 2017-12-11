@@ -89,12 +89,29 @@ public:
     ///@cond INTERNAL
     double getValueFromText(const juce::String& text) override
     {
-        return rx.getValueFromText.getValue()(text);
+        const auto& getValueFromText = rx.getValueFromText.getValue();
+        if (getValueFromText)
+            return getValueFromText(text);
+        else
+            return SliderType::getValueFromText(text);
     }
 
     juce::String getTextFromValue(double value) override
     {
-        return rx.getTextFromValue.getValue()(value);
+        const auto& getTextFromValue = rx.getTextFromValue.getValue();
+        if (getTextFromValue)
+            return getTextFromValue(value);
+        else
+            return SliderType::getTextFromValue(value);
+    }
+
+    double snapValue(double attemptedValue, juce::Slider::DragMode dragMode) override
+    {
+        const auto& snapValue = rx.snapValue.getValue();
+        if (snapValue)
+            return snapValue(attemptedValue, dragMode);
+        else
+            return SliderType::snapValue(attemptedValue, dragMode);
     }
     ///@endcond
 };
