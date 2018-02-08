@@ -53,10 +53,10 @@ public:
     {
         // The queue capacity must be > 0.
         jassert(queueCapacity > 0);
-        
+
         startTimer(timerIntervalInMilliseconds);
     }
-    
+
     ///@{
     /**
      Adds a value that will be emitted from the Observable.
@@ -76,6 +76,8 @@ public:
 
 private:
     moodycamel::ConcurrentQueue<T> queue;
+    moodycamel::ProducerToken producerToken{ queue };
+    moodycamel::ConsumerToken consumerToken{ queue };
     std::atomic_bool needsUpdate;
     const T dummy;
 
@@ -85,13 +87,13 @@ private:
         switch (congestionPolicy) {
             // If allocation is allowed, just enqueue the value, allowing the queue to allocate memory if needed.
             case CongestionPolicy::Allocate:
-                queue.enqueue(std::forward<U>(value));
+                queue.enqueue(producerToken, std::forward<U>(value));
                 needsUpdate.store(true);
                 break;
 
             // If the newest value(s) may be dropped, just try to enqueue (without allocating), and do nothing if it fails.
             case CongestionPolicy::DropNewest:
-                if (queue.try_enqueue(std::forward<U>(value)))
+                if (queue.try_enqueue(producerToken, std::forward<U>(value)))
                     needsUpdate.store(true);
                 break;
 
@@ -99,16 +101,16 @@ private:
             case CongestionPolicy::DropOldest: {
                 // Try to enqueue the value. If it succeeds, there's no need to copy the dummy.
                 // Cannot use std::forward here: Value must not be moved because try_enqueue may be called again (multiple times) below.
-                if (queue.try_enqueue(value)) {
+                if (queue.try_enqueue(producerToken, value)) {
                     needsUpdate.store(true);
                     break;
                 }
-                
+
                 // Queue is full. Drop values from the front until there's space again:
                 T unused(dummy);
-                while (!queue.try_enqueue(value))
-                    queue.try_dequeue(unused);
-                
+                while (!queue.try_enqueue(producerToken, value))
+                    queue.try_dequeue_from_producer(producerToken, unused);
+
                 needsUpdate.store(true);
                 break;
             }
@@ -119,10 +121,10 @@ private:
     {
         if (!needsUpdate.exchange(false))
             return;
-        
+
         // Emits all values from the queue
         T value(dummy);
-        while (queue.try_dequeue(value))
+        while (queue.try_dequeue(consumerToken, value))
             detail::LockFreeSourceBase<T>::subject.onNext(value);
     }
 
