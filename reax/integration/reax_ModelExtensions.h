@@ -73,7 +73,7 @@ public:
      
      Parameter values can be changed from the audio thread; in this case the subject's `Observable` side emits asynchronously.
      */
-    BehaviorSubject<juce::var> parameterValue(const juce::String& parameterID) const;
+    BehaviorSubject<juce::var> parameterValue(const juce::StringRef parameterID) const;
     
 private:
     struct Impl;
