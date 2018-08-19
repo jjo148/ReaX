@@ -38,7 +38,7 @@ public:
 
     /// Contravariant constructor: If T is convertible to U, an Observer<U> is convertible to an Observer<T>. 
     template<typename U>
-    Observer(const Observer<U>& other, typename std::enable_if<std::is_convertible<T, U>::value>::type* = 0)
+    Observer(const Observer<U>& other, typename std::enable_if<std::is_convertible<T, U>::value>::type* = nullptr)
     : Observer(other.impl, [](const detail::any& value){ return detail::any(static_cast<U>(value.get<T>())); })
     {}
 

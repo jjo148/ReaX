@@ -1,41 +1,50 @@
 Reactive<Value>::Reactive()
-: rx(value) {}
+: rx(Value()) {}
 
 Reactive<Value>::Reactive(const Value& other)
-: value(other),
-  rx(value) {}
+: rx(other) {}
 
 Reactive<Value>::Reactive(const var& initialValue)
-: value(initialValue),
-  rx(value) {}
+: rx(Value(initialValue)) {}
 
 Reactive<Value>::operator juce::Value() const
 {
-    return value;
+    return rx.getValue();
 }
 
 var Reactive<Value>::getValue() const
 {
-    return value.getValue();
+    return rx.getValue().getValue();
 }
 
 Reactive<Value>::operator var() const
 {
-    return value.operator var();
+    return rx.getValue().operator var();
 }
 
 void Reactive<Value>::setValue(const var& newValue)
 {
-    value.setValue(newValue);
+    rx.getValue().setValue(newValue);
 }
 
 Reactive<Value>& Reactive<Value>::operator=(const var& newValue)
 {
-    value = newValue; // Causes Observable to emit
+    rx.getValue() = newValue; // Causes Observable to emit
     return *this;
 }
 
-Reactive<AudioProcessorValueTreeState>::Reactive(AudioProcessor& processorToConnectTo, UndoManager* undoManagerToUse)
+void Reactive<Value>::referTo(const Value& valueToReferTo)
+{
+    rx.getValue().referTo(valueToReferTo);
+}
+
+Reactive<Value>& Reactive<Value>::operator=(const Value& newValue)
+{
+    referTo(newValue);
+    return *this;
+}
+
+Reactive<juce::AudioProcessorValueTreeState>::Reactive(AudioProcessor& processorToConnectTo, UndoManager* undoManagerToUse)
 : AudioProcessorValueTreeState(processorToConnectTo, undoManagerToUse),
   rx(*this)
 {}

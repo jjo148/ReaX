@@ -18,7 +18,7 @@ public:
         value.addListener(this);
     }
 
-    ~ValueObservable()
+    ~ValueObservable() override
     {
         value.removeListener(this);
         subject.get_subscriber().on_completed();
@@ -263,7 +263,8 @@ Subscription ObservableImpl::subscribe(const ObserverImpl& observer) const
             return any(0); \
     }
 
-ObservableImpl ObservableImpl::combineLatest(std::initializer_list<ObservableImpl> others, const any& function) const {
+ObservableImpl ObservableImpl::combineLatest(std::initializer_list<ObservableImpl> others, const any& function) const 
+{
     REAX_OBSERVABLE_IMPL_UNROLLED_LIST_IMPLEMENTATION_WITH_FUNCTION(combineLatest, others, function)
 }
 

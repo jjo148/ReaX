@@ -13,8 +13,10 @@ ValueExtension::ValueExtension(const Value& inputValue)
         .disposedBy(disposeBag);
 }
 
-void ValueExtension::valueChanged(Value&)
+void ValueExtension::valueChanged(Value& changedValue)
 {
+    jassert(changedValue.refersToSameSourceAs(this->value));
+    
     // Only emit a new value if it has actually changed
     if (value.getValue() != subject.getValue())
         subject.onNext(value.getValue());
@@ -51,7 +53,7 @@ AudioProcessorValueTreeStateExtension::AudioProcessorValueTreeStateExtension(Aud
 
 AudioProcessorValueTreeStateExtension::~AudioProcessorValueTreeStateExtension() {}
 
-BehaviorSubject<var> AudioProcessorValueTreeStateExtension::parameterValue(const String& parameterID) const
+BehaviorSubject<var> AudioProcessorValueTreeStateExtension::parameterValue(StringRef parameterID) const
 {
     // Create a Reactive<Value> for the parameter, if not already done
     if (impl->parameterValues.find(parameterID) == impl->parameterValues.end())
