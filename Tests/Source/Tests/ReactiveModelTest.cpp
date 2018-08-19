@@ -13,6 +13,27 @@ TEST_CASE("Reactive<Value> conversion",
         value = "Some String";
         REQUIRE(value.getValue() == "Some String");
     }
+    
+    IT("supports referTo()")
+    {
+        Value other(18);
+        value.referTo(other);
+        CHECK(value.getValue() == var(18));
+        
+        other.setValue("Something else");
+        
+        REQUIRE(value.getValue() == "Something else");
+    }
+    
+    IT("supports copy assignment from juce::Value")
+    {
+        value.setValue(-3.41);
+        CHECK(value.getValue() == var(-3.41));
+        Value other("Hello!");
+        
+        value = other;
+        REQUIRE(value.getValue() == "Hello!");
+    }
 
     IT("can be converted to var")
     {
@@ -58,6 +79,24 @@ TEST_CASE("Reactive<Value> Observable",
         ReaX_RunDispatchLoop(15);
 
         ReaX_RequireValues(values, "Initial");
+    }
+    
+    IT("Emits values from different source after assigning a new juce::Value")
+    {
+        Value firstValueSourceValue;
+        firstValueSourceValue.referTo(*value);
+        value->setValue("Should not arrive because async");
+        ReaX_CheckValues(values, "Initial");
+        
+        Value other(198.3);
+        value->referTo(other);
+        ReaX_RunDispatchLoopUntil(values.size() == 2);
+        ReaX_CheckValues(values, var("Initial"), var(198.3));
+        
+        firstValueSourceValue.setValue("Should not arrive because different source");
+        other = -3718;
+        ReaX_RunDispatchLoopUntil(values.size() == 3);
+        ReaX_CheckValues(values, var("Initial"), var(198.3), var(-3718));
     }
 }
 

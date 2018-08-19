@@ -18,8 +18,6 @@
 template<>
 class Reactive<juce::Value>
 {
-    juce::Value value;
-
 public:
     /// Creates a new instance. Has the same behavior as the `juce::Value` equivalent.
     ///@{
@@ -41,13 +39,19 @@ public:
     void setValue(const juce::var& newValue);
 
     /// Sets a new value. This is the same as calling `setValue`.
-    Reactive& operator=(const juce::var& newValue);
+    Reactive<juce::Value>& operator=(const juce::var& newValue);
+    
+    /// Makes this object refer to the same ValueSource as another one.
+    void referTo(const juce::Value& valueToReferTo);
+    
+    /// Same as referTo(newValue).
+    Reactive<juce::Value>& operator=(const juce::Value& newValue);
 
     /// The reactive extension object.
-    const ValueExtension rx;
+    ValueExtension rx;
 
 private:
-    Reactive& operator=(const Reactive&) = delete;
+    Reactive<juce::Value>& operator=(const Reactive<juce::Value>&) = delete;
 };
 
 /**

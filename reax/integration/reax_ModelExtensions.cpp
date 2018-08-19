@@ -13,8 +13,10 @@ ValueExtension::ValueExtension(const Value& inputValue)
         .disposedBy(disposeBag);
 }
 
-void ValueExtension::valueChanged(Value&)
+void ValueExtension::valueChanged(Value& changedValue)
 {
+    jassert(changedValue.refersToSameSourceAs(this->value));
+    
     // Only emit a new value if it has actually changed
     if (value.getValue() != subject.getValue())
         subject.onNext(value.getValue());
