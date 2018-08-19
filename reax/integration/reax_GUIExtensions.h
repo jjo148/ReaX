@@ -18,7 +18,7 @@ public:
     /// Creates a new instance for a given `Component`.
     ComponentExtension(juce::Component& parent);
     
-    ~ComponentExtension();
+    ~ComponentExtension() override;
     
     /// Controls the bounds of the `Component`, and emits a value whenever they change (relative to the `Component`'s parent).
     const BehaviorSubject<juce::Rectangle<int>> bounds;
@@ -54,7 +54,7 @@ public:
     /// Creates a new instance for a given `Button`.
     ButtonExtension(juce::Button& parent);
     
-    ~ButtonExtension();
+    ~ButtonExtension() override;
 
     /// Emits a value whenever the `Button` is clicked.
     const Observable<Empty> clicked;
@@ -130,7 +130,7 @@ public:
     /// Creates a new instance for a given `Label`.
     LabelExtension(juce::Label& parent);
     
-    ~LabelExtension();
+    ~LabelExtension() override;
 
     /// Controls the `Label` text. Setting a new string notifies all `Label::Listener`s.
     const BehaviorSubject<juce::String> text;
@@ -208,7 +208,7 @@ public:
                     const Observer<std::function<double(const juce::String&)>>& getValueFromText,
                     const Observer<std::function<juce::String(double)>>& getTextFromValue);
     
-    ~SliderExtension();
+    ~SliderExtension() override;
 
     /// Controls the `Slider` value.
     const BehaviorSubject<double> value;

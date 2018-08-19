@@ -41,7 +41,7 @@ public:
     /// Creates a new instance for a given `AudioProcessor`.
     AudioProcessorExtension(juce::AudioProcessor& parent);
 
-    ~AudioProcessorExtension();
+    ~AudioProcessorExtension() override;
 
     /**
      Emits when something (apart from a parameter value) has changed, for example the latency.

@@ -42,13 +42,13 @@ public:
 
 
     template<typename T>
-    explicit any(T&& value, typename std::enable_if<is_enum<T>::value>::type* = 0)
+    explicit any(T&& value, typename std::enable_if<is_enum<T>::value>::type* = nullptr)
     : type(Type::Enum),
       enumValue(static_cast<juce::int64>(value))
     {}
 
     template<typename T>
-    explicit any(T&& value, typename std::enable_if<is_pointer<T>::value>::type* = 0)
+    explicit any(T&& value, typename std::enable_if<is_pointer<T>::value>::type* = nullptr)
     : type(Type::RawPointer),
       rawPointerValue(value)
     {}
@@ -59,7 +59,7 @@ public:
      If you use this constructor, make sure that the value you're passing in actually has the type that you try to `get<T>()` later on. One way to ensure this is to use `any(static_cast<T>(myT))`.
      */
     template<typename T>
-    explicit any(T&& value, typename std::enable_if<is_class<T>::value && !is_any<T>::value>::type* = 0)
+    explicit any(T&& value, typename std::enable_if<is_class<T>::value && !is_any<T>::value>::type* = nullptr)
     : type(Type::Object),
       objectValue(std::make_shared<EquatableTypedObject<typename std::decay<T>::type>>(std::forward<T>(value)))
     {}
@@ -80,7 +80,7 @@ public:
      Objects are returned by `const &`, so no copy is made.
      */
     template<typename T>
-    T get(typename std::enable_if<is_enum<T>::value>::type* = 0) const
+    T get(typename std::enable_if<is_enum<T>::value>::type* = nullptr) const
     {
         if (!is<T>())
             throw typeMismatchError<T>();
@@ -89,7 +89,7 @@ public:
     }
 
     template<typename T>
-    T get(typename std::enable_if<is_pointer<T>::value>::type* = 0) const
+    T get(typename std::enable_if<is_pointer<T>::value>::type* = nullptr) const
     {
         if (!is<T>())
             throw typeMismatchError<T>();
@@ -98,7 +98,7 @@ public:
     }
 
     template<typename T>
-    T get(typename std::enable_if<is_arithmetic<T>::value>::type* = 0) const
+    T get(typename std::enable_if<is_arithmetic<T>::value>::type* = nullptr) const
     {
         if (!is<T>())
             throw typeMismatchError<T>();
@@ -124,7 +124,7 @@ public:
     }
 
     template<typename T>
-    const T& get(typename std::enable_if<is_class<T>::value>::type* = 0) const
+    const T& get(typename std::enable_if<is_class<T>::value>::type* = nullptr) const
     {
         if (!is<T>())
             throw typeMismatchError<T>();
@@ -137,25 +137,25 @@ public:
      Checks whether the held value is a T. For class types, it returns true only if the wrapped type is exactly T, not a base class.
      */
     template<typename T>
-    bool is(typename std::enable_if<is_enum<T>::value>::type* = 0) const
+    bool is(typename std::enable_if<is_enum<T>::value>::type* = nullptr) const
     {
         return (type == Type::Enum);
     }
 
     template<typename T>
-    bool is(typename std::enable_if<is_pointer<T>::value>::type* = 0) const
+    bool is(typename std::enable_if<is_pointer<T>::value>::type* = nullptr) const
     {
         return (type == Type::RawPointer);
     }
 
     template<typename T>
-    bool is(typename std::enable_if<is_arithmetic<T>::value>::type* = 0) const
+    bool is(typename std::enable_if<is_arithmetic<T>::value>::type* = nullptr) const
     {
         return isArithmetic();
     }
 
     template<typename T>
-    bool is(typename std::enable_if<is_class<T>::value>::type* = 0) const
+    bool is(typename std::enable_if<is_class<T>::value>::type* = nullptr) const
     {
         return (getObjectPointer<T>() != nullptr);
     }

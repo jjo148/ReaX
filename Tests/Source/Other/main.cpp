@@ -46,5 +46,6 @@ public:
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wold-style-cast"
 #pragma clang diagnostic ignored "-Wmissing-prototypes"
+#pragma clang diagnostic ignored "-Wcast-qual"
 START_JUCE_APPLICATION(TestRunnerApplication)
 #pragma clang diagnostic pop

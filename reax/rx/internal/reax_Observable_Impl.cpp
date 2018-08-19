@@ -18,7 +18,7 @@ public:
         value.addListener(this);
     }
 
-    ~ValueObservable()
+    ~ValueObservable() override
     {
         value.removeListener(this);
         subject.get_subscriber().on_completed();
