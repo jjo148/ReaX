@@ -5,22 +5,22 @@
  
  Whenever the `Value` changes, the `BehaviorSubject` is changed, and vice versa.
  */
-class ValueExtension : private juce::Value::Listener
+class ValueExtension  : private juce::Value::Listener
 {
 public:
     /// Creates a new instance for a given `Value`. The subject will refers to the **`ValueSource`** of `inputValue`.
-    ValueExtension(const juce::Value& inputValue);
-    
+    ValueExtension (const juce::Value& inputValue);
+
     /// The subject that's connected to the `Value`'s `ValueSource`. This changes whenever the `Value` changes, and vice versa.
     const BehaviorSubject<juce::var> subject;
-    
+
 private:
     juce::Value value;
     DisposeBag disposeBag;
-    
-    void valueChanged(juce::Value&) override;
-    
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ValueExtension)
+
+    void valueChanged (juce::Value&) override;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ValueExtension)
 };
 
 /**
@@ -28,14 +28,15 @@ private:
  
  If you use this directly (instead of `Reactive<AudioProcessor>`), you **must** make sure that the `AudioProcessor` has a longer lifetime than this `AudioProcessorExtension`!
  */
-class AudioProcessorExtension : private juce::AudioProcessorListener
+class AudioProcessorExtension  : private juce::AudioProcessorListener
 {
     juce::AudioProcessor& parent;
     LockFreeSource<Empty> _processorChanged;
+
 public:
     /// Creates a new instance for a given `AudioProcessor`.
-    AudioProcessorExtension(juce::AudioProcessor& parent);
-    
+    AudioProcessorExtension (juce::AudioProcessor& parent);
+
     ~AudioProcessorExtension();
 
     /**
@@ -47,11 +48,11 @@ public:
 
 private:
     DisposeBag disposeBag;
-    
-    void audioProcessorParameterChanged(juce::AudioProcessor*, int, float) override {}
-    void audioProcessorChanged(juce::AudioProcessor*) override;
-    
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioProcessorExtension)
+
+    void audioProcessorParameterChanged (juce::AudioProcessor*, int, float) override {}
+    void audioProcessorChanged (juce::AudioProcessor*) override;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioProcessorExtension)
 };
 
 /**
@@ -59,13 +60,14 @@ private:
  
  If you use this directly (instead of `Reactive<AudioProcessorValueTreeState>`), you **must** make sure that the `AudioProcessorValueTreeState` has a longer lifetime than this `AudioProcessorValueTreeStateExtension`!
  */
-class AudioProcessorValueTreeStateExtension {
+class AudioProcessorValueTreeStateExtension
+{
 public:
     /// Creates a new instance for a given `AudioProcessorValueTreeState`.
-    AudioProcessorValueTreeStateExtension(juce::AudioProcessorValueTreeState& parent);
-    
+    AudioProcessorValueTreeStateExtension (juce::AudioProcessorValueTreeState& parent);
+
     ~AudioProcessorValueTreeStateExtension();
-    
+
     /**
      Returns a subject to control the value of the parameter with the given ID.
      
@@ -73,13 +75,13 @@ public:
      
      Parameter values can be changed from the audio thread; in this case the subject's `Observable` side emits asynchronously.
      */
-    BehaviorSubject<juce::var> parameterValue(const juce::StringRef parameterID) const;
-    
+    BehaviorSubject<juce::var> parameterValue (const juce::StringRef parameterID) const;
+
 private:
     struct Impl;
-    const juce::ScopedPointer<Impl> impl;
+    const std::unique_ptr<Impl> impl;
     juce::AudioProcessorValueTreeState& parent;
     DisposeBag disposeBag;
-    
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioProcessorValueTreeStateExtension)
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioProcessorValueTreeStateExtension)
 };
